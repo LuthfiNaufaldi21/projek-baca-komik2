@@ -1,4 +1,4 @@
-const comics = [
+export const comics = [
   {
     id: "solo-leveling",
     title: "Solo Leveling",
