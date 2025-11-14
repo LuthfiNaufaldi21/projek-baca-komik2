@@ -1,39 +1,177 @@
-import { auth } from '../utils/auth.js';
-import { renderNavbar } from '../components/navbar.js';
+import { auth } from "../utils/auth.js";
+import { renderNavbar } from "../components/navbar.js";
 
 export function renderAccountPage() {
-    const appContent = document.getElementById('app-content');
-    if (!appContent) return;
+  const appContent = document.getElementById("app-content");
+  if (!appContent) return;
 
-    if (!auth.isLoggedIn()) {
-        window.location.hash = '#login';
-        return;
-    }
-    const user = auth.getUser();
+  if (!auth.isLoggedIn()) {
+    window.location.hash = "#login";
+    return;
+  }
 
-    appContent.innerHTML = `
-        <div class="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Akun Saya</h2>
-        <p class="text-lg mb-6 text-gray-600 dark:text-gray-300">Selamat datang, <strong class="text-primary">${user?.username || 'Pengguna'}</strong>!</p>
+  const user = auth.getUser();
 
-        <button
-            id="logout-button"
-            class="w-full py-2 px-4 bg-red-600 text-white font-semibold rounded-md
-                hover:bg-red-700 transition-all duration-200
-                transform hover:-translate-y-0.5 hover:shadow-lg"
-        >
-            Logout
-        </button>
+  const username = user?.username || "Pengguna";
+  const email = user?.email || "Belum diatur";
+  const joined = user?.joined || "Tidak diketahui";
+  const bookmarks = user?.bookmarks?.length || 0;
+  const totalRead = user?.totalRead || 0;
+
+  const getRank = (read) => {
+    if (read > 200)
+      return {
+        name: "Comic Master",
+        color: "text-yellow-500 dark:text-yellow-300",
+      };
+    if (read > 100)
+      return {
+        name: "Super Fan",
+        color: "text-purple-600 dark:text-purple-300",
+      };
+    if (read > 50)
+      return { name: "Fan", color: "text-blue-600 dark:text-blue-300" };
+    return { name: "Reader", color: "text-gray-700 dark:text-gray-300" };
+  };
+
+  const rank = getRank(totalRead);
+
+  appContent.className = `
+        px-4 py-8 animate-[fadeIn_0.6s_ease]
+        bg-gray-100 text-gray-800
+        dark:bg-[#0d0f1a] dark:text-gray-200
+        min-h-screen
+    `;
+
+  appContent.innerHTML = `
+
+    <div class="w-full max-w-xl mx-auto mb-6 rounded-3xl overflow-hidden shadow-xl
+        border border-black/10 dark:border-white/10">
+
+        <img 
+            src="public/account-img.jpg" 
+            alt="Banner Komik"
+            class="w-full h-32 object-cover">
+        </div>
+
+        <div class="max-w-xl mx-auto p-8 rounded-3xl shadow-xl
+            bg-white/80 backdrop-blur-xl border border-black/10
+            dark:bg-white/5 dark:border-white/10">
+
+            <div class="flex flex-col items-center text-center mb-8">
+
+                <div class="w-28 h-28 rounded-full
+                    bg-gradient-to-br from-purple-400 to-purple-600
+                    dark:from-primary/40 dark:to-purple-700
+                    flex items-center justify-center
+                    text-white text-5xl font-extrabold shadow-lg
+                    ring-4 ring-purple-300/40 dark:ring-primary/30
+                    transition-all duration-500 hover:scale-110 hover:rotate-3">
+                    ${username.charAt(0).toUpperCase()}
+                </div>
+
+                <h2 class="text-3xl font-extrabold mt-5 tracking-tight
+                    text-gray-900 dark:text-white">
+                    ${username}
+                </h2>
+
+                <p class="mt-2 text-sm font-semibold ${rank.color}">
+                    ⭐ ${rank.name}
+                </p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-10">
+
+                <div class="p-4 rounded-2xl text-center shadow-md
+                    bg-gray-200/70 border border-black/10
+                    dark:bg-white/5 dark:border-white/10">
+                    <p class="text-purple-600 dark:text-purple-300 text-2xl font-bold">${bookmarks}</p>
+                    <p class="text-gray-600 dark:text-gray-300 text-xs">Bookmark</p>
+                </div>
+
+                <div class="p-4 rounded-2xl text-center shadow-md
+                    bg-gray-200/70 border border-black/10
+                    dark:bg-white/5 dark:border-white/10">
+                    <p class="text-purple-600 dark:text-purple-300 text-2xl font-bold">${totalRead}</p>
+                    <p class="text-gray-600 dark:text-gray-300 text-xs">Dibaca</p>
+                </div>
+
+                <div class="p-4 rounded-2xl text-center shadow-md
+                    bg-gray-200/70 border border-black/10
+                    dark:bg-white/5 dark:border-white/10">
+                    <p class="text-purple-600 dark:text-purple-300 text-2xl font-bold">
+                        ${rank.name.split(" ")[0]}
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-300 text-xs">Rank</p>
+                </div>
+
+            </div>
+
+            <div class="p-6 rounded-2xl shadow-md
+                bg-gray-200/70 backdrop-blur-xl border border-black/10
+                dark:bg-white/5 dark:border-white/10 mb-10">
+
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                    Informasi Pengguna
+                </h3>
+
+                <div class="space-y-4">
+
+                    <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                        <span>Username</span>
+                        <span class="font-semibold text-purple-700 dark:text-purple-300">${username}</span>
+                    </div>
+
+                    <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                        <span>Email</span>
+                        <span class="font-semibold text-purple-700 dark:text-purple-300">${email}</span>
+                    </div>
+
+                    <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                        <span>Tanggal Bergabung</span>
+                        <span class="font-semibold">${joined}</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="space-y-4">
+
+                <button id="edit-profile"
+                    class="w-full py-3 rounded-xl font-semibold
+                    bg-purple-600 text-white
+                    hover:bg-purple-700 active:scale-95 transition-all">
+                    Edit Profil
+                </button>
+
+                <button id="change-password"
+                    class="w-full py-3 rounded-xl font-semibold
+                    bg-gray-300 text-gray-900
+                    hover:bg-gray-400 dark:bg-gray-700 dark:text-white
+                    dark:hover:bg-gray-600 active:scale-95 transition-all">
+                    Ganti Password
+                </button>
+
+                <button id="logout-button"
+                    class="w-full py-3 rounded-xl font-semibold
+                    bg-red-600 text-white
+                    hover:bg-red-700 active:scale-95 transition-all">
+                    Logout
+                </button>
+
+            </div>
+
         </div>
     `;
 
-    const logoutButton = document.getElementById('logout-button');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
-            auth.logout();
-            renderNavbar();
-            alert('Anda telah logout.');
-            window.location.hash = '#home';
-        });
-    }
+  document
+    .getElementById("logout-button")
+    ?.addEventListener("click", handleLogout);
+}
+
+function handleLogout() {
+  auth.logout();
+  renderNavbar();
+  alert("Anda telah logout.");
+  window.location.hash = "#home";
 }
