@@ -1,4 +1,4 @@
-export function renderFilterBar(uniqueTags) {
+export function renderFilterBar(uniqueTags, initialQuery = '') {
   const currentActiveFilters = window.appState.activeFilters;
   const currentSort = window.appState.currentSortOrder;
   
@@ -32,7 +32,7 @@ export function renderFilterBar(uniqueTags) {
 
       <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">Cari Judul</h3>
       <form id="filter-search-form" class="flex">
-        <input type="text" id="filter-search-input" placeholder="Cari berdasarkan judul..." class="flex-grow p-2 border border-gray-300 dark:border-gray-500 rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-200 dark:placeholder-gray-400">
+        <input type="text" id="filter-search-input" value="${initialQuery}" placeholder="Cari berdasarkan judul..." class="flex-grow p-2 border border-gray-300 dark:border-gray-500 rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-200 dark:placeholder-gray-400">
         <button type="submit" class="bg-primary text-white px-4 py-2 rounded-r-md hover:bg-primary-hover">Cari</button>
       </form>
     </div>

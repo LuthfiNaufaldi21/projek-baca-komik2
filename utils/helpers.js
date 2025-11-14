@@ -2,6 +2,26 @@ import { renderComicGrid } from '../components/comicCard.js';
 import { renderPagination } from '../components/pagination.js';
 import { comicsPerPage, setCurrentPaginator } from '../app.js';
 
+export function escapeHTML(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/[&<>"']/g, function(match) {
+        switch (match) {
+            case '&':
+                return '&amp;';
+            case '<':
+                return '&lt;';
+            case '>':
+                return '&gt;';
+            case '"':
+                return '&quot;';
+            case "'":
+                return '&#39;';
+            default:
+                return match;
+        }
+    });
+}
+
 export function cleanupPageLogic() {
   window.appState.activeFilters = [];
   window.appState.currentPage = 1;
@@ -63,7 +83,7 @@ export function createPaginatedPage(title, comicList) {
     setCurrentPaginator(paginator);
 
     appContent.innerHTML = `
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">${title}</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">${title}</h2>
         <div id="comic-grid-container"></div>
         <div id="pagination-container" class="mt-8"></div>
     `;

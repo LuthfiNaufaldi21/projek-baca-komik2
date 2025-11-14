@@ -3,6 +3,7 @@ import { renderPagination } from '../components/pagination.js';
 import { renderComicGrid } from '../components/comicCard.js';
 import { comicsPerPage, initScrollObserver, setCurrentPaginator, setCurrentPage, setActiveFilters, setCurrentSortOrder } from '../app.js';
 import { comics } from '../data.js';
+import { escapeHTML } from '../utils/helpers.js';
 
 function getAllUniqueTags() {
     const allTags = new Set();
@@ -13,8 +14,9 @@ function getAllUniqueTags() {
 }
 
 function applyFiltersAndRenderInternal() {
-    const query =
-      document.getElementById('filter-search-input')?.value.toLowerCase() || '';
+    const queryInput = document.getElementById('filter-search-input');
+    const query = queryInput?.value.toLowerCase() || '';
+
     const state = window.appState;
 
     let filteredComics = comics.filter((comic) => {
@@ -58,7 +60,7 @@ function applyFiltersAndRenderInternal() {
     sortButtons.forEach(button => {
         const sortType = button.dataset.sort;
         if (sortType === state.currentSortOrder) {
-            button.className = `${baseClasses} ${activeClasses}`; 
+            button.className = `${baseClasses} ${activeClasses}`;
         } else {
             button.className = `${baseClasses} ${normalClasses}`;
         }
@@ -68,14 +70,14 @@ function applyFiltersAndRenderInternal() {
     tagButtons.forEach(button => {
         const tag = button.dataset.tag;
         if (state.activeFilters.includes(tag)) {
-            button.className = `${baseClasses} ${activeClasses}`; 
+            button.className = `${baseClasses} ${activeClasses}`;
         } else {
-            button.className = `${baseClasses} ${normalClasses}`; 
+            button.className = `${baseClasses} ${normalClasses}`;
         }
     });
 
     initScrollObserver();
-  }
+}
 
 
 export function renderDaftarKomikPage() {
@@ -85,8 +87,16 @@ export function renderDaftarKomikPage() {
     const uniqueTags = getAllUniqueTags();
     setCurrentPaginator(applyFiltersAndRenderInternal);
 
+    let initialQuery = '';
+    const hash = window.location.hash;
+    if (hash.startsWith('#search?q=')) {
+        const params = new URLSearchParams(hash.split('?')[1]);
+        const query = params.get('q');
+        initialQuery = query ? escapeHTML(decodeURIComponent(query)) : '';
+    }
+
     appContent.innerHTML = `
-      ${renderFilterBar(uniqueTags)} 
+      ${renderFilterBar(uniqueTags, initialQuery)}
       <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Daftar Komik</h2>
       <div id="comic-grid-container"></div>
       <div id="pagination-container" class="mt-8"></div>
@@ -105,7 +115,7 @@ export function renderDaftarKomikPage() {
       .addEventListener('click', (e) => {
         if (e.target.classList.contains('filter-tag')) {
           const tag = e.target.dataset.tag;
-          
+
           let currentFilters = [...window.appState.activeFilters];
           if (currentFilters.includes(tag)) {
             currentFilters = currentFilters.filter((t) => t !== tag);
@@ -114,7 +124,7 @@ export function renderDaftarKomikPage() {
           }
           setActiveFilters(currentFilters);
           setCurrentPage(1);
-          applyFiltersAndRenderInternal(); 
+          applyFiltersAndRenderInternal();
         }
       });
 
@@ -124,7 +134,7 @@ export function renderDaftarKomikPage() {
           if (e.target.classList.contains('filter-tag') && e.target.dataset.sort) {
               setCurrentSortOrder(e.target.dataset.sort);
               setCurrentPage(1);
-              applyFiltersAndRenderInternal(); 
+              applyFiltersAndRenderInternal();
           }
       });
 

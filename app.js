@@ -1,6 +1,6 @@
 import { renderNavbar } from './components/navbar.js'; 
 import { router } from './router.js';
-import { initScrollObserver, createPaginatedPage } from './utils/helpers.js';
+import { initScrollObserver, createPaginatedPage, cleanupPageLogic, escapeHTML } from './utils/helpers.js';
 import { comics } from './data.js';
 import { renderPagination } from './components/pagination.js';
 import { renderComicGrid, renderComicCard } from './components/comicCard.js'; 
@@ -30,9 +30,9 @@ export function setCurrentPaginator(paginatorFunc) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderNavbar();
-  initializeThemeToggle(document.getElementById('navbar-container'));
-  router();
+    renderNavbar();
+    initializeThemeToggle(document.getElementById('navbar-container'));
+    router();
 });
 
 window.addEventListener('hashchange', () => {
@@ -48,27 +48,27 @@ const navbarContainer = document.getElementById('navbar-container');
 const appContent = document.getElementById('app-content');
 
 window.addEventListener('scroll', () => {
-  const currentScrollY = window.scrollY;
+    const currentScrollY = window.scrollY;
 
-  if (navbarContainer){
-    if (currentScrollY > lastScrollY) {
-      if (currentScrollY > 100) {
-        navbarContainer.classList.add('navbar-hidden');
+    if (navbarContainer){
+      if (currentScrollY > lastScrollY) {
+        if (currentScrollY > 100) {
+          navbarContainer.classList.add('navbar-hidden');
+        }
+      } else {
+        navbarContainer.classList.remove('navbar-hidden');
       }
-    } else {
-      navbarContainer.classList.remove('navbar-hidden');
     }
-  }
 
-  lastScrollY = currentScrollY;
+    lastScrollY = currentScrollY;
 
-  if (backToTopBtn){
-    if (window.scrollY > 300) {
-        backToTopBtn.classList.add('show');
-    } else {
-        backToTopBtn.classList.remove('show');
+    if (backToTopBtn){
+      if (window.scrollY > 300) {
+          backToTopBtn.classList.add('show');
+      } else {
+          backToTopBtn.classList.remove('show');
+      }
     }
-  }
 });
 
 if(backToTopBtn){
@@ -100,5 +100,5 @@ if(appContent){
     });
 }
 
-export { initScrollObserver, createPaginatedPage, comics };
+export { initScrollObserver, createPaginatedPage, comics, cleanupPageLogic, escapeHTML };
 export { renderComicGrid, renderPagination };
