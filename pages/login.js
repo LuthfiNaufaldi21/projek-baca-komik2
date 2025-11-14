@@ -10,7 +10,7 @@ export function renderLoginPage() {
         <div class="login-split-container">
             <div class="login-image-panel">
                 <div class="image-overlay-content">
-                    <h1 class="text-4xl font-bold text-white" style="font-family: 'Playfair Display', serif;">Komik Kita</h1>
+                    <h1 class="text-4xl font-bold text-white" style="font-family: 'Playfair Display', serif;">KomiKita</h1>
                     <p class="text-white mt-4 max-w-sm text-center">Tempat seru membaca komik aduhay, menghadirkan cerita seru, gambar no burik burik, update cepat, dan pengalaman membaca yang selalu bikin ketagihan</p>
                 </div>
             </div>

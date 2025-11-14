@@ -14,23 +14,22 @@ function getAllUniqueTags() {
 }
 
 function applyFiltersAndRenderInternal() {
-    const queryInput = document.getElementById('filter-search-input');
-    const query = queryInput?.value.toLowerCase() || '';
-
     const state = window.appState;
 
     let filteredComics = comics.filter((comic) => {
-      const titleMatch = comic.title.toLowerCase().includes(query);
+      const titleMatch = true;
       const tagsMatch = state.activeFilters.every((filterTag) =>
         comic.tags.includes(filterTag)
       );
       return titleMatch && tagsMatch;
     });
 
-    if (state.currentSortOrder === 'rating_desc') {
+    if (state.currentSortOrder === "rating_desc") {
       filteredComics.sort((a, b) => b.rating - a.rating);
-    } else if (state.currentSortOrder === 'title_asc') {
+    } else if (state.currentSortOrder === "title_asc") {
       filteredComics.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (state.currentSortOrder === "title_desc") {
+      filteredComics.sort((a, b) => b.title.localeCompare(a.title));
     }
 
     const totalItems = filteredComics.length;
@@ -101,14 +100,6 @@ export function renderDaftarKomikPage() {
       <div id="comic-grid-container"></div>
       <div id="pagination-container" class="mt-8"></div>
     `;
-
-    document
-      .getElementById('filter-search-form')
-      .addEventListener('submit', (e) => {
-        e.preventDefault();
-        setCurrentPage(1);
-        applyFiltersAndRenderInternal();
-      });
 
     document
       .getElementById('filter-tag-container')
