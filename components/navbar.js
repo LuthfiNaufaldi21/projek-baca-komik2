@@ -9,7 +9,12 @@ export function renderNavbar() {
 
     const navbarHTML = `
       <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-3 px-6 shadow-md dark:shadow-black/20">
-        <a href="#home" class="text-xl font-bold text-gray-800 dark:text-gray-100 hover:text-primary">KOMIKITA</a>
+        <a href="#home" class="flex items-center">
+          <img src="./public/logo.png" alt="Logo" class="h-[25px] w-auto" />
+          <span class="text-xl font-bold text-gray-800 dark:text-gray-100 hover:text-primary">
+            KOMIKITA
+          </span>
+        </a>
         <div class="flex items-center space-x-6">
           <div class="hidden md:flex items-center space-x-5">
             <a href="#daftar-komik" class="text-gray-600 dark:text-gray-300 hover:text-primary">Daftar Komik</a>
