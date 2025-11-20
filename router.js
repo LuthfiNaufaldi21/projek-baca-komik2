@@ -12,6 +12,8 @@ import { renderDetailPage } from './pages/detail.js';
 import { auth } from './utils/auth.js';
 import { cleanupPageLogic as generalCleanup } from './utils/helpers.js';
 
+const defaultAppContentClass = "max-w-6xl mx-auto p-4 md:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-700/50 my-8";
+
 export function router() {
   const appContent = document.getElementById('app-content');
   if (!appContent) return;
@@ -23,9 +25,11 @@ export function router() {
   generalCleanup();
 
   setTimeout(() => {
-     if (appContent.innerHTML === '<p class="text-center text-gray-500 py-10">Memuat...</p>') {
-         appContent.innerHTML = '';
-     }
+      if (appContent.innerHTML === '<p class="text-center text-gray-500 py-10">Memuat...</p>') {
+          appContent.innerHTML = '';
+      }
+
+      appContent.className = defaultAppContentClass;
 
       if (path === '#home') {
         renderHomePage();
