@@ -1,9 +1,9 @@
-import { renderNavbar } from './components/navbar.js'; 
+import { renderNavbar } from './components/navbar.js';
 import { router } from './router.js';
 import { initScrollObserver, createPaginatedPage, cleanupPageLogic, escapeHTML } from './utils/helpers.js';
 import { comics } from './data.js';
 import { renderPagination } from './components/pagination.js';
-import { renderComicGrid, renderComicCard } from './components/comicCard.js'; 
+import { renderComicGrid } from './components/comicCard.js';
 import { initializeThemeToggle } from './utils/theme.js';
 
 window.appState = {
@@ -35,12 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
 });
 
-window.addEventListener('hashchange', () => {
-    router();
-    renderNavbar();
-    initializeThemeToggle(document.getElementById('navbar-container'));
-});
+function smoothNavigate() {
+    const app = document.getElementById('app-content');
+    if (!app) return;
+    app.classList.add('fade-out');
+    setTimeout(() => {
+        router();
+        app.classList.remove('fade-out');
+    }, 150);
+}
 
+window.addEventListener('hashchange', smoothNavigate);
 
 let lastScrollY = window.scrollY;
 const backToTopBtn = document.getElementById('back-to-top-btn');
@@ -50,44 +55,34 @@ const appContent = document.getElementById('app-content');
 window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
 
-    if (navbarContainer){
-      if (currentScrollY > lastScrollY) {
-        if (currentScrollY > 100) {
-          navbarContainer.classList.add('navbar-hidden');
+    if (navbarContainer) {
+        if (currentScrollY > lastScrollY) {
+            if (currentScrollY > 100) navbarContainer.classList.add('navbar-hidden');
+        } else {
+            navbarContainer.classList.remove('navbar-hidden');
         }
-      } else {
-        navbarContainer.classList.remove('navbar-hidden');
-      }
     }
 
     lastScrollY = currentScrollY;
 
-    if (backToTopBtn){
-      if (window.scrollY > 300) {
-          backToTopBtn.classList.add('show');
-      } else {
-          backToTopBtn.classList.remove('show');
-      }
+    if (backToTopBtn) {
+        if (window.scrollY > 300) backToTopBtn.classList.add('show');
+        else backToTopBtn.classList.remove('show');
     }
 });
 
-if(backToTopBtn){
+if (backToTopBtn) {
     backToTopBtn.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
 
-if(appContent){
+if (appContent) {
     appContent.addEventListener('click', (e) => {
         const paginationLink = e.target.closest('.pagination-link');
-        if (!paginationLink || paginationLink.classList.contains('disabled')) {
-            return;
-        }
-        e.preventDefault();
+        if (!paginationLink || paginationLink.classList.contains('disabled')) return;
 
+        e.preventDefault();
         const page = paginationLink.dataset.page;
 
         if (page) {

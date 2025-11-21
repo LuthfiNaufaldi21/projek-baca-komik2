@@ -1,3 +1,8 @@
+html {
+  scrollbar-gutter: stable;
+}
+
+
 body {
   font-family: "Inter", sans-serif;
   @apply bg-slate-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300;
@@ -72,8 +77,8 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 11;
-  transform: translateX(0px);
-  margin-right: 30px;
+  transform: translateX(50px);
+  margin-right: 80px;
 }
 .hero-slide .hover-content {
   width: calc(100% - 150px - 30px - 40px);
@@ -264,7 +269,6 @@ body {
   height: 1.5rem;
 }
 
-/* Login Page Styles */
 .login-split-container {
   display: flex;
   width: 100%;
@@ -348,9 +352,40 @@ body {
   background-color: #f9fafb;
 }
 
-/* Hapus style lama yang tidak relevan */
 .login-container,
 .or-separator,
 .social-btn {
   display: none;
+}
+
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  color: white;
+  background: rgba(0,0,0,0.3);
+  border: none;
+  width: 45px;
+  height: 60px;
+  cursor: pointer;
+  z-index: 30;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease;
+}
+
+.hero-arrow:hover {
+  background: rgba(0,0,0,0.5);
+}
+
+.hero-arrow-left {
+  left: 10px;
+}
+
+.hero-arrow-right {
+  right: 10px;
 }

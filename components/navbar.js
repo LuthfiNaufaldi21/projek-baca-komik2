@@ -34,22 +34,21 @@ export function renderNavbar() {
             <button type="submit" class="px-3 py-1.5 bg-primary text-white text-sm rounded-r-md hover:bg-primary-hover">Cari</button>
           </form>
           <a href="${profileLink}" title="Akun Saya">
-            <svg class="w-7 h-7 text-gray-600 dark:text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+            <svg class="w-7 h-7 text-gray-600 dark:text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
           </a>
         </div>
       </div>
     `;
+
     navbarContainer.innerHTML = navbarHTML;
 
     const searchForm = document.getElementById('search-form');
     if (searchForm) {
         searchForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const searchInput = document.getElementById('search-input');
-          const query = searchInput.value;
-          if (query) {
-            window.location.hash = `#search?q=${encodeURIComponent(query)}`;
-          }
+            e.preventDefault();
+            const searchInput = document.getElementById('search-input');
+            const query = searchInput.value;
+            if (query) window.location.hash = `#search?q=${encodeURIComponent(query)}`;
         });
     }
 }

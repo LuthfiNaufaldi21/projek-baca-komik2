@@ -7,6 +7,10 @@ let heroSliderInterval = null;
 function initHeroSliderInternal() {
     const slides = document.querySelectorAll('.hero-slide');
     const dots = document.querySelectorAll('.hero-dot');
+    const heroContainer = document.querySelector('.max-w-5xl'); 
+    const arrowLeft = document.querySelector('.hero-arrow-left');
+    const arrowRight = document.querySelector('.hero-arrow-right');
+
     if (slides.length === 0) return;
 
     let currentSlideIndex = 0;
@@ -15,58 +19,68 @@ function initHeroSliderInternal() {
         slides.forEach((slide, i) => {
             slide.classList.toggle('active', i === index);
             const imageUrl = slide.dataset.backgroundImage;
-
             slide.style.backgroundImage = `url('${imageUrl}')`;
-            slide.style.backgroundSize = 'cover';
-            slide.style.backgroundPosition = 'center';
-            slide.style.backgroundRepeat = 'no-repeat';
         });
+
         dots.forEach((dot, i) => {
             dot.classList.toggle('active', i === index);
         });
+
         currentSlideIndex = index;
     };
 
     showSlide(currentSlideIndex);
 
     if (heroSliderInterval) clearInterval(heroSliderInterval);
-     if (window.appState && window.appState.heroIntervalRef) {
-        window.appState.heroIntervalRef.current = setInterval(() => {
-            let nextIndex = (currentSlideIndex + 1) % slides.length;
-            showSlide(nextIndex);
-        }, 4000);
-        heroSliderInterval = window.appState.heroIntervalRef.current;
-     } else {
-         heroSliderInterval = setInterval(() => {
-            let nextIndex = (currentSlideIndex + 1) % slides.length;
-            showSlide(nextIndex);
-        }, 4000);
-     }
 
+    const startAutoSlide = () => {
+        heroSliderInterval = setInterval(() => {
+            let nextIndex = (currentSlideIndex + 1) % slides.length;
+            showSlide(nextIndex);
+        }, 4000);
+
+        if (window.appState?.heroIntervalRef) {
+            window.appState.heroIntervalRef.current = heroSliderInterval;
+        }
+    };
+
+    const resetAutoSlide = () => {
+        clearInterval(heroSliderInterval);
+        if (window.appState?.heroIntervalRef?.current) {
+            clearInterval(window.appState.heroIntervalRef.current);
+        }
+        startAutoSlide();
+    };
+
+    startAutoSlide();
 
     dots.forEach((dot) => {
-        const newDot = dot.cloneNode(true);
-        dot.parentNode.replaceChild(newDot, dot);
-
-        newDot.addEventListener('click', () => {
-            const index = parseInt(newDot.dataset.dotIndex);
+        dot.addEventListener("click", () => {
+            const index = parseInt(dot.dataset.dotIndex);
             showSlide(index);
-            clearInterval(heroSliderInterval);
-            if(window.appState && window.appState.heroIntervalRef.current) {
-                clearInterval(window.appState.heroIntervalRef.current);
-            }
-            const startNewInterval = () => {
-                 let nextIndex = (currentSlideIndex + 1) % slides.length;
-                 showSlide(nextIndex);
-            };
-            const newIntervalId = setInterval(startNewInterval, 4000);
-             heroSliderInterval = newIntervalId;
-             if(window.appState && window.appState.heroIntervalRef) {
-                 window.appState.heroIntervalRef.current = newIntervalId;
-             }
+            resetAutoSlide();
         });
     });
+
+    if (arrowLeft) {
+        arrowLeft.addEventListener("click", (e) => {
+            e.stopPropagation();
+            let prev = (currentSlideIndex - 1 + slides.length) % slides.length;
+            showSlide(prev);
+            resetAutoSlide();
+        });
+    }
+
+    if (arrowRight) {
+        arrowRight.addEventListener("click", (e) => {
+            e.stopPropagation();
+            let next = (currentSlideIndex + 1) % slides.length;
+            showSlide(next);
+            resetAutoSlide();
+        });
+    }
 }
+
 
 export function cleanupHomePage() {
     if (heroSliderInterval) {
@@ -89,9 +103,9 @@ export function renderHomePage() {
 
   const sliderHTML = `
     <div class="max-w-5xl mx-auto h-[300px] rounded-lg overflow-hidden relative shadow-lg mb-8">
+
       ${featuredComics
-        .map(
-          (comic, index) => {
+        .map((comic, index) => {
             const hoverTags = comic.tags
               .filter(t => !['Warna', 'Manga', 'Manhwa', 'Manhua'].includes(t))
               .slice(0, 3);
@@ -118,20 +132,25 @@ export function renderHomePage() {
                 </a>
               </div>
             `;
-          }
-        )
+        })
         .join('')}
 
       <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         ${featuredComics
           .map(
             (_, index) => `
-          <div class="hero-dot ${
-            index === 0 ? 'active' : ''
-          }" data-dot-index="${index}"></div>
+          <div class="hero-dot ${index === 0 ? 'active' : ''}" data-dot-index="${index}"></div>
         `
           )
           .join('')}
+      </div>
+
+      <div class="hero-arrow-left absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white px-3 py-2 rounded-full cursor-pointer z-20">
+        ‹
+      </div>
+
+      <div class="hero-arrow-right absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white px-3 py-2 rounded-full cursor-pointer z-20">
+        ›
       </div>
     </div>
   `;
