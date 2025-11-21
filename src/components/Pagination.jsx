@@ -1,3 +1,5 @@
+import "../styles/Pagination.css";
+
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   const pages = [];
   const maxVisiblePages = 5;
@@ -16,11 +18,11 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex justify-center items-center space-x-2 mt-12 mb-8">
+    <div className="pagination">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all duration-200 font-medium"
+        className="pagination__button pagination__button--disabled"
       >
         ← Prev
       </button>
@@ -29,11 +31,11 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         <>
           <button
             onClick={() => onPageChange(1)}
-            className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all duration-200 font-medium"
+            className="pagination__page-button pagination__page-button--inactive"
           >
             1
           </button>
-          {startPage > 2 && <span className="text-gray-400 px-1">...</span>}
+          {startPage > 2 && <span className="pagination__ellipsis">...</span>}
         </>
       )}
 
@@ -41,10 +43,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`w-10 h-10 rounded-full shadow-sm border transition-all duration-200 font-medium ${
+          className={`pagination__page-button ${
             currentPage === page
-              ? "bg-primary border-primary text-white scale-110 shadow-primary/30"
-              : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary"
+              ? "pagination__page-button--active"
+              : "pagination__page-button--inactive"
           }`}
         >
           {page}
@@ -54,11 +56,11 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
       {endPage < totalPages && (
         <>
           {endPage < totalPages - 1 && (
-            <span className="text-gray-400 px-1">...</span>
+            <span className="pagination__ellipsis">...</span>
           )}
           <button
             onClick={() => onPageChange(totalPages)}
-            className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all duration-200 font-medium"
+            className="pagination__page-button pagination__page-button--inactive"
           >
             {totalPages}
           </button>
@@ -68,7 +70,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all duration-200 font-medium"
+        className="pagination__button pagination__button--disabled"
       >
         Next →
       </button>

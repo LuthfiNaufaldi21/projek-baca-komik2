@@ -1,0 +1,101 @@
+/* Navbar Styles */
+
+.navbar {
+  @apply sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-800 transition-all duration-300;
+}
+
+.navbar__container {
+  @apply max-w-7xl mx-auto flex justify-between items-center p-4;
+}
+
+.navbar__logo-link {
+  @apply flex items-center;
+}
+
+.navbar__logo-glow-wrapper {
+  @apply relative;
+}
+
+.navbar__logo-glow {
+  @apply absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-25 transition duration-200;
+}
+
+.navbar__logo-link:hover .navbar__logo-glow {
+  @apply opacity-75;
+}
+
+.navbar__logo {
+  @apply relative h-8 w-auto transform transition-transform duration-200;
+}
+
+.navbar__logo-link:hover .navbar__logo {
+  @apply scale-105;
+}
+
+.navbar__brand-name {
+  @apply ml-3 text-xl font-extrabold tracking-tight text-gray-900 dark:text-white group-hover:text-primary transition-colors;
+}
+
+.navbar__content {
+  @apply flex items-center space-x-8;
+}
+
+.navbar__links {
+  @apply hidden md:flex items-center space-x-6;
+}
+
+.navbar__link {
+  @apply text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors relative;
+}
+
+.navbar__link-underline {
+  @apply absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300;
+}
+
+.navbar__link:hover .navbar__link-underline {
+  @apply w-full;
+}
+
+.navbar__actions {
+  @apply flex items-center space-x-4;
+}
+
+.navbar__search-form {
+  @apply relative hidden lg:block;
+}
+
+.navbar__search-input {
+  @apply pl-10 pr-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 border-none rounded-full focus:ring-2 focus:ring-primary/50 w-64 transition-all focus:w-72 text-gray-900 dark:text-gray-100;
+}
+
+.navbar__search-icon {
+  @apply w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2;
+}
+
+.navbar__theme-toggle {
+  @apply p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400;
+}
+
+.navbar__theme-icon {
+  @apply w-5 h-5;
+}
+
+.navbar__profile-link {
+  @apply relative;
+}
+
+.navbar__profile-gradient {
+  @apply w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 p-[2px];
+}
+
+.navbar__profile-inner {
+  @apply w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center;
+}
+
+.navbar__profile-icon {
+  @apply w-5 h-5 text-gray-600 dark:text-gray-300 transition-colors;
+}
+
+.navbar__profile-link:hover .navbar__profile-icon {
+  @apply text-primary;
+}

@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { comics } from "../data/comics";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
+import "../styles/DetailPage.css";
 
 export default function DetailPage() {
   const { id } = useParams();
@@ -10,14 +11,14 @@ export default function DetailPage() {
 
   if (!comic) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-3xl font-bold text-red-600 mb-4">
+      <div className="detail-page__not-found">
+        <h2 className="detail-page__not-found-title">
           🚨 404 - Komik Tidak Ditemukan
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <p className="detail-page__not-found-text">
           Maaf, komik yang Anda cari tidak ada.
         </p>
-        <Link to="/" className="text-primary hover:underline">
+        <Link to="/" className="detail-page__not-found-link">
           Kembali ke Home
         </Link>
       </div>
@@ -39,39 +40,39 @@ export default function DetailPage() {
   };
 
   return (
-    <div className="animate-fade-in pb-12">
+    <div className="detail-page__container">
       {/* Hero Banner Background */}
-      <div className="relative w-full max-w-7xl mx-auto mt-6 h-[400px] overflow-hidden rounded-3xl shadow-2xl mb-[-150px] border border-gray-100 dark:border-gray-800 group">
+      <div className="detail-page__hero-banner">
         <div
-          className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-50 transition-transform duration-1000 group-hover:scale-125"
+          className="detail-page__hero-bg"
           style={{ backgroundImage: `url('${comic.cover}')` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white/90 dark:to-gray-900/90"></div>
+        <div className="detail-page__hero-overlay"></div>
       </div>
 
-      <div className="relative z-10 px-4 md:px-8 max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="detail-page__content">
+        <div className="detail-page__layout">
           {/* Cover Image */}
-          <div className="md:w-1/3 lg:w-1/4 flex-shrink-0 mx-auto md:mx-0 w-2/3">
-            <div className="rounded-2xl shadow-2xl overflow-hidden border-4 border-white dark:border-gray-700 transform hover:scale-105 transition-transform duration-300 aspect-[3/4] relative z-20">
+          <div className="detail-page__cover-container">
+            <div className="detail-page__cover-wrapper">
               <img
                 src={comic.cover}
                 alt={comic.title}
-                className="w-full h-full object-cover"
+                className="detail-page__cover-image"
               />
             </div>
             <button
               onClick={handleBookmarkClick}
-              className={`w-full mt-6 py-3 px-6 rounded-full font-bold shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 relative z-20 ${
+              className={`detail-page__bookmark-button ${
                 bookmarked
-                  ? "bg-red-500 hover:bg-red-600 text-white ring-2 ring-red-200 dark:ring-red-900"
-                  : "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-200 dark:ring-blue-900"
+                  ? "detail-page__bookmark-button--saved"
+                  : "detail-page__bookmark-button--unsaved"
               }`}
             >
               {bookmarked ? (
                 <>
                   <svg
-                    className="w-5 h-5"
+                    className="detail-page__icon"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -86,7 +87,7 @@ export default function DetailPage() {
               ) : (
                 <>
                   <svg
-                    className="w-5 h-5"
+                    className="detail-page__icon"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -105,15 +106,13 @@ export default function DetailPage() {
           </div>
 
           {/* Comic Details */}
-          <div className="md:w-2/3 lg:w-3/4 pt-16 md:pt-32">
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight drop-shadow-sm">
-              {comic.title}
-            </h1>
+          <div className="detail-page__info">
+            <h1 className="detail-page__title">{comic.title}</h1>
 
-            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm md:text-base">
-              <div className="flex items-center px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700">
+            <div className="detail-page__meta">
+              <div className="detail-page__rating-badge">
                 <svg
-                  className="w-5 h-5 mr-1.5"
+                  className="detail-page__icon"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -123,9 +122,9 @@ export default function DetailPage() {
                 <span className="opacity-75 ml-1">/ 10</span>
               </div>
 
-              <div className="flex items-center text-gray-600 dark:text-gray-300 font-medium">
+              <div className="detail-page__meta-item">
                 <svg
-                  className="w-5 h-5 mr-2"
+                  className="detail-page__icon mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -140,9 +139,9 @@ export default function DetailPage() {
                 <span>{comic.author}</span>
               </div>
 
-              <div className="flex items-center text-gray-600 dark:text-gray-300 font-medium">
+              <div className="detail-page__meta-item">
                 <svg
-                  className="w-5 h-5 mr-2"
+                  className="detail-page__icon mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -158,43 +157,37 @@ export default function DetailPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-8">
+            <div className="detail-page__tags">
               {comic.tags?.map((tag, index) => (
                 <Link
                   to={`/genre/${encodeURIComponent(tag)}`}
                   key={index}
-                  className="px-4 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-full text-sm font-semibold hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 shadow-sm"
+                  className="detail-page__tag"
                 >
                   {tag}
                 </Link>
               ))}
             </div>
 
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                Sinopsis
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                {comic.synopsis}
-              </p>
+            <div className="detail-page__synopsis-container">
+              <h3 className="detail-page__synopsis-title">Sinopsis</h3>
+              <p className="detail-page__synopsis-text">{comic.synopsis}</p>
             </div>
           </div>
         </div>
 
         {/* Chapters Section */}
-        <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-            Daftar Chapter
-          </h2>
+        <div className="detail-page__chapters">
+          <h2 className="detail-page__chapters-title">Daftar Chapter</h2>
           {comic.chapters && comic.chapters.length > 0 ? (
-            <div className="space-y-2">
+            <div className="detail-page__chapters-list">
               {comic.chapters.map((chapter) => (
                 <Link
                   key={chapter.id}
                   to={`/read/${comic.id}/${chapter.id}`}
-                  className="block p-3 bg-gray-100 dark:bg-gray-600 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-md transition-colors"
+                  className="detail-page__chapter-link"
                 >
-                  <span className="text-gray-800 dark:text-gray-100">
+                  <span className="detail-page__chapter-title">
                     {chapter.title}
                   </span>
                 </Link>

@@ -2,11 +2,11 @@ import { useState } from "react";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import "../styles/DaftarKomikPage.css";
 
 export default function DaftarKomikPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  // 5 rows x 5 columns per page
-  const itemsPerPage = 25;
+  const itemsPerPage = 10;
 
   const totalPages = Math.ceil(comics.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -20,14 +20,12 @@ export default function DaftarKomikPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-        Daftar Semua Komik
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
+      <h1 className="daftar-komik__title">Daftar Semua Komik</h1>
+      <p className="daftar-komik__description">
         Koleksi lengkap komik kami ({comics.length} komik)
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+      <div className="daftar-komik__grid">
         {currentComics.map((comic) => (
           <ComicCard key={comic.id} comic={comic} />
         ))}

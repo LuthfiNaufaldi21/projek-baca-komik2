@@ -2,10 +2,11 @@ import { useState } from "react";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import "../styles/CategoryPage.css";
 
 export default function BerwarnaPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 25; // 5 rows x 5 columns
+  const itemsPerPage = 10;
 
   const filteredComics = comics.filter((comic) =>
     comic.tags?.includes("Warna")
@@ -23,20 +24,18 @@ export default function BerwarnaPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-        Komik Berwarna
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
+      <h1 className="category-page__title">Komik Berwarna</h1>
+      <p className="category-page__description">
         Koleksi komik berwarna ({filteredComics.length} komik)
       </p>
 
       {filteredComics.length === 0 ? (
-        <p className="text-center text-gray-500 py-10">
+        <p className="category-page__empty">
           Tidak ada komik berwarna saat ini.
         </p>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+          <div className="category-page__grid">
             {currentComics.map((comic) => (
               <ComicCard key={comic.id} comic={comic} />
             ))}

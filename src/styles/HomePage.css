@@ -1,0 +1,29 @@
+/* HomePage Styles */
+
+.home-page__title {
+  @apply text-3xl font-bold font-serif text-gray-800 dark:text-gray-100 mb-6 border-l-4 border-primary pl-4;
+}
+
+.home-page__subtitle {
+  @apply text-3xl font-bold font-serif text-gray-800 dark:text-gray-100 mb-2 mt-12 border-l-4 border-primary pl-4;
+}
+
+.home-page__description {
+  @apply text-gray-600 dark:text-gray-400 mb-4;
+}
+
+.home-page__divider {
+  @apply mb-4 border-gray-200 dark:border-gray-700;
+}
+
+.home-page__grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5;
+}
+
+.home-page__view-all-link {
+  @apply inline-block px-6 py-2 bg-primary text-white font-semibold rounded-md hover:bg-primary-hover transition-colors duration-200;
+}
+
+.home-page__view-all-container {
+  @apply text-center mt-6;
+}

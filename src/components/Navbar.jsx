@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+import "../styles/Navbar.css";
 
 export default function Navbar() {
   const { isLoggedIn } = useAuth();
@@ -20,24 +21,18 @@ export default function Navbar() {
   const profileLink = isLoggedIn ? "/akun" : "/login";
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
-      <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
-        <Link to="/" className="flex items-center group">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-200"></div>
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="relative h-8 w-auto transform group-hover:scale-105 transition-transform duration-200"
-            />
+    <nav className="navbar">
+      <div className="navbar__container">
+        <Link to="/" className="navbar__logo-link">
+          <div className="navbar__logo-glow-wrapper">
+            <div className="navbar__logo-glow"></div>
+            <img src="/logo.svg" alt="Logo" className="navbar__logo" />
           </div>
-          <span className="ml-3 text-xl font-extrabold tracking-tight text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-            KOMIKITA
-          </span>
+          <span className="navbar__brand-name">KomiKita</span>
         </Link>
 
-        <div className="flex items-center space-x-8">
-          <div className="hidden md:flex items-center space-x-6">
+        <div className="navbar__content">
+          <div className="navbar__links">
             {[
               { to: "/daftar-komik", label: "Daftar Komik" },
               { to: "/bookmark", label: "Bookmark" },
@@ -46,28 +41,24 @@ export default function Navbar() {
               { to: "/manhwa", label: "Manhwa" },
               { to: "/manhua", label: "Manhua" },
             ].map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors relative group"
-              >
+              <Link key={link.to} to={link.to} className="navbar__link">
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                <span className="navbar__link-underline"></span>
               </Link>
             ))}
           </div>
 
-          <div className="flex items-center space-x-4">
-            <form onSubmit={handleSearch} className="relative hidden lg:block">
+          <div className="navbar__actions">
+            <form onSubmit={handleSearch} className="navbar__search-form">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari komik..."
-                className="pl-10 pr-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 border-none rounded-full focus:ring-2 focus:ring-primary/50 w-64 transition-all focus:w-72 text-gray-900 dark:text-gray-100"
+                className="navbar__search-input"
               />
               <svg
-                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                className="navbar__search-icon"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -83,12 +74,12 @@ export default function Navbar() {
 
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+              className="navbar__theme-toggle"
               title={theme === "dark" ? "Light Mode" : "Dark Mode"}
             >
               {theme === "dark" ? (
                 <svg
-                  className="w-5 h-5"
+                  className="navbar__theme-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -102,7 +93,7 @@ export default function Navbar() {
                 </svg>
               ) : (
                 <svg
-                  className="w-5 h-5"
+                  className="navbar__theme-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -117,11 +108,11 @@ export default function Navbar() {
               )}
             </button>
 
-            <Link to={profileLink} className="relative group">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 p-[2px]">
-                <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center">
+            <Link to={profileLink} className="navbar__profile-link">
+              <div className="navbar__profile-gradient">
+                <div className="navbar__profile-inner">
                   <svg
-                    className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-primary transition-colors"
+                    className="navbar__profile-icon"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

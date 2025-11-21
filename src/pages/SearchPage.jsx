@@ -3,12 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import "../styles/SearchPage.css";
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     setCurrentPage(1);
@@ -36,23 +37,23 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-        Hasil Pencarian untuk "{query}"
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
+      <h1 className="search-page__title">Hasil Pencarian untuk "{query}"</h1>
+      <p className="search-page__results-count">
         Ditemukan {searchResults.length} komik
       </p>
 
       {searchResults.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
+        <div className="search-page__empty-state">
+          <p className="search-page__empty-text">
             Tidak ada hasil yang ditemukan untuk "{query}"
           </p>
-          <p className="text-gray-400 mt-2">Coba gunakan kata kunci lain</p>
+          <p className="search-page__empty-hint">
+            Coba gunakan kata kunci lain
+          </p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="search-page__grid">
             {currentComics.map((comic) => (
               <ComicCard key={comic.id} comic={comic} />
             ))}

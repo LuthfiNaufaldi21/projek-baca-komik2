@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
+import "../styles/LoginPage.css";
 
 export default function LoginPage() {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -39,25 +40,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f8f9fd] dark:bg-[#0f172a] transition-colors duration-300 relative overflow-hidden">
+    <div className="login-page__container">
       {/* Seamless Background Pattern */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/5 blur-[120px]"></div>
+      <div className="login-page__bg-pattern">
+        <div className="login-page__bg-blob-top"></div>
+        <div className="login-page__bg-blob-bottom"></div>
       </div>
 
-      <div className="flex w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden min-h-[600px] relative z-10 border border-gray-100 dark:border-gray-700">
+      <div className="login-page__card">
         {/* Left Side - Image & Branding */}
         <div
-          className="hidden md:flex md:w-1/2 bg-cover bg-center relative items-center justify-center p-12"
-          style={{ backgroundImage: "url(/login-img.jpg)" }}
+          className="login-page__image-section"
+          style={{ backgroundImage: "url(/images/login-img.jpg)" }}
         >
-          <div className="absolute inset-0 bg-black/40 z-[1]"></div>
-          <div className="relative z-[2] text-center text-white">
-            <h1 className="text-5xl font-bold mb-6 tracking-wide drop-shadow-lg font-serif">
-              KomiKita
-            </h1>
-            <p className="text-lg font-medium leading-relaxed opacity-90 max-w-md mx-auto">
+          <div className="login-page__image-overlay"></div>
+          <div className="login-page__branding">
+            <h1 className="login-page__brand-title">KomiKita</h1>
+            <p className="login-page__brand-description">
               Tempat seru membaca komik aduhay, menghadirkan cerita seru, gambar
               no burik burik, update cepat, dan pengalaman membaca yang selalu
               bikin ketagihan
@@ -66,28 +65,26 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-8 md:p-12 bg-white dark:bg-gray-800 transition-colors duration-300">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-[#4a56e2] mb-2">
+        <div className="login-page__form-section">
+          <div className="login-page__form-wrapper">
+            <div className="login-page__form-header">
+              <h2 className="login-page__form-title">
                 {isLoginView ? "Salam, pecinta komik" : "Gabung Komunitas Kami"}
               </h2>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="login-page__form-subtitle">
                 {isLoginView
                   ? "Masuk dengan email"
                   : "Daftar sekarang dan mulai membaca"}
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="login-page__form">
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Alamat email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <label className="login-page__label">Alamat email</label>
+                <div className="login-page__input-group">
+                  <div className="login-page__input-icon">
                     <svg
-                      className="h-5 w-5 text-gray-400"
+                      className="login-page__icon"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -105,19 +102,17 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a56e2] focus:border-transparent transition-all duration-200"
+                    className="login-page__input"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <label className="login-page__label">Password</label>
+                <div className="login-page__input-group">
+                  <div className="login-page__input-icon">
                     <svg
-                      className="h-5 w-5 text-gray-400"
+                      className="login-page__icon"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -135,15 +130,12 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a56e2] focus:border-transparent transition-all duration-200"
+                    className="login-page__input"
                   />
                 </div>
                 {isLoginView && (
-                  <div className="flex justify-end mt-1">
-                    <a
-                      href="#"
-                      className="text-xs text-gray-500 hover:text-[#4a56e2] hover:underline"
-                    >
+                  <div className="login-page__forgot-password">
+                    <a href="#" className="login-page__forgot-link">
                       Lupa passwordmu?
                     </a>
                   </div>
@@ -152,13 +144,13 @@ export default function LoginPage() {
 
               {!isLoginView && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  <label className="login-page__label">
                     Konfirmasi Password
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="login-page__input-group">
+                    <div className="login-page__input-icon">
                       <svg
-                        className="h-5 w-5 text-gray-400"
+                        className="login-page__icon"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -176,58 +168,53 @@ export default function LoginPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required={!isLoginView}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a56e2] focus:border-transparent transition-all duration-200"
+                      className="login-page__input"
                     />
                   </div>
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#4a56e2] hover:bg-[#3b47c4] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4a56e2] transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg uppercase tracking-wide"
-              >
+              <button type="submit" className="login-page__submit-button">
                 {isLoginView ? "LOGIN" : "SIGN UP"}
               </button>
             </form>
 
-            <div className="mt-8">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white dark:bg-gray-800 text-gray-400">
-                    Bisa juga dengan
-                  </span>
-                </div>
+            <div className="login-page__divider-container">
+              <div className="login-page__divider-line-container">
+                <div className="login-page__divider-line"></div>
               </div>
-
-              <div className="mt-6 flex justify-center gap-4">
-                <button className="w-12 h-12 inline-flex justify-center items-center border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                  <img
-                    src="https://www.google.com/favicon.ico"
-                    alt="Google"
-                    className="h-6 w-6"
-                  />
-                </button>
-                <button className="w-12 h-12 inline-flex justify-center items-center border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/2048px-2021_Facebook_icon.svg.png"
-                    alt="Facebook"
-                    className="h-6 w-6"
-                  />
-                </button>
-                <button className="w-12 h-12 inline-flex justify-center items-center border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                  <img
-                    src="https://www.apple.com/favicon.ico"
-                    alt="Apple"
-                    className="h-6 w-6"
-                  />
-                </button>
+              <div className="login-page__divider-text-container">
+                <span className="login-page__divider-text">
+                  Bisa juga dengan
+                </span>
               </div>
             </div>
 
-            <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+            <div className="login-page__social-buttons">
+              <button className="login-page__social-button">
+                <img
+                  src="https://www.google.com/favicon.ico"
+                  alt="Google"
+                  className="login-page__social-icon"
+                />
+              </button>
+              <button className="login-page__social-button">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/2048px-2021_Facebook_icon.svg.png"
+                  alt="Facebook"
+                  className="login-page__social-icon"
+                />
+              </button>
+              <button className="login-page__social-button">
+                <img
+                  src="https://www.apple.com/favicon.ico"
+                  alt="Apple"
+                  className="login-page__social-icon"
+                />
+              </button>
+            </div>
+
+            <p className="login-page__toggle-view">
               {isLoginView ? "Belum punya akun? " : "Sudah punya akun? "}
               <a
                 href="#"
@@ -235,7 +222,7 @@ export default function LoginPage() {
                   e.preventDefault();
                   setIsLoginView(!isLoginView);
                 }}
-                className="font-bold text-[#4a56e2] hover:underline transition-colors"
+                className="login-page__toggle-link"
               >
                 {isLoginView ? "Daftar disini" : "Login sekarang"}
               </a>

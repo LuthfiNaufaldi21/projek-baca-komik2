@@ -1,22 +1,23 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import "../styles/BookmarkPage.css";
 
 export default function BookmarkPage() {
   const { isLoggedIn, user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 10;
 
   if (!isLoggedIn) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-3xl font-bold text-gray-700 dark:text-gray-200 mb-4">
+      <div className="bookmark-page__auth-required">
+        <h2 className="bookmark-page__auth-title">
           Anda harus login terlebih dahulu
         </h2>
-        <Link to="/login" className="text-primary hover:underline">
+        <Link to="/login" className="bookmark-page__auth-link">
           Klik di sini untuk login
         </Link>
       </div>
@@ -30,10 +31,8 @@ export default function BookmarkPage() {
   if (bookmarkedComics.length === 0) {
     return (
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-          Bookmark Saya
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <h2 className="bookmark-page__empty-title">Bookmark Saya</h2>
+        <p className="bookmark-page__empty-text">
           Anda belum memiliki bookmark.
         </p>
       </div>
@@ -52,14 +51,12 @@ export default function BookmarkPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-        Bookmark Saya
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
+      <h1 className="bookmark-page__title">Bookmark Saya</h1>
+      <p className="bookmark-page__count">
         Total {bookmarkedComics.length} komik tersimpan
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="bookmark-page__grid">
         {currentComics.map((comic) => (
           <ComicCard key={comic.id} comic={comic} />
         ))}

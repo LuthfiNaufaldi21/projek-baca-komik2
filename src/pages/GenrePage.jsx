@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
+import "../styles/GenrePage.css";
 
 export default function GenrePage() {
   const { tag } = useParams();
@@ -9,26 +10,21 @@ export default function GenrePage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-        Genre: {decodedTag}
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-6">
+      <h1 className="genre-page__title">Genre: {decodedTag}</h1>
+      <p className="genre-page__description">
         Menampilkan {filtered.length} komik dengan genre "{decodedTag}".
       </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+      <div className="genre-page__grid">
         {filtered.map((comic) => (
           <ComicCard key={comic.id} comic={comic} />
         ))}
       </div>
       {filtered.length === 0 && (
-        <div className="mt-8 p-6 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-center">
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
+        <div className="genre-page__empty-state">
+          <p className="genre-page__empty-text">
             Tidak ada komik dengan genre ini.
           </p>
-          <Link
-            to="/daftar-komik"
-            className="inline-block px-5 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
-          >
+          <Link to="/daftar-komik" className="genre-page__back-link">
             Kembali ke Daftar Komik
           </Link>
         </div>

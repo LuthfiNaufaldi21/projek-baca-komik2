@@ -1,0 +1,57 @@
+/* AccountPage Styles */
+
+.account-page__container {
+  @apply max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden;
+}
+
+.account-page__header {
+  @apply relative h-48 bg-cover bg-center;
+}
+
+.account-page__header-overlay {
+  @apply absolute inset-0 bg-gradient-to-b from-black/50 to-black/70;
+}
+
+.account-page__profile {
+  @apply relative z-10 flex flex-col items-center justify-center h-full text-center;
+}
+
+.account-page__avatar {
+  @apply w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold mb-3 shadow-lg;
+}
+
+.account-page__title {
+  @apply text-2xl font-bold text-white drop-shadow-lg;
+}
+
+.account-page__content {
+  @apply p-6;
+}
+
+.account-page__welcome {
+  @apply text-lg mb-6 text-gray-600 dark:text-gray-300 text-center;
+}
+
+.account-page__username {
+  @apply text-primary;
+}
+
+.account-page__stats {
+  @apply mb-6;
+}
+
+.account-page__stats-card {
+  @apply bg-gray-100 dark:bg-gray-700 p-4 rounded-md;
+}
+
+.account-page__stats-label {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.account-page__stats-value {
+  @apply text-2xl font-bold text-primary;
+}
+
+.account-page__logout-button {
+  @apply w-full py-2 px-4 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg;
+}
