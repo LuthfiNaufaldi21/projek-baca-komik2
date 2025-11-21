@@ -67,12 +67,13 @@ export default function HeroSlider({ comics }) {
                 >
                   <div className="flex flex-wrap gap-2 mb-4">
                     {hoverTags.map((tag, i) => (
-                      <span
+                      <Link
                         key={i}
-                        className="px-3 py-1 bg-primary/80 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider shadow-lg"
+                        to={`/genre/${tag}`}
+                        className="px-3 py-1 bg-primary/80 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-primary hover:scale-105 transition-all duration-200 cursor-pointer"
                       >
                         {tag}
-                      </span>
+                      </Link>
                     ))}
                   </div>
 
