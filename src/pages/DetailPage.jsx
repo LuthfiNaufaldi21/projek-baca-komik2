@@ -39,33 +39,33 @@ export default function DetailPage() {
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in pb-12">
       {/* Hero Banner Background */}
-      <div className="relative w-full h-[400px] overflow-hidden rounded-xl mb-[-100px] shadow-2xl">
+      <div className="relative w-full max-w-7xl mx-auto mt-6 h-[400px] overflow-hidden rounded-3xl shadow-2xl mb-[-150px] border border-gray-100 dark:border-gray-800 group">
         <div
-          className="absolute inset-0 bg-cover bg-center blur-sm scale-105"
+          className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-50 transition-transform duration-1000 group-hover:scale-125"
           style={{ backgroundImage: `url('${comic.cover}')` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:from-gray-800 dark:via-gray-800/60 dark:to-gray-900/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white/90 dark:to-gray-900/90"></div>
       </div>
 
       <div className="relative z-10 px-4 md:px-8 max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col md:flex-row gap-8 items-start">
           {/* Cover Image */}
-          <div className="md:w-1/3 lg:w-1/4 flex-shrink-0">
-            <div className="rounded-xl shadow-2xl overflow-hidden border-4 border-white dark:border-gray-700 transform hover:scale-105 transition-transform duration-300">
+          <div className="md:w-1/3 lg:w-1/4 flex-shrink-0 mx-auto md:mx-0 w-2/3">
+            <div className="rounded-2xl shadow-2xl overflow-hidden border-4 border-white dark:border-gray-700 transform hover:scale-105 transition-transform duration-300 aspect-[3/4] relative z-20">
               <img
                 src={comic.cover}
                 alt={comic.title}
-                className="w-full h-auto object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
             <button
               onClick={handleBookmarkClick}
-              className={`w-full mt-6 py-3 px-6 rounded-full font-bold shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 ${
+              className={`w-full mt-6 py-3 px-6 rounded-full font-bold shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 relative z-20 ${
                 bookmarked
-                  ? "bg-red-500 hover:bg-red-600 text-white ring-4 ring-red-200 dark:ring-red-900"
-                  : "bg-primary hover:bg-primary-hover text-white ring-4 ring-blue-200 dark:ring-blue-900"
+                  ? "bg-red-500 hover:bg-red-600 text-white ring-2 ring-red-200 dark:ring-red-900"
+                  : "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-200 dark:ring-blue-900"
               }`}
             >
               {bookmarked ? (
@@ -105,8 +105,8 @@ export default function DetailPage() {
           </div>
 
           {/* Comic Details */}
-          <div className="md:w-2/3 lg:w-3/4 pt-4 md:pt-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight drop-shadow-sm">
+          <div className="md:w-2/3 lg:w-3/4 pt-16 md:pt-32">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight drop-shadow-sm">
               {comic.title}
             </h1>
 
@@ -123,7 +123,7 @@ export default function DetailPage() {
                 <span className="opacity-75 ml-1">/ 10</span>
               </div>
 
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
+              <div className="flex items-center text-gray-600 dark:text-gray-300 font-medium">
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
@@ -137,10 +137,10 @@ export default function DetailPage() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span className="font-medium">{comic.author}</span>
+                <span>{comic.author}</span>
               </div>
 
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
+              <div className="flex items-center text-gray-600 dark:text-gray-300 font-medium">
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
