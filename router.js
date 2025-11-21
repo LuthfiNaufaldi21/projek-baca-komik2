@@ -4,6 +4,7 @@ import { renderBerwarnaPage } from './pages/berwarna.js';
 import { renderBookmarkPage } from './pages/bookmark.js';
 import { renderLoginPage } from './pages/login.js';
 import { renderAccountPage } from './pages/account.js';
+import { renderEditProfilePage } from './pages/editProfil.js';
 import { renderMangaPage } from './pages/manga.js';
 import { renderManhwaPage } from './pages/manhwa.js';
 import { renderManhuaPage } from './pages/manhua.js';
@@ -43,6 +44,8 @@ export function router() {
         renderLoginPage();
       } else if (path === '#akun') {
         renderAccountPage();
+      } else if (path === '#edit-profile') {
+        renderEditProfilePage();
       } else if (path === '#manga') {
         renderMangaPage();
       } else if (path === '#manhwa') {
