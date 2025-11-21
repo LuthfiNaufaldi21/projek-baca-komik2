@@ -21,22 +21,17 @@ export default function ComicCard({ comic }) {
   return (
     <div className="group bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-100 dark:border-gray-700">
       <Link to={`/detail/${comic.id}`} className="block">
-        <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-200 dark:bg-gray-700">
-          {/* Blurred Background Effect */}
-          <div
-            className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110 transition-transform duration-500 group-hover:scale-125"
-            style={{ backgroundImage: `url('${comic.cover}')` }}
-          ></div>
-
+        <div className="relative w-full aspect-[3/4] overflow-hidden">
           {/* Main Image */}
-          <div className="absolute inset-0 flex items-center justify-center p-2 z-10">
-            <img
-              src={comic.cover}
-              alt={comic.title}
-              className="max-h-full max-w-full object-contain drop-shadow-lg rounded-sm transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          </div>
+          <img
+            src={comic.cover}
+            alt={comic.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
           {/* Bookmark Button */}
           <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
