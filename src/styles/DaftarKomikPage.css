@@ -11,3 +11,7 @@
 .daftar-komik__grid {
   @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5;
 }
+
+.daftar-komik__no-results {
+  @apply text-center py-10 text-gray-500 dark:text-gray-400 text-lg;
+}
