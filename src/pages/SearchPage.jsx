@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
@@ -8,12 +8,9 @@ import "../styles/SearchPage.css";
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  // Reset currentPage to 1 when query changes using key prop
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
 
   const searchResults = comics.filter((comic) => {
     const searchLower = query.toLowerCase();
@@ -36,7 +33,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div>
+    <div key={query}>
       <h1 className="search-page__title">Hasil Pencarian untuk "{query}"</h1>
       <p className="search-page__results-count">
         Ditemukan {searchResults.length} komik

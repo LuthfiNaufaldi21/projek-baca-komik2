@@ -1,24 +1,38 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../hooks/useTheme";
+import { getInitials, getAvatarColor } from "../utils/getInitials";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    // Sanitize input: remove HTML tags and encode special characters
+    const sanitized = searchQuery.trim().replace(/<[^>]*>/g, "");
+    if (sanitized) {
+      navigate(`/search?q=${encodeURIComponent(sanitized)}`);
       setSearchQuery("");
     }
   };
 
+  const handleSearchChange = (e) => {
+    // Prevent HTML injection by removing tags on input
+    const sanitized = e.target.value.replace(/<[^>]*>/g, "");
+    setSearchQuery(sanitized);
+  };
+
   const profileLink = isLoggedIn ? "/akun" : "/login";
+  const avatarInitials = user ? getInitials(user.username || "User") : "";
+  const avatarColor = user
+    ? getAvatarColor(user.username || "User")
+    : "#6366f1";
 
   return (
     <nav className="navbar">
@@ -40,12 +54,22 @@ export default function Navbar() {
               { to: "/manga", label: "Manga" },
               { to: "/manhwa", label: "Manhwa" },
               { to: "/manhua", label: "Manhua" },
-            ].map((link) => (
-              <Link key={link.to} to={link.to} className="navbar__link">
-                {link.label}
-                <span className="navbar__link-underline"></span>
-              </Link>
-            ))}
+            ].map((link) => {
+              const isActive = location.pathname === link.to;
+
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`navbar__link ${
+                    isActive ? "navbar__link--active" : ""
+                  }`}
+                >
+                  {link.label}
+                  <span className="navbar__link-underline"></span>
+                </Link>
+              );
+            })}
           </div>
 
           <div className="navbar__actions">
@@ -53,7 +77,7 @@ export default function Navbar() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Cari komik..."
                 className="navbar__search-input"
               />
@@ -111,19 +135,51 @@ export default function Navbar() {
             <Link to={profileLink} className="navbar__profile-link">
               <div className="navbar__profile-gradient">
                 <div className="navbar__profile-inner">
-                  <svg
-                    className="navbar__profile-icon"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  {isLoggedIn && user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="Profile"
+                      className="navbar__profile-avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
                     />
-                  </svg>
+                  ) : isLoggedIn && user ? (
+                    <div
+                      className="navbar__profile-initials"
+                      style={{
+                        backgroundColor: avatarColor,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "50%",
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        color: "white",
+                      }}
+                    >
+                      {avatarInitials}
+                    </div>
+                  ) : (
+                    <svg
+                      className="navbar__profile-icon"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  )}
                 </div>
               </div>
             </Link>

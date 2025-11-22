@@ -81,7 +81,7 @@
 }
 
 .comic-card__tag {
-  @apply px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-sm hover:bg-primary hover:text-white transition-colors;
+  @apply px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-sm cursor-default;
 }
 
 .comic-card__tag-more {

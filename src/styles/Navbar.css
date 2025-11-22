@@ -20,7 +20,7 @@
   @apply absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-25 transition duration-200;
 }
 
-.navbar__logo-link:hover .navbar__logo-glow {
+.navbar__logo-glow-wrapper:hover .navbar__logo-glow {
   @apply opacity-75;
 }
 
@@ -28,12 +28,17 @@
   @apply relative h-8 w-auto transform transition-transform duration-200;
 }
 
-.navbar__logo-link:hover .navbar__logo {
-  @apply scale-105;
+
+.navbar__logo-glow-wrapper:hover .navbar__logo {
+  @apply scale-110;
 }
 
 .navbar__brand-name {
-  @apply ml-3 text-xl font-extrabold tracking-tight text-gray-900 dark:text-white group-hover:text-primary transition-colors;
+  @apply ml-3 text-xl font-extrabold tracking-tight text-gray-900 dark:text-white transition-all transform duration-200;
+}
+
+.navbar__brand-name:hover {
+  @apply scale-105 text-primary;
 }
 
 .navbar__content {
@@ -98,4 +103,12 @@
 
 .navbar__profile-link:hover .navbar__profile-icon {
   @apply text-primary;
+}
+
+.navbar__link--active {
+  @apply text-primary dark:text-primary;
+}
+
+.navbar__link--active .navbar__link-underline {
+  @apply w-full;
 }

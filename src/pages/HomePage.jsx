@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
@@ -7,7 +6,7 @@ import "../styles/HomePage.css";
 
 export default function HomePage() {
   const featuredComics = comics.slice(0, 5);
-  const latestComics = comics.slice(0, 25); // show 5 rows x 5 columns
+  const latestComics = comics.slice(0, 10);
 
   return (
     <div>

@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import "../styles/LoginPage.css";
+import loginImage from "../assets/images/login-img.jpg";
 
 export default function LoginPage() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -20,7 +24,7 @@ export default function LoginPage() {
         return;
       }
       const username = email.split("@")[0];
-      login(username);
+      login(username, email);
       alert("Login Berhasil!");
       navigate("/akun");
     } else {
@@ -33,7 +37,7 @@ export default function LoginPage() {
         return;
       }
       const username = email.split("@")[0];
-      login(username);
+      login(username, email);
       alert("Pendaftaran Berhasil!");
       navigate("/akun");
     }
@@ -51,7 +55,7 @@ export default function LoginPage() {
         {/* Left Side - Image & Branding */}
         <div
           className="login-page__image-section"
-          style={{ backgroundImage: "url(/images/login-img.jpg)" }}
+          style={{ backgroundImage: `url(${loginImage})` }}
         >
           <div className="login-page__image-overlay"></div>
           <div className="login-page__branding">
@@ -126,12 +130,23 @@ export default function LoginPage() {
                     </svg>
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="login-page__input"
+                    className="login-page__input login-page__input--with-toggle"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="login-page__password-toggle"
+                  >
+                    {showPassword ? (
+                      <FiEyeOff className="login-page__icon" />
+                    ) : (
+                      <FiEye className="login-page__icon" />
+                    )}
+                  </button>
                 </div>
                 {isLoginView && (
                   <div className="login-page__forgot-password">
@@ -164,12 +179,25 @@ export default function LoginPage() {
                       </svg>
                     </div>
                     <input
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required={!isLoginView}
-                      className="login-page__input"
+                      className="login-page__input login-page__input--with-toggle"
                     />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="login-page__password-toggle"
+                    >
+                      {showConfirmPassword ? (
+                        <FiEyeOff className="login-page__icon" />
+                      ) : (
+                        <FiEye className="login-page__icon" />
+                      )}
+                    </button>
                   </div>
                 </div>
               )}

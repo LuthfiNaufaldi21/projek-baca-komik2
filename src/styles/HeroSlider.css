@@ -9,11 +9,11 @@
 }
 
 .hero-slider__slide--active {
-  @apply opacity-100 scale-100;
+  @apply opacity-100 scale-100 pointer-events-auto z-10;
 }
 
 .hero-slider__slide--inactive {
-  @apply opacity-0 scale-105;
+  @apply opacity-0 scale-105 pointer-events-none z-0;
 }
 
 .hero-slider__background {
@@ -105,11 +105,7 @@
 }
 
 .hero-slider__nav-button {
-  @apply absolute top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 transition-opacity hover:bg-primary;
-}
-
-.hero-slider:hover .hero-slider__nav-button {
-  @apply opacity-100;
+  @apply absolute top-1/2 -translate-y-1/2 p-2 rounded-full z-20 bg-black/30 text-white backdrop-blur-sm transition-opacity hover:bg-primary;
 }
 
 .hero-slider__nav-button--prev {

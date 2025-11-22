@@ -4,9 +4,12 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Navbar from "./components/Navbar";
 import BackToTop from "./components/BackToTop";
 import AppRouter from "./routes/router";
+import useScrollToTop from "./hooks/useScrollToTop";
 import "./App.css";
 
 function AppContent() {
+  useScrollToTop(); // Auto scroll to top on route change
+
   return (
     <div className="app__wrapper">
       <Navbar />

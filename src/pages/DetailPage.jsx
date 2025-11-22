@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { comics } from "../data/comics";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
@@ -194,7 +194,9 @@ export default function DetailPage() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500">Belum ada chapter tersedia.</p>
+            <p className="detail-page__no-chapters">
+              Belum ada chapter tersedia.
+            </p>
           )}
         </div>
       </div>

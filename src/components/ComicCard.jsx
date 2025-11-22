@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import "../styles/ComicCard.css";
 
 export default function ComicCard({ comic }) {
@@ -87,13 +87,9 @@ export default function ComicCard({ comic }) {
           {comic.tags && comic.tags.length > 0 && (
             <div className="comic-card__tags">
               {comic.tags.slice(0, 3).map((tag, index) => (
-                <Link
-                  to={`/genre/${encodeURIComponent(tag)}`}
-                  key={index}
-                  className="comic-card__tag"
-                >
+                <span key={index} className="comic-card__tag">
                   {tag}
-                </Link>
+                </span>
               ))}
               {comic.tags.length > 3 && (
                 <span className="comic-card__tag-more">

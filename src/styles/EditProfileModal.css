@@ -1,0 +1,104 @@
+/* EditProfileModal Styles */
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  @apply flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700;
+}
+
+.modal-title {
+  @apply text-2xl font-bold text-gray-800 dark:text-gray-100;
+}
+
+.modal-close {
+  @apply p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+
+.modal-close svg {
+  @apply w-6 h-6 text-gray-500 dark:text-gray-400;
+}
+
+.modal-form {
+  @apply p-6 space-y-5;
+}
+
+.modal-field {
+  @apply space-y-2;
+}
+
+.modal-label {
+  @apply flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+.modal-label-icon {
+  @apply w-4 h-4 text-primary;
+}
+
+.modal-label-optional {
+  @apply text-xs text-gray-400 ml-auto;
+}
+
+.modal-input,
+.modal-textarea {
+  @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+}
+
+.modal-input--error {
+  @apply border-red-500 focus:ring-red-500;
+}
+
+.modal-textarea {
+  @apply resize-none;
+}
+
+.modal-char-count {
+  @apply text-xs text-gray-400 text-right;
+}
+
+.modal-error {
+  @apply text-xs text-red-500 mt-1;
+}
+
+.modal-actions {
+  @apply flex gap-3 pt-4;
+}
+
+.modal-button {
+  @apply flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:-translate-y-0.5;
+}
+
+.modal-button--cancel {
+  @apply bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600;
+}
+
+.modal-button--save {
+  @apply bg-primary text-white hover:bg-primary-hover shadow-lg hover:shadow-xl;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
