@@ -20,7 +20,7 @@ export default function ComicCard({ comic }) {
   };
 
   return (
-    <div className="comic-card">
+    <div className="comic-card group">
       <Link to={`/detail/${comic.id}`} className="comic-card__link">
         <div className="comic-card__image-wrapper">
           {/* Main Image */}
