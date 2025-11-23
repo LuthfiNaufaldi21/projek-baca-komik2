@@ -21,7 +21,8 @@
 }
 
 .hero-slider__overlay {
-  @apply absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent;
+  @apply absolute inset-0;
+  background-color: rgba(0, 0, 0, 0.85);
 }
 
 .hero-slider__content-wrapper {
@@ -45,7 +46,12 @@
 }
 
 .hero-slider__cover {
-  @apply w-[200px] h-[300px] object-cover rounded-lg shadow-2xl border-2 border-white/20 rotate-[-3deg] hover:rotate-0 transition-transform duration-300;
+  @apply w-[200px] h-[300px] object-cover rounded-lg shadow-2xl border-2 border-white/20 transition-transform duration-300;
+  transform: rotate(0deg);
+}
+
+.hero-slider__cover:hover {
+  transform: rotate(-3deg); 
 }
 
 .hero-slider__text-content {

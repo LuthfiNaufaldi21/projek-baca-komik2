@@ -207,41 +207,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="login-page__divider-container">
-              <div className="login-page__divider-line-container">
-                <div className="login-page__divider-line"></div>
-              </div>
-              <div className="login-page__divider-text-container">
-                <span className="login-page__divider-text">
-                  Bisa juga dengan
-                </span>
-              </div>
-            </div>
-
-            <div className="login-page__social-buttons">
-              <button className="login-page__social-button">
-                <img
-                  src="https://www.google.com/favicon.ico"
-                  alt="Google"
-                  className="login-page__social-icon"
-                />
-              </button>
-              <button className="login-page__social-button">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/2048px-2021_Facebook_icon.svg.png"
-                  alt="Facebook"
-                  className="login-page__social-icon"
-                />
-              </button>
-              <button className="login-page__social-button">
-                <img
-                  src="https://www.apple.com/favicon.ico"
-                  alt="Apple"
-                  className="login-page__social-icon"
-                />
-              </button>
-            </div>
-
             <p className="login-page__toggle-view">
               {isLoginView ? "Belum punya akun? " : "Sudah punya akun? "}
               <a
