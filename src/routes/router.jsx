@@ -11,6 +11,8 @@ import GenrePage from "../pages/GenrePage";
 import BookmarkPage from "../pages/BookmarkPage";
 import SearchPage from "../pages/SearchPage";
 import DetailPage from "../pages/DetailPage";
+import ReaderPage from "../pages/ReaderPage";
+import RiwayatPage from "../pages/RiwayatPage";
 
 export default function AppRouter() {
   return (
@@ -24,9 +26,11 @@ export default function AppRouter() {
       <Route path="/manhua" element={<ManhuaPage />} />
       <Route path="/bookmark" element={<BookmarkPage />} />
       <Route path="/akun" element={<AccountPage />} />
+      <Route path="/riwayat" element={<RiwayatPage />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/detail/:id" element={<DetailPage />} />
       <Route path="/genre/:tag" element={<GenrePage />} />
+      <Route path="/read/:comicId/:chapterId" element={<ReaderPage />} />
     </Routes>
   );
 }

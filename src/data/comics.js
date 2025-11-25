@@ -34,7 +34,12 @@ export const comics = [
       "https://thumbor.prod.vidiocdn.com/w9gDKJuYqIooJcv5svHJOH-JGac=/filters:quality(70)/vidio-media-production/uploads/image/source/49405/0990e8.png",
     synopsis:
       "Yuji Itadori, seorang siswa SMA dengan kekuatan fisik luar biasa, menelan jari terkutuk untuk menyelamatkan temannya...",
-    chapters: [],
+    chapters: [
+      {
+        id: "chapter-1", // ID ini harus sama dengan yang dicek di ReaderPage
+        title: "Chapter 1: Ryomen Sukuna",
+      },
+    ],
     rating: 9.2,
     tags: ["Action", "Supernatural", "Dark Fantasy", "Manga"],
   },

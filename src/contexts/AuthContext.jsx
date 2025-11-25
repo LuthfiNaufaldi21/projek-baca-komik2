@@ -141,6 +141,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // --- LOGIKA DIPERBAIKI DI SINI ---
   const updateReadingHistory = (comicId, chapterId) => {
     if (!isLoggedIn || !user) return;
 
@@ -148,6 +149,13 @@ export const AuthProvider = ({ children }) => {
     if (!updatedUser.readingHistory) {
       updatedUser.readingHistory = {};
     }
+
+    // Hapus entri lama jika ada (agar urutannya pindah ke paling baru)
+    if (updatedUser.readingHistory[comicId]) {
+      delete updatedUser.readingHistory[comicId];
+    }
+
+    // Masukkan kembali (sekarang dia jadi property paling 'bawah/baru')
     updatedUser.readingHistory[comicId] = chapterId;
 
     // Update current user
@@ -170,6 +178,7 @@ export const AuthProvider = ({ children }) => {
 
     setUser(updatedUser);
   };
+  // --------------------------------
 
   const getReadingHistory = () => {
     if (!isLoggedIn || !user) return {};

@@ -75,7 +75,7 @@
 }
 
 .hero-slider__title {
-  @apply text-3xl md:text-5xl font-black mb-4 leading-tight drop-shadow-lg line-clamp-2;
+  @apply text-3xl md:text-5xl font-black mb-4 leading-normal drop-shadow-lg line-clamp-2 pb-2;
 }
 
 .hero-slider__synopsis {

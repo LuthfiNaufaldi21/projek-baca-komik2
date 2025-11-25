@@ -148,13 +148,6 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
-                {isLoginView && (
-                  <div className="login-page__forgot-password">
-                    <a href="#" className="login-page__forgot-link">
-                      Lupa passwordmu?
-                    </a>
-                  </div>
-                )}
               </div>
 
               {!isLoginView && (

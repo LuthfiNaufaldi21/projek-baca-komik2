@@ -1,0 +1,22 @@
+/* Footer Styles */
+
+.footer {
+  @apply bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto;
+}
+
+.footer__container {
+  @apply max-w-7xl mx-auto px-4 py-5;
+}
+
+/* Bottom Section */
+.footer__bottom {
+  @apply flex flex-col items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-500 text-center;
+}
+
+.footer__copyright {
+  @apply font-normal;
+}
+
+.footer__credit {
+  @apply font-medium text-gray-400 dark:text-gray-600 text-sm; /* Dibuat sedikit lebih kecil/tipis biar estetik */
+}
