@@ -1,0 +1,25 @@
+/* GenrePage Styles */
+
+.genre-page__title {
+  @apply text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2;
+}
+
+.genre-page__description {
+  @apply text-gray-600 dark:text-gray-400 mb-6;
+}
+
+.genre-page__grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5;
+}
+
+.genre-page__empty-state {
+  @apply mt-8 p-6 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-center;
+}
+
+.genre-page__empty-text {
+  @apply text-gray-600 dark:text-gray-300 mb-4;
+}
+
+.genre-page__back-link {
+  @apply inline-block px-5 py-2 bg-primary text-white rounded-md hover:bg-primary-hover;
+}

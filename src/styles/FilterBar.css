@@ -1,0 +1,47 @@
+/* FilterBar Styles */
+
+.filter-bar {
+  @apply bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6;
+}
+
+.filter-bar__section {
+  @apply mb-4 last:mb-0;
+}
+
+.filter-bar__title {
+  @apply text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3;
+}
+
+.filter-bar__tags {
+  @apply flex flex-wrap gap-2;
+}
+
+.filter-bar__tag {
+  @apply text-sm font-medium px-3 py-1 rounded-full cursor-pointer transition-all duration-200 border-2;
+  @apply bg-gray-200 text-gray-700 border-transparent;
+  @apply dark:bg-gray-600 dark:text-gray-200;
+  @apply hover:bg-gray-300 dark:hover:bg-gray-500;
+}
+
+.filter-bar__tag--active {
+  @apply bg-primary text-white border-primary-hover;
+  @apply dark:bg-primary dark:text-white dark:border-primary-hover;
+  @apply scale-105 shadow-md;
+}
+
+.filter-bar__sorts {
+  @apply flex flex-wrap gap-2;
+}
+
+.filter-bar__sort {
+  @apply text-sm font-medium px-3 py-1 rounded-full cursor-pointer transition-all duration-200 border-2;
+  @apply bg-gray-200 text-gray-700 border-transparent;
+  @apply dark:bg-gray-600 dark:text-gray-200;
+  @apply hover:bg-gray-300 dark:hover:bg-gray-500;
+}
+
+.filter-bar__sort--active {
+  @apply bg-primary text-white border-primary-hover;
+  @apply dark:bg-primary dark:text-white dark:border-primary-hover;
+  @apply scale-105 shadow-md;
+}
