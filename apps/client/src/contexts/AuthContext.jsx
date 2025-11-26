@@ -1,4 +1,5 @@
 import { createContext, useState } from "react";
+import * as authService from "../services/authService";
 
 // Export context so hooks can use it
 // eslint-disable-next-line react-refresh/only-export-components
@@ -21,162 +22,137 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return !!localStorage.getItem("komikita-user");
+    return !!(
+      localStorage.getItem("komikita-user") &&
+      localStorage.getItem("komikita-token")
+    );
   });
 
-  const login = (username, email = "" /* , password = "" */) => {
-    // Check if user already exists in users list
-    const usersListStr = localStorage.getItem("komikita-users");
-    let usersList = [];
-
+  // Updated login function to work with backend
+  const login = async (email, password) => {
     try {
-      usersList = usersListStr ? JSON.parse(usersListStr) : [];
+      const userData = await authService.login(email, password);
+      setUser(userData);
+      setIsLoggedIn(true);
+
+      // Refresh user data from backend to get latest bookmarks and history
+      const freshUserData = await authService.getCurrentUser();
+      if (freshUserData) {
+        setUser(freshUserData);
+      }
+
+      return userData;
     } catch (error) {
-      console.error("Error parsing users list:", error);
-      usersList = [];
-    }
-
-    // Find existing user by email
-    let existingUser = usersList.find((u) => u.email === email);
-
-    if (existingUser) {
-      // User exists, log them in
-      localStorage.setItem("komikita-user", JSON.stringify(existingUser));
-      setUser(existingUser);
-      setIsLoggedIn(true);
-      return existingUser;
-    } else {
-      // Create new user
-      const newUser = {
-        username: username,
-        email: email,
-        avatar: null,
-        bio: "",
-        joinedAt: new Date().toISOString(),
-        bookmarks: [],
-        readingHistory: {},
-        favoriteGenres: [],
-      };
-
-      // Add to users list
-      usersList.push(newUser);
-      localStorage.setItem("komikita-users", JSON.stringify(usersList));
-      localStorage.setItem("komikita-user", JSON.stringify(newUser));
-      setUser(newUser);
-      setIsLoggedIn(true);
-      return newUser;
+      console.error("Login failed:", error);
+      throw error;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("komikita-user");
-    setUser(null);
-    setIsLoggedIn(false);
+  // Updated logout function
+  const logout = async () => {
+    try {
+      await authService.logout();
+      localStorage.removeItem("komikita-token");
+      localStorage.removeItem("komikita-user");
+      setUser(null);
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Clear local data even if API call fails
+      localStorage.removeItem("komikita-token");
+      localStorage.removeItem("komikita-user");
+      setUser(null);
+      setIsLoggedIn(false);
+    }
   };
 
   const isBookmarked = (comicId) => {
     if (!isLoggedIn || !user) return false;
-    return user.bookmarks?.includes(comicId) || false;
+    // Handle both formats: simple array [id1, id2] or array of objects [{comicId}]
+    if (Array.isArray(user.bookmarks)) {
+      return user.bookmarks.some((b) =>
+        typeof b === "object" ? b.comicId === comicId : b === comicId
+      );
+    }
+    return false;
   };
 
-  const addBookmark = (comicId) => {
+  const addBookmark = async (comicId) => {
     if (!isLoggedIn || !user) return;
 
-    const updatedUser = { ...user };
-    if (!updatedUser.bookmarks) updatedUser.bookmarks = [];
+    try {
+      await authService.toggleBookmark(comicId);
 
-    if (!updatedUser.bookmarks.includes(comicId)) {
-      updatedUser.bookmarks.push(comicId);
-
-      // Update current user
-      localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
-
-      // Update in users list
-      const usersListStr = localStorage.getItem("komikita-users");
-      if (usersListStr) {
-        try {
-          let usersList = JSON.parse(usersListStr);
-          const userIndex = usersList.findIndex((u) => u.email === user.email);
-          if (userIndex !== -1) {
-            usersList[userIndex] = updatedUser;
-            localStorage.setItem("komikita-users", JSON.stringify(usersList));
-          }
-        } catch (error) {
-          console.error("Error updating users list:", error);
-        }
-      }
-
+      // Refresh user data from backend
+      const updatedUser = await authService.getCurrentUser();
       setUser(updatedUser);
+    } catch (error) {
+      console.error("Error adding bookmark:", error);
+      // Fallback to localStorage on error
+      const updatedUser = { ...user };
+      if (!updatedUser.bookmarks) updatedUser.bookmarks = [];
+
+      if (!updatedUser.bookmarks.includes(comicId)) {
+        updatedUser.bookmarks.push(comicId);
+        localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
     }
   };
 
-  const removeBookmark = (comicId) => {
+  const removeBookmark = async (comicId) => {
     if (!isLoggedIn || !user) return;
 
-    const updatedUser = { ...user };
-    if (updatedUser.bookmarks) {
-      updatedUser.bookmarks = updatedUser.bookmarks.filter(
-        (id) => id !== comicId
-      );
+    try {
+      await authService.toggleBookmark(comicId);
 
-      // Update current user
-      localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
-
-      // Update in users list
-      const usersListStr = localStorage.getItem("komikita-users");
-      if (usersListStr) {
-        try {
-          let usersList = JSON.parse(usersListStr);
-          const userIndex = usersList.findIndex((u) => u.email === user.email);
-          if (userIndex !== -1) {
-            usersList[userIndex] = updatedUser;
-            localStorage.setItem("komikita-users", JSON.stringify(usersList));
-          }
-        } catch (error) {
-          console.error("Error updating users list:", error);
-        }
-      }
-
+      // Refresh user data from backend
+      const updatedUser = await authService.getCurrentUser();
       setUser(updatedUser);
+    } catch (error) {
+      console.error("Error removing bookmark:", error);
+      // Fallback to localStorage on error
+      const updatedUser = { ...user };
+      if (updatedUser.bookmarks) {
+        updatedUser.bookmarks = updatedUser.bookmarks.filter(
+          (id) => id !== comicId
+        );
+        localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
     }
   };
 
   // --- LOGIKA DIPERBAIKI DI SINI ---
-  const updateReadingHistory = (comicId, chapterId) => {
+  const updateReadingHistory = async (comicId, chapterId) => {
     if (!isLoggedIn || !user) return;
 
-    const updatedUser = { ...user };
-    if (!updatedUser.readingHistory) {
-      updatedUser.readingHistory = {};
-    }
+    try {
+      await authService.updateReadingHistory(comicId, chapterId);
 
-    // Hapus entri lama jika ada (agar urutannya pindah ke paling baru)
-    if (updatedUser.readingHistory[comicId]) {
-      delete updatedUser.readingHistory[comicId];
-    }
-
-    // Masukkan kembali (sekarang dia jadi property paling 'bawah/baru')
-    updatedUser.readingHistory[comicId] = chapterId;
-
-    // Update current user
-    localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
-
-    // Update in users list
-    const usersListStr = localStorage.getItem("komikita-users");
-    if (usersListStr) {
-      try {
-        let usersList = JSON.parse(usersListStr);
-        const userIndex = usersList.findIndex((u) => u.email === user.email);
-        if (userIndex !== -1) {
-          usersList[userIndex] = updatedUser;
-          localStorage.setItem("komikita-users", JSON.stringify(usersList));
-        }
-      } catch (error) {
-        console.error("Error updating users list:", error);
+      // Refresh user data from backend
+      const updatedUser = await authService.getCurrentUser();
+      setUser(updatedUser);
+    } catch (error) {
+      console.error("Error updating reading history:", error);
+      // Fallback to localStorage on error
+      const updatedUser = { ...user };
+      if (!updatedUser.readingHistory) {
+        updatedUser.readingHistory = {};
       }
-    }
 
-    setUser(updatedUser);
+      // Hapus entri lama jika ada (agar urutannya pindah ke paling baru)
+      if (updatedUser.readingHistory[comicId]) {
+        delete updatedUser.readingHistory[comicId];
+      }
+
+      // Masukkan kembali (sekarang dia jadi property paling 'bawah/baru')
+      updatedUser.readingHistory[comicId] = chapterId;
+
+      // Update current user
+      localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    }
   };
   // --------------------------------
 
@@ -185,33 +161,24 @@ export const AuthProvider = ({ children }) => {
     return user.readingHistory || {};
   };
 
-  const updateProfile = (profileData) => {
+  const updateProfile = async (profileData) => {
     if (!isLoggedIn || !user) return;
 
-    const updatedUser = {
-      ...user,
-      ...profileData,
-    };
-
-    // Update current user
-    localStorage.setItem("komikita-user", JSON.stringify(updatedUser));
-
-    // Update in users list
-    const usersListStr = localStorage.getItem("komikita-users");
-    if (usersListStr) {
-      try {
-        let usersList = JSON.parse(usersListStr);
-        const userIndex = usersList.findIndex((u) => u.email === user.email);
-        if (userIndex !== -1) {
-          usersList[userIndex] = updatedUser;
-          localStorage.setItem("komikita-users", JSON.stringify(usersList));
-        }
-      } catch (error) {
-        console.error("Error updating users list:", error);
-      }
+    try {
+      const updatedUser = await authService.updateProfile(profileData);
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      // Fallback to localStorage update
+      const localUpdatedUser = {
+        ...user,
+        ...profileData,
+      };
+      localStorage.setItem("komikita-user", JSON.stringify(localUpdatedUser));
+      setUser(localUpdatedUser);
+      return localUpdatedUser;
     }
-
-    setUser(updatedUser);
   };
 
   const value = {

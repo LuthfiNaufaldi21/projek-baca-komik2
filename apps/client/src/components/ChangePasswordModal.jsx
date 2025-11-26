@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { FiX, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import * as authService from "../services/authService";
 import "../styles/ChangePasswordModal.css";
 
-export default function ChangePasswordModal({ onClose, onSave }) {
+export default function ChangePasswordModal({ onClose }) {
   const [formData, setFormData] = useState({
     oldPassword: "",
     newPassword: "",
@@ -16,6 +17,7 @@ export default function ChangePasswordModal({ onClose, onSave }) {
   });
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,7 +63,7 @@ export default function ChangePasswordModal({ onClose, onSave }) {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = validate();
@@ -70,7 +72,25 @@ export default function ChangePasswordModal({ onClose, onSave }) {
       return;
     }
 
-    onSave(formData);
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      await authService.changePassword(
+        formData.oldPassword,
+        formData.newPassword
+      );
+
+      alert("Password berhasil diubah!");
+      onClose();
+    } catch (err) {
+      console.error("Change password error:", err);
+      setErrors({
+        general: err.message || "Gagal mengubah password. Silakan coba lagi.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -89,6 +109,12 @@ export default function ChangePasswordModal({ onClose, onSave }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="change-password-modal__form">
+          {errors.general && (
+            <div className="change-password-modal__error-banner">
+              {errors.general}
+            </div>
+          )}
+
           {/* Old Password */}
           <div className="change-password-modal__field">
             <label className="change-password-modal__label">
@@ -107,11 +133,13 @@ export default function ChangePasswordModal({ onClose, onSave }) {
                     : ""
                 }`}
                 placeholder="Masukkan password lama"
+                disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("old")}
                 className="change-password-modal__toggle"
+                disabled={isLoading}
               >
                 {showPasswords.old ? <FiEyeOff /> : <FiEye />}
               </button>
@@ -141,11 +169,13 @@ export default function ChangePasswordModal({ onClose, onSave }) {
                     : ""
                 }`}
                 placeholder="Masukkan password baru"
+                disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("new")}
                 className="change-password-modal__toggle"
+                disabled={isLoading}
               >
                 {showPasswords.new ? <FiEyeOff /> : <FiEye />}
               </button>
@@ -175,11 +205,13 @@ export default function ChangePasswordModal({ onClose, onSave }) {
                     : ""
                 }`}
                 placeholder="Ulangi password baru"
+                disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("confirm")}
                 className="change-password-modal__toggle"
+                disabled={isLoading}
               >
                 {showPasswords.confirm ? <FiEyeOff /> : <FiEye />}
               </button>
@@ -197,14 +229,16 @@ export default function ChangePasswordModal({ onClose, onSave }) {
               type="button"
               onClick={onClose}
               className="change-password-modal__button change-password-modal__button--cancel"
+              disabled={isLoading}
             >
               Batal
             </button>
             <button
               type="submit"
               className="change-password-modal__button change-password-modal__button--save"
+              disabled={isLoading}
             >
-              Simpan Password
+              {isLoading ? "Menyimpan..." : "Simpan Password"}
             </button>
           </div>
         </form>

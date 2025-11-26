@@ -1,11 +1,14 @@
 import { useState, useRef } from "react";
 import { FiX, FiCamera, FiUpload, FiTrash2 } from "react-icons/fi";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
+import * as authService from "../services/authService";
 import "../styles/UploadAvatarModal.css";
 
 export default function UploadAvatarModal({ user, onClose, onSave }) {
   const [preview, setPreview] = useState(user?.avatar || null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -13,16 +16,17 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        alert("File harus berupa gambar");
+        setError("File harus berupa gambar");
         return;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Ukuran file maksimal 5MB");
+      // Validate file size (max 2MB - sesuai dengan backend)
+      if (file.size > 2 * 1024 * 1024) {
+        setError("Ukuran file maksimal 2MB");
         return;
       }
 
+      setError(null);
       setSelectedFile(file);
 
       // Create preview
@@ -37,16 +41,34 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   const handleRemovePhoto = () => {
     setPreview(null);
     setSelectedFile(null);
+    setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleSave = () => {
-    if (preview) {
-      onSave({ avatar: preview });
-    } else {
-      onSave({ avatar: null });
+  const handleSave = async () => {
+    if (!selectedFile) {
+      setError("Pilih foto terlebih dahulu");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await authService.uploadAvatar(selectedFile);
+
+      // Call onSave with new avatar URL from backend
+      onSave({ avatar: response.avatar });
+
+      alert("Foto profil berhasil diperbarui!");
+      onClose();
+    } catch (err) {
+      console.error("Upload avatar error:", err);
+      setError(err.message || "Gagal mengupload foto profil");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,8 +124,9 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
               Pilih foto terbaik Anda
             </p>
             <p className="upload-avatar-modal__instructions-text">
-              Format: JPG, PNG, GIF (Maksimal 5MB)
+              Format: JPG, JPEG, PNG (Maksimal 2MB)
             </p>
+            {error && <p className="upload-avatar-modal__error">{error}</p>}
           </div>
 
           {/* Action Buttons */}
@@ -141,15 +164,16 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
           <button
             onClick={onClose}
             className="upload-avatar-modal__footer-button upload-avatar-modal__footer-button--cancel"
+            disabled={isLoading}
           >
             Batal
           </button>
           <button
             onClick={handleSave}
             className="upload-avatar-modal__footer-button upload-avatar-modal__footer-button--save"
-            disabled={!selectedFile && preview === user?.avatar}
+            disabled={!selectedFile || isLoading}
           >
-            Simpan
+            {isLoading ? "Mengupload..." : "Simpan"}
           </button>
         </div>
       </div>

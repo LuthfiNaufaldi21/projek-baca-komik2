@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import * as authService from "../services/authService";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import "../styles/LoginPage.css";
 import loginImage from "../assets/images/login-img.jpg";
@@ -12,34 +13,49 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    if (isLoginView) {
-      if (!email || !password) {
-        alert("Email dan password harus diisi!");
-        return;
+    try {
+      if (isLoginView) {
+        // Login
+        if (!email || !password) {
+          alert("Email dan password harus diisi!");
+          setIsLoading(false);
+          return;
+        }
+
+        await login(email, password);
+        alert("Login Berhasil!");
+        navigate("/akun");
+      } else {
+        // Register
+        if (!email || !password || !confirmPassword) {
+          alert("Semua field harus diisi!");
+          setIsLoading(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          alert("Password dan konfirmasi password tidak cocok!");
+          setIsLoading(false);
+          return;
+        }
+
+        const username = email.split("@")[0];
+        await authService.register({ username, email, password });
+        alert("Pendaftaran Berhasil! Anda sekarang sudah login.");
+        navigate("/akun");
       }
-      const username = email.split("@")[0];
-      login(username, email);
-      alert("Login Berhasil!");
-      navigate("/akun");
-    } else {
-      if (!email || !password || !confirmPassword) {
-        alert("Semua field harus diisi!");
-        return;
-      }
-      if (password !== confirmPassword) {
-        alert("Password dan konfirmasi password tidak cocok!");
-        return;
-      }
-      const username = email.split("@")[0];
-      login(username, email);
-      alert("Pendaftaran Berhasil!");
-      navigate("/akun");
+    } catch (error) {
+      console.error("Authentication error:", error);
+      alert(error.message || "Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -195,8 +211,12 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <button type="submit" className="login-page__submit-button">
-                {isLoginView ? "LOGIN" : "SIGN UP"}
+              <button
+                type="submit"
+                className="login-page__submit-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "LOADING..." : isLoginView ? "LOGIN" : "SIGN UP"}
               </button>
             </form>
 

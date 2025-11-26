@@ -56,6 +56,18 @@
   @apply bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-200 dark:ring-blue-900;
 }
 
+.detail-page__bookmark-button--loading {
+  @apply opacity-70 cursor-not-allowed;
+}
+
+.detail-page__bookmark-button:disabled {
+  @apply cursor-not-allowed;
+}
+
+.detail-page__icon--spin {
+  @apply animate-spin;
+}
+
 .detail-page__info {
   @apply md:w-2/3 lg:w-3/4 pt-8 md:pt-10;
 }
@@ -139,6 +151,6 @@
 .detail-page__icon {
   @apply w-5 h-5;
   flex-shrink: 0; /* Tambahkan ini agar ikon tidak mencoba menyesuaikan ukuran */
-    width: 24px;   /* Kunci ukuran ikon secara eksplisit (sesuaikan jika ikon Anda bukan 24x24) */
-    height: 24px;
+  width: 24px; /* Kunci ukuran ikon secara eksplisit (sesuaikan jika ikon Anda bukan 24x24) */
+  height: 24px;
 }

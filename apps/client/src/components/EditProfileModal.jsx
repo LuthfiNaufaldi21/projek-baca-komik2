@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { FiX, FiUser, FiMail, FiFileText } from "react-icons/fi";
+import { FiX, FiUser, FiMail } from "react-icons/fi";
 import "../styles/EditProfileModal.css";
 
 export default function EditProfileModal({ user, onClose, onSave }) {
   const [formData, setFormData] = useState({
     username: user?.username || "",
     email: user?.email || "",
-    bio: user?.bio || "",
   });
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,14 +38,10 @@ export default function EditProfileModal({ user, onClose, onSave }) {
       newErrors.email = "Format email tidak valid";
     }
 
-    if (formData.bio && formData.bio.length > 200) {
-      newErrors.bio = "Bio maksimal 200 karakter";
-    }
-
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = validate();
@@ -54,7 +50,19 @@ export default function EditProfileModal({ user, onClose, onSave }) {
       return;
     }
 
-    onSave(formData);
+    setIsLoading(true);
+    try {
+      await onSave(formData);
+      alert("Profil berhasil diperbarui!");
+      onClose();
+    } catch (err) {
+      console.error("Update profile error:", err);
+      setErrors({
+        general: err.message || "Gagal memperbarui profil. Silakan coba lagi.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,6 +78,10 @@ export default function EditProfileModal({ user, onClose, onSave }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="modal-form">
+          {errors.general && (
+            <div className="modal-error-banner">{errors.general}</div>
+          )}
+
           {/* Username */}
           <div className="modal-field">
             <label className="modal-label">
@@ -85,6 +97,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                 errors.username ? "modal-input--error" : ""
               }`}
               placeholder="Masukkan username"
+              disabled={isLoading}
             />
             {errors.username && (
               <p className="modal-error">{errors.username}</p>
@@ -106,30 +119,9 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                 errors.email ? "modal-input--error" : ""
               }`}
               placeholder="Masukkan email"
+              disabled={isLoading}
             />
             {errors.email && <p className="modal-error">{errors.email}</p>}
-          </div>
-
-          {/* Bio */}
-          <div className="modal-field">
-            <label className="modal-label">
-              <FiFileText className="modal-label-icon" />
-              Bio
-              <span className="modal-label-optional">(Opsional)</span>
-            </label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              className={`modal-textarea ${
-                errors.bio ? "modal-input--error" : ""
-              }`}
-              placeholder="Ceritakan tentang dirimu..."
-              rows="4"
-              maxLength="200"
-            />
-            <div className="modal-char-count">{formData.bio.length}/200</div>
-            {errors.bio && <p className="modal-error">{errors.bio}</p>}
           </div>
 
           {/* Actions */}
@@ -138,11 +130,16 @@ export default function EditProfileModal({ user, onClose, onSave }) {
               type="button"
               onClick={onClose}
               className="modal-button modal-button--cancel"
+              disabled={isLoading}
             >
               Batal
             </button>
-            <button type="submit" className="modal-button modal-button--save">
-              Simpan Perubahan
+            <button
+              type="submit"
+              className="modal-button modal-button--save"
+              disabled={isLoading}
+            >
+              {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
         </form>

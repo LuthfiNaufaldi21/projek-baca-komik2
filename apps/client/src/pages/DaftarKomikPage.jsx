@@ -1,15 +1,49 @@
-import { useState, useMemo } from "react";
-import { comics } from "../data/comics";
+import { useState, useMemo, useEffect } from "react";
+import { comics as fallbackComics } from "../data/comics";
+import { getAllComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
 import FilterBar from "../components/FilterBar";
 import "../styles/DaftarKomikPage.css";
 
 export default function DaftarKomikPage() {
+  const [comics, setComics] = useState(fallbackComics);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilters, setActiveFilters] = useState([]);
   const [sortOrder, setSortOrder] = useState("default");
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    const fetchComics = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getAllComics();
+
+        if (data && data.length > 0) {
+          // Map backend data to expected format
+          const mappedData = data.map((comic, index) => ({
+            id: comic.id || index + 1,
+            title: comic.title || comic.name,
+            image: comic.thumbnail || comic.image,
+            rating: comic.rating || 4.5,
+            genre: comic.genre || "Fantasy",
+            type: comic.type || "Manga",
+            tags: comic.tags || [],
+            slug: comic.slug || comic.apiDetailLink?.split("/").pop(),
+          }));
+          setComics(mappedData);
+        }
+      } catch (error) {
+        console.error("Error fetching comics:", error);
+        // Keep using fallback data
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchComics();
+  }, []);
 
   // Get unique tags from all comics
   const uniqueTags = useMemo(() => {
@@ -20,7 +54,7 @@ export default function DaftarKomikPage() {
       }
     });
     return Array.from(allTags).sort();
-  }, []);
+  }, [comics]);
 
   // Filter and sort comics
   const processedComics = useMemo(() => {
@@ -43,7 +77,7 @@ export default function DaftarKomikPage() {
     }
 
     return result;
-  }, [activeFilters, sortOrder]);
+  }, [activeFilters, sortOrder, comics]);
 
   const totalPages = Math.ceil(processedComics.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -64,6 +98,15 @@ export default function DaftarKomikPage() {
     setSortOrder(newSort);
     setCurrentPage(1);
   };
+
+  if (isLoading) {
+    return (
+      <div>
+        <h1 className="daftar-komik__title">Daftar Semua Komik</h1>
+        <div className="daftar-komik__loading">Loading comics...</div>
+      </div>
+    );
+  }
 
   return (
     <div>

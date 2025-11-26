@@ -42,27 +42,34 @@ export default function AccountPage() {
     navigate("/");
   };
 
-  const handleSaveProfile = (profileData) => {
-    updateProfile(profileData);
-    setShowEditModal(false);
-    alert("Profil berhasil diperbarui!");
+  const handleSaveProfile = async (profileData) => {
+    try {
+      await updateProfile(profileData);
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
-  const handleChangePassword = (passwordData) => {
-    console.log("Password change:", passwordData);
+  const handleChangePassword = () => {
+    // Modal will handle the API call
     setShowPasswordModal(false);
-    alert("Password berhasil diubah!");
   };
 
-  const handleUploadAvatar = (avatarData) => {
-    updateProfile(avatarData);
+  const handleUploadAvatar = () => {
+    // Modal will handle the API call
     setShowAvatarModal(false);
-    alert("Foto profil berhasil diperbarui!");
   };
 
   // 1. Data Bookmark
+  // Handle both formats: [{comicId, bookmarkedAt}] or [comicId]
+  const bookmarkIds = (() => {
+    if (!user?.bookmarks || !Array.isArray(user.bookmarks)) return [];
+    return user.bookmarks.map((b) => (typeof b === "object" ? b.comicId : b));
+  })();
+
   const bookmarkedComics = comics.filter((comic) =>
-    user?.bookmarks?.includes(comic.id)
+    bookmarkIds.includes(comic.id)
   );
 
   // 2. Data Riwayat Baca
@@ -153,7 +160,6 @@ export default function AccountPage() {
                 {user.email}
               </p>
             )}
-            {user?.bio && <p className="account-page__bio">{user.bio}</p>}
             <p className="account-page__joined">
               <FiCalendar className="account-page__joined-icon" />
               Bergabung {formatDate.relative(user?.joinedAt || new Date())}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { comics } from "../data/comics";
+import { comics as fallbackComics } from "../data/comics";
+import { searchComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
 import "../styles/SearchPage.css";
@@ -9,41 +10,90 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
 
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // --- SOLUSI ERROR ESLINT ---
-  // Kita simpan query terakhir yang kita lihat
   const [lastQuery, setLastQuery] = useState(query);
 
-  // Cek saat render: Jika query URL beda dengan yang tersimpan
+  // Reset page when query changes
   if (query !== lastQuery) {
-    setLastQuery(query); // Update query tersimpan
-    setCurrentPage(1); // Reset halaman langsung (tanpa nunggu useEffect)
+    setLastQuery(query);
+    setCurrentPage(1);
   }
-  // ---------------------------
 
-  // useEffect sekarang hanya untuk Scroll, bukan reset state
+  // Fetch search results from backend
   useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!query) {
+        setSearchResults([]);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const results = await searchComics(query);
+
+        if (results && results.length > 0) {
+          // Map backend data to expected format
+          const mappedResults = results.map((comic, index) => ({
+            id: comic.id || index + 1,
+            title: comic.title || comic.name,
+            image: comic.thumbnail || comic.image,
+            rating: comic.rating || 4.5,
+            author: comic.author || "Unknown",
+            genre: comic.genre || "Fantasy",
+            type: comic.type || "Manga",
+            tags: comic.tags || [],
+            synopsis: comic.synopsis || "",
+            slug: comic.slug || comic.apiDetailLink?.split("/").pop(),
+          }));
+          setSearchResults(mappedResults);
+        } else {
+          // Try fallback local search
+          const localResults = fallbackComics.filter((comic) => {
+            const searchLower = query.toLowerCase();
+            const hasTagMatch =
+              Array.isArray(comic.tags) &&
+              comic.tags.some((tag) => tag.toLowerCase().includes(searchLower));
+
+            return (
+              comic.title.toLowerCase().includes(searchLower) ||
+              comic.author.toLowerCase().includes(searchLower) ||
+              (comic.synopsis &&
+                comic.synopsis.toLowerCase().includes(searchLower)) ||
+              hasTagMatch
+            );
+          });
+          setSearchResults(localResults);
+        }
+      } catch (error) {
+        console.error("Error searching comics:", error);
+        // Fallback to local search
+        const localResults = fallbackComics.filter((comic) => {
+          const searchLower = query.toLowerCase();
+          const hasTagMatch =
+            Array.isArray(comic.tags) &&
+            comic.tags.some((tag) => tag.toLowerCase().includes(searchLower));
+
+          return (
+            comic.title.toLowerCase().includes(searchLower) ||
+            comic.author.toLowerCase().includes(searchLower) ||
+            (comic.synopsis &&
+              comic.synopsis.toLowerCase().includes(searchLower)) ||
+            hasTagMatch
+          );
+        });
+        setSearchResults(localResults);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [query, currentPage]); // Jalan saat query ganti atau pindah hal
-
-  // --- LOGIC FILTERING ---
-  const searchResults = comics.filter((comic) => {
-    const searchLower = query.toLowerCase();
-
-    // Validasi Tags (Anti Crash jika tags undefined)
-    const hasTagMatch =
-      Array.isArray(comic.tags) &&
-      comic.tags.some((tag) => tag.toLowerCase().includes(searchLower));
-
-    return (
-      comic.title.toLowerCase().includes(searchLower) ||
-      comic.author.toLowerCase().includes(searchLower) ||
-      (comic.synopsis && comic.synopsis.toLowerCase().includes(searchLower)) ||
-      hasTagMatch
-    );
-  });
+  }, [query]);
 
   const totalPages = Math.ceil(searchResults.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -58,10 +108,12 @@ export default function SearchPage() {
     <div>
       <h1 className="search-page__title">Hasil Pencarian untuk "{query}"</h1>
       <p className="search-page__results-count">
-        Ditemukan {searchResults.length} komik
+        {isLoading ? "Mencari..." : `Ditemukan ${searchResults.length} komik`}
       </p>
 
-      {searchResults.length === 0 ? (
+      {isLoading ? (
+        <div className="search-page__loading">Loading...</div>
+      ) : searchResults.length === 0 ? (
         <div className="search-page__empty-state">
           <p className="search-page__empty-text">
             Tidak ada hasil yang ditemukan untuk "{query}"
@@ -78,11 +130,13 @@ export default function SearchPage() {
             ))}
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       )}
     </div>

@@ -15,9 +15,15 @@ export default function BookmarkPage() {
   const itemsPerPage = 10;
 
   // --- LOGIKA DATA (FRONTEND VERSION) ---
-  // Kita filter langsung dari data dummy berdasarkan array ID di user.bookmarks
+  // Convert user.bookmarks to simple array of comic IDs
+  const bookmarkIds = (() => {
+    if (!user?.bookmarks || !Array.isArray(user.bookmarks)) return [];
+    // Handle both formats: [{comicId, bookmarkedAt}] or [comicId]
+    return user.bookmarks.map((b) => (typeof b === "object" ? b.comicId : b));
+  })();
+
   const bookmarkedComics = comics.filter((comic) =>
-    user?.bookmarks?.includes(comic.id)
+    bookmarkIds.includes(comic.id)
   );
 
   const totalPages = Math.ceil(bookmarkedComics.length / itemsPerPage);
