@@ -56,6 +56,7 @@ npm run dev
 ```
 
 This will start:
+
 - **Frontend**: http://localhost:5173
 - **Backend**: http://localhost:5000
 - **API Docs**: http://localhost:5000/api-docs
@@ -74,6 +75,7 @@ This will start:
 **Error:** `EADDRINUSE: address already in use :::5000`
 
 **Solution:**
+
 ```bash
 # Windows
 netstat -ano | findstr :5000
@@ -88,6 +90,7 @@ PORT=5001
 **Error:** `Unable to connect to the database`
 
 **Solution:**
+
 1. Check PostgreSQL is running
 2. Verify credentials in `apps/server/.env`
 3. Make sure database exists:
@@ -100,18 +103,19 @@ PORT=5001
 **Error:** Frontend can't connect to backend
 
 **Solution:**
+
 1. Check `VITE_API_URL` in `apps/client/.env` matches backend port
 2. Default should be: `http://localhost:5000`
 
 ## Development Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start both client & server |
-| `npm run dev:client` | Start only frontend |
-| `npm run dev:server` | Start only backend |
-| `npm run build` | Build for production |
-| `npm run lint` | Run ESLint |
+| Command              | Description                |
+| -------------------- | -------------------------- |
+| `npm run dev`        | Start both client & server |
+| `npm run dev:client` | Start only frontend        |
+| `npm run dev:server` | Start only backend         |
+| `npm run build`      | Build for production       |
+| `npm run lint`       | Run ESLint                 |
 
 ## Next Steps
 
