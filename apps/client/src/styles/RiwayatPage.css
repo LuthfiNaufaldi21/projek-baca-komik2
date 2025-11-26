@@ -5,15 +5,15 @@
 }
 
 .riwayat-page__auth-required {
-  @apply text-center py-20;
+  @apply flex flex-col items-center justify-center py-20 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 min-h-[65vh];
 }
 
 .riwayat-page__auth-title {
-  @apply text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4;
+  @apply text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2;
 }
 
 .riwayat-page__auth-link {
-  @apply text-primary hover:underline font-medium;
+  @apply px-6 py-2.5 mt-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all shadow-lg font-medium inline-block;
 }
 
 .riwayat-page__header {

@@ -1,43 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import { FiBookmark, FiLock } from "react-icons/fi"; // Pastikan install: npm install react-icons
 import "../styles/BookmarkPage.css";
 
 export default function BookmarkPage() {
   const { isLoggedIn, user } = useAuth();
+  const navigate = useNavigate();
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  if (!isLoggedIn) {
-    return (
-      <div className="bookmark-page__auth-required">
-        <h2 className="bookmark-page__auth-title">
-          Anda harus login terlebih dahulu
-        </h2>
-        <Link to="/login" className="bookmark-page__auth-link">
-          Klik di sini untuk login
-        </Link>
-      </div>
-    );
-  }
-
+  // --- LOGIKA DATA (FRONTEND VERSION) ---
+  // Kita filter langsung dari data dummy berdasarkan array ID di user.bookmarks
   const bookmarkedComics = comics.filter((comic) =>
     user?.bookmarks?.includes(comic.id)
   );
-
-  if (bookmarkedComics.length === 0) {
-    return (
-      <div>
-        <h2 className="bookmark-page__empty-title">Bookmark Saya</h2>
-        <p className="bookmark-page__empty-text">
-          Anda belum memiliki bookmark.
-        </p>
-      </div>
-    );
-  }
 
   const totalPages = Math.ceil(bookmarkedComics.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -49,24 +30,63 @@ export default function BookmarkPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // --- TAMPILAN UI BARU (Agar tidak gepeng) ---
   return (
-    <div>
-      <h1 className="bookmark-page__title">Bookmark Saya</h1>
-      <p className="bookmark-page__count">
-        Total {bookmarkedComics.length} komik tersimpan
-      </p>
-
-      <div className="bookmark-page__grid">
-        {currentComics.map((comic) => (
-          <ComicCard key={comic.id} comic={comic} />
-        ))}
+    <div className="bookmark-page__container">
+      {/* Header: Selalu Tampil */}
+      <div className="bookmark-page__header">
+        <h1 className="bookmark-page__title">Bookmark Saya</h1>
+        <p className="bookmark-page__count">
+          {isLoggedIn
+            ? `Total ${bookmarkedComics.length} komik tersimpan`
+            : "Kelola koleksi komik favoritmu"}
+        </p>
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {/* KONDISI 1: BELUM LOGIN */}
+      {!isLoggedIn ? (
+        <div className="bookmark-page__auth-required">
+          <FiLock className="bookmark-page__empty-icon" />
+          <h2 className="bookmark-page__auth-title">Akses Terbatas</h2>
+          <p className="bookmark-page__empty-text">
+            Silakan login terlebih dahulu untuk melihat bookmark kamu.
+          </p>
+          <Link to="/login" className="bookmark-page__auth-link">
+            Login Sekarang
+          </Link>
+        </div>
+      ) : /* KONDISI 2: SUDAH LOGIN TAPI KOSONG */
+      bookmarkedComics.length === 0 ? (
+        <div className="bookmark-page__empty">
+          <FiBookmark className="bookmark-page__empty-icon" />
+          <p className="bookmark-page__empty-text">
+            Belum ada komik yang dibookmark.
+          </p>
+          <button
+            onClick={() => navigate("/daftar-komik")}
+            className="bookmark-page__browse-button"
+          >
+            Jelajahi Komik
+          </button>
+        </div>
+      ) : (
+        /* KONDISI 3: ADA DATA (GRID) */
+        <>
+          <div className="bookmark-page__grid">
+            {currentComics.map((comic) => (
+              <ComicCard key={comic.id} comic={comic} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

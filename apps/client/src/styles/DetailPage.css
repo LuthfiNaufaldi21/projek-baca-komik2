@@ -5,7 +5,7 @@
 }
 
 .detail-page__hero-banner {
-  @apply relative w-full max-w-7xl mx-auto mt-6 h-[300px] overflow-hidden rounded-3xl shadow-2xl mb-[-250px] border border-gray-100 dark:border-gray-800;
+  @apply relative w-full max-w-7xl mx-auto mt-6 h-[260px] overflow-hidden rounded-3xl shadow-2xl mb-[-210px] border border-gray-100 dark:border-gray-800;
 }
 
 .detail-page__hero-banner:hover .detail-page__hero-bg {

@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
-import { FiClock, FiList } from "react-icons/fi";
+import { FiClock, FiList, FiLock } from "react-icons/fi";
 import "../styles/RiwayatPage.css";
 
 export default function RiwayatPage() {
@@ -17,6 +17,7 @@ export default function RiwayatPage() {
   if (!isLoggedIn) {
     return (
       <div className="riwayat-page__auth-required">
+        <FiLock className="riwayat-page__empty-icon" />
         <h2 className="riwayat-page__auth-title">
           Anda harus login untuk melihat riwayat
         </h2>
