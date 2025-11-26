@@ -66,7 +66,7 @@ DB_USER=your_username
 DB_PASSWORD=your_password
 
 JWT_SECRET=your_jwt_secret_key
-PORT=3001
+PORT=5000
 ```
 
 ### Development
@@ -83,7 +83,7 @@ Atau jalankan secara terpisah:
 # Client (Frontend) - http://localhost:5173
 npm run dev:client
 
-# Server (Backend) - http://localhost:3001
+# Server (Backend) - http://localhost:5000
 npm run dev:server
 ```
 
@@ -142,7 +142,7 @@ npm run build:server
 Setelah server berjalan, akses dokumentasi API di:
 
 ```
-http://localhost:3001/api-docs
+http://localhost:5000/api-docs
 ```
 
 ## 🌐 Deployment
@@ -177,7 +177,7 @@ Deploy ke Vercel, Railway, Render, atau VPS:
 ### Client (.env di apps/client/)
 
 ```env
-VITE_API_URL=http://localhost:3001/api
+VITE_API_URL=http://localhost:5000
 ```
 
 ### Server (.env di apps/server/)
@@ -192,7 +192,7 @@ DB_PASSWORD=password
 JWT_SECRET=your_secret_key
 JWT_EXPIRES_IN=7d
 
-PORT=3001
+PORT=5000
 NODE_ENV=development
 ```
 

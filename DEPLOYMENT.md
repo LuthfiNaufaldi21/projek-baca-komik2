@@ -71,7 +71,7 @@ DB_USER=your-user
 DB_PASSWORD=your-password
 JWT_SECRET=your-secret-key
 JWT_EXPIRES_IN=7d
-PORT=3001
+PORT=5000
 NODE_ENV=production
 ```
 
