@@ -97,7 +97,7 @@
 }
 
 .detail-page__synopsis-container {
-  @apply bg-gray-100 dark:bg-gray-700 p-4 rounded-lg;
+  @apply bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-10;
 }
 
 .detail-page__synopsis-title {

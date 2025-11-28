@@ -14,12 +14,18 @@ import { post, put, get } from "./api";
  * @returns {Promise} - User object and token
  */
 export const login = async (email, password) => {
+  console.log("🔐 [AuthService] Login attempt for:", email);
   try {
     const response = await post("/api/auth/login", { email, password });
+    console.log(
+      "✅ [AuthService] Login successful, user:",
+      response.user?.username
+    );
 
     // Store token and user data
     if (response.token) {
       localStorage.setItem("komikita-token", response.token);
+      console.log("💾 [AuthService] Token saved to localStorage");
     }
     if (response.user) {
       const API_BASE_URL =
@@ -51,12 +57,17 @@ export const login = async (email, password) => {
         joinedAt: response.user.createdAt || new Date().toISOString(),
       };
       localStorage.setItem("komikita-user", JSON.stringify(userData));
+      console.log("💾 [AuthService] User data converted and saved:", {
+        bookmarks: bookmarkIds.length,
+        history: Object.keys(historyObj).length,
+        avatar: userData.avatar ? "Yes" : "No",
+      });
       return userData;
     }
 
     return response.user;
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("❌ [AuthService] Login error:", error);
     throw error;
   }
 };
@@ -107,15 +118,20 @@ export const logout = async () => {
  * @returns {Promise} - User object
  */
 export const getCurrentUser = async () => {
+  console.log("👤 [AuthService] Getting current user profile...");
   try {
     const token = localStorage.getItem("komikita-token");
 
     if (!token) {
+      console.log(
+        "⚠️  [AuthService] No token found, returning from localStorage"
+      );
       // No token, return from localStorage if exists
       const userStr = localStorage.getItem("komikita-user");
       return userStr ? JSON.parse(userStr) : null;
     }
 
+    console.log("🔑 [AuthService] Token found, fetching from backend...");
     // Fetch from backend
     const response = await get("/api/user/profile");
 
@@ -145,12 +161,18 @@ export const getCurrentUser = async () => {
         joinedAt: response.createdAt || new Date().toISOString(),
       };
       localStorage.setItem("komikita-user", JSON.stringify(userData));
+      console.log("✅ [AuthService] User profile fetched and converted:", {
+        username: userData.username,
+        bookmarks: bookmarkIds.length,
+        history: Object.keys(historyObj).length,
+        avatar: userData.avatar ? "Yes" : "No",
+      });
       return userData;
     }
 
     return response;
   } catch (error) {
-    console.error("Error getting current user:", error);
+    console.error("❌ [AuthService] Error getting current user:", error);
     // Fallback to localStorage
     const userStr = localStorage.getItem("komikita-user");
     return userStr ? JSON.parse(userStr) : null;
@@ -307,6 +329,7 @@ export const uploadAvatar = async (file) => {
  * @returns {Promise} - Updated bookmark list
  */
 export const toggleBookmark = async (comicId) => {
+  console.log("🔖 [AuthService] Toggling bookmark for comic:", comicId);
   try {
     const token = localStorage.getItem("komikita-token");
 
@@ -315,12 +338,16 @@ export const toggleBookmark = async (comicId) => {
     }
 
     const response = await post("/api/user/bookmark", { comicId });
+    console.log(
+      "✅ [AuthService] Bookmark toggled successfully:",
+      response.msg
+    );
 
     // Don't update localStorage here, let getCurrentUser handle it
     // This will be refreshed by the context
     return response;
   } catch (error) {
-    console.error("Error toggling bookmark:", error);
+    console.error("❌ [AuthService] Error toggling bookmark:", error);
     throw error;
   }
 };
@@ -332,6 +359,10 @@ export const toggleBookmark = async (comicId) => {
  * @returns {Promise} - Updated reading history
  */
 export const updateReadingHistory = async (comicId, chapterId) => {
+  console.log("📖 [AuthService] Updating reading history:", {
+    comicId,
+    chapterId,
+  });
   try {
     const token = localStorage.getItem("komikita-token");
 
@@ -340,12 +371,13 @@ export const updateReadingHistory = async (comicId, chapterId) => {
     }
 
     const response = await post("/api/user/history", { comicId, chapterId });
+    console.log("✅ [AuthService] Reading history updated successfully");
 
     // Don't update localStorage here, let getCurrentUser handle it
     // This will be refreshed by the context
     return response;
   } catch (error) {
-    console.error("Error updating reading history:", error);
+    console.error("❌ [AuthService] Error updating reading history:", error);
     throw error;
   }
 };

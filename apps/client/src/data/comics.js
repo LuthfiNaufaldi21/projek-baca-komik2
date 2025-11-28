@@ -15,7 +15,7 @@ export const comics = [
     tags: ["Warna", "Action", "Fantasy", "Manhwa"],
   },
   {
-    id: "one-piece",
+    id: "komik-one-piece-indo",
     title: "One Piece",
     author: "Eiichiro Oda",
     cover:

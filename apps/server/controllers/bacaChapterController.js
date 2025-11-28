@@ -3,7 +3,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const router = express.Router();
 
-const URL_BASE = "https://komiku.org/"; // Renamed for clarity
+const URL_BASE = "https://komiku.org/"; // default; actual used base may switch to .id
 
 function extractSlugAndChapter(url) {
   // Regex to match URLs like /slug-chapter-123/ or /manga/slug/chapter/123/ (more flexible)
@@ -35,20 +35,82 @@ function extractSlugAndChapter(url) {
 const getBacaChapter = async (req, res) => {
   try {
     const { slug, chapter } = req.params;
-    const chapterUrl = `${URL_BASE}${slug}-chapter-${chapter}/`;
+    const HOSTS = ["https://komiku.org/", "https://komiku.id/"];
 
-    const { data } = await axios.get(chapterUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        Referer: "https://komiku.id/",
-        "Cache-Control": "public, max-age=3600", // Cache for 1 hour
-        timeout: 10000, // Optional: 10 seconds timeout
-      },
-    });
+    let data = null;
+    let baseUsed = URL_BASE;
+    let lastError = null;
+
+    // Try both hosts with constructed chapter path
+    for (const host of HOSTS) {
+      try {
+        const chapterUrl = `${host}${slug}-chapter-${chapter}/`;
+        const resp = await axios.get(chapterUrl, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            Referer: "https://komiku.id/",
+            "Cache-Control": "public, max-age=3600",
+          },
+          timeout: 10000,
+        });
+        data = resp.data;
+        baseUsed = host;
+        break;
+      } catch (err) {
+        lastError = err;
+        // continue to next host
+      }
+    }
+
+    // Fallback: discover chapter originalLink via our own detail endpoint
+    if (!data) {
+      try {
+        const localBase = `http://localhost:${process.env.PORT || 5000}`;
+        const detailResp = await axios.get(
+          `${localBase}/detail-komik/${slug}`,
+          {
+            timeout: 15000,
+          }
+        );
+        const chapters = Array.isArray(detailResp?.data?.chapters)
+          ? detailResp.data.chapters
+          : [];
+        const candidate = chapters.find(
+          (c) => String(c.chapterNumber) === String(chapter)
+        );
+        const original = candidate?.originalLink;
+        if (original) {
+          const resp = await axios.get(original, {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+              Accept:
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+              "Accept-Language": "en-US,en;q=0.5",
+              Referer: "https://komiku.id/",
+              "Cache-Control": "public, max-age=3600",
+            },
+            timeout: 10000,
+          });
+          data = resp.data;
+          baseUsed = original.startsWith("https://komiku.id")
+            ? "https://komiku.id/"
+            : original.startsWith("https://komiku.org")
+            ? "https://komiku.org/"
+            : baseUsed;
+        }
+      } catch (fallbackErr) {
+        lastError = fallbackErr;
+      }
+    }
+
+    if (!data) {
+      throw lastError || new Error("Chapter not found");
+    }
 
     const $ = cheerio.load(data);
 
@@ -106,26 +168,44 @@ const getBacaChapter = async (req, res) => {
     });
 
     const images = [];
-    $("#Baca_Komik img").each((i, el) => {
-      const src = $(el).attr("src");
-      const alt = $(el).attr("alt");
-      const id = $(el).attr("id");
+    $("#Baca_Komik img, #Baca_Komik_2 img, #Baca_Komik2 img").each((i, el) => {
+      let src =
+        $(el).attr("src") ||
+        $(el).attr("data-src") ||
+        $(el).attr("data-lazy-src") ||
+        $(el).attr("data-original");
+      const alt = $(el).attr("alt") || "";
+      const id = $(el).attr("id") || null;
 
-      // Revised condition to correctly match image URLs from komiku.id's upload directories
-      if (
-        src &&
-        (src.includes("komiku.org/upload") ||
-          src.includes("cdn.komiku.org/upload") ||
-          src.includes("img.komiku.org/upload")) &&
-        id
-      ) {
+      if (!src) return;
+
+      const normalizedSrc = src.trim();
+      const isKomikuHost =
+        // Broadly accept Komiku domains serving media
+        ((normalizedSrc.includes("komiku.org") ||
+          normalizedSrc.includes("komiku.id")) &&
+          (normalizedSrc.includes("uploads") ||
+            normalizedSrc.includes("wp-content"))) ||
+        // Legacy cdn/img hosts
+        normalizedSrc.includes("cdn.komiku.org/") ||
+        normalizedSrc.includes("img.komiku.org/") ||
+        normalizedSrc.includes("cdn.komiku.id/") ||
+        normalizedSrc.includes("img.komiku.id/") ||
+        // WordPress proxy often used by Komiku
+        (normalizedSrc.includes("wp.com") && normalizedSrc.includes("komiku"));
+
+      if (isKomikuHost) {
+        const fallbackSrc = normalizedSrc
+          .replace("cdn.komiku.id", "img.komiku.id")
+          .replace("cdn.komiku.org", "img.komiku.org")
+          .replace("komiku.id/upload", "img.komiku.id/upload")
+          .replace("komiku.org/upload", "img.komiku.org/upload");
+
         images.push({
-          src,
+          src: normalizedSrc,
           alt,
           id,
-          fallbackSrc: src
-            .replace("cdn.komiku.id", "img.komiku.id")
-            .replace("komiku.id/upload", "img.komiku.id/upload"), // More robust fallback
+          fallbackSrc,
         });
       }
     });
@@ -181,7 +261,7 @@ const getBacaChapter = async (req, res) => {
         prevChapterInfo = {
           originalLink: prevChapterLink.startsWith("http")
             ? prevChapterLink
-            : `${URL_BASE}${
+            : `${baseUsed}${
                 prevChapterLink.startsWith("/")
                   ? prevChapterLink.substring(1)
                   : prevChapterLink
@@ -201,7 +281,7 @@ const getBacaChapter = async (req, res) => {
         nextChapterInfo = {
           originalLink: nextChapterLink.startsWith("http")
             ? nextChapterLink
-            : `${URL_BASE}${
+            : `${baseUsed}${
                 nextChapterLink.startsWith("/")
                   ? nextChapterLink.substring(1)
                   : nextChapterLink
@@ -221,7 +301,7 @@ const getBacaChapter = async (req, res) => {
         originalLink: mangaLink?.startsWith("http")
           ? mangaLink
           : mangaLink
-          ? `${URL_BASE}${
+          ? `${baseUsed}${
               mangaLink.startsWith("/") ? mangaLink.substring(1) : mangaLink
             }`
           : null,
@@ -265,9 +345,13 @@ router.get("/url", async (req, res) => {
       });
     }
 
-    if (!url.includes("komiku.id/") || !url.includes("chapter")) {
+    if (
+      (!url.includes("komiku.id/") && !url.includes("komiku.org/")) ||
+      !url.includes("chapter")
+    ) {
       return res.status(400).json({
-        error: "URL tidak valid, harus dari komiku.id dan berisi 'chapter'",
+        error:
+          "URL tidak valid, harus dari komiku.id/.org dan berisi 'chapter'",
       });
     }
 

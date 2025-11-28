@@ -4,7 +4,18 @@ import "../styles/ComicCard.css";
 
 export default function ComicCard({ comic }) {
   const { isBookmarked, addBookmark, removeBookmark, isLoggedIn } = useAuth();
-  const bookmarked = isBookmarked(comic.id);
+  // Prefer slug; fallback to derive from apiDetailLink; lastly use id
+  const derivedSlug =
+    comic?.slug ||
+    (comic?.apiDetailLink
+      ? String(comic.apiDetailLink).split("/").filter(Boolean).pop()
+      : null) ||
+    (comic?.originalLink
+      ? String(comic.originalLink).split("/").filter(Boolean).pop()
+      : null);
+
+  const bookmarkKey = comic?.id || derivedSlug;
+  const bookmarked = isBookmarked(bookmarkKey);
 
   const handleBookmarkClick = (e) => {
     e.preventDefault();
@@ -13,19 +24,22 @@ export default function ComicCard({ comic }) {
       return;
     }
     if (bookmarked) {
-      removeBookmark(comic.id);
+      removeBookmark(bookmarkKey);
     } else {
-      addBookmark(comic.id);
+      addBookmark(bookmarkKey);
     }
   };
 
   return (
     <div className="comic-card group">
-      <Link to={`/detail/${comic.id}`} className="comic-card__link">
+      <Link
+        to={`/detail/${derivedSlug || comic.id}`}
+        className="comic-card__link"
+      >
         <div className="comic-card__image-wrapper">
           {/* Main Image */}
           <img
-            src={comic.cover}
+            src={comic.cover || comic.image || comic.thumbnail}
             alt={comic.title}
             className="comic-card__image"
             loading="lazy"

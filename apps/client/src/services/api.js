@@ -16,6 +16,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
  */
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
+  const startTime = performance.now();
 
   const defaultHeaders = {
     "Content-Type": "application/json",
@@ -35,20 +36,50 @@ export const apiRequest = async (endpoint, options = {}) => {
     },
   };
 
+  // 🔍 LOG REQUEST
+  console.group(`🌐 API Request: ${options.method || "GET"} ${endpoint}`);
+  console.log("📍 Full URL:", url);
+  console.log("📦 Headers:", config.headers);
+  if (config.body) {
+    console.log("📤 Body:", config.body);
+  }
+  console.log("⏱️  Started at:", new Date().toLocaleTimeString());
+
   try {
     const response = await fetch(url, config);
+    const endTime = performance.now();
+    const duration = (endTime - startTime).toFixed(2);
+
+    // 🔍 LOG RESPONSE STATUS
+    console.log(
+      `📡 Response Status: ${response.status} ${response.statusText}`
+    );
+    console.log(`⏱️  Duration: ${duration}ms`);
 
     // Handle non-OK responses
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "API request failed");
+      console.error("❌ Error Response:", error);
+      console.groupEnd();
+      throw new Error(error.message || error.msg || "API request failed");
     }
 
     // Parse JSON response
     const data = await response.json();
+
+    // 🔍 LOG RESPONSE DATA
+    console.log("✅ Response Data:", data);
+    console.groupEnd();
+
     return data;
   } catch (error) {
-    console.error("API Error:", error);
+    const endTime = performance.now();
+    const duration = (endTime - startTime).toFixed(2);
+
+    console.error(`❌ API Error after ${duration}ms:`, error.message);
+    console.error("🔧 Error Details:", error);
+    console.groupEnd();
+
     throw error;
   }
 };

@@ -230,13 +230,114 @@ async function scrapeKomikDetail(url) {
   }
 }
 
+// Try multiple strategies to resolve a working detail page when a slug 404s
+async function resolveAndFetchDetailBySlug(slug) {
+  const hosts = ["https://komiku.org/", "https://komiku.id/"];
+
+  const buildUrl = (host, s) => `${host}manga/${s}/`;
+
+  let lastError = null;
+
+  // 1) Try both hosts with the incoming slug as-is
+  for (const host of hosts) {
+    try {
+      const url = buildUrl(host, slug);
+      return await scrapeKomikDetail(url);
+    } catch (err) {
+      lastError = err;
+      if (err?.response?.status !== 404) {
+        // Non-404 errors: keep last error but continue trying other strategies
+      }
+    }
+  }
+
+  // 2) Fallback: search on komiku with transformed keyword to discover the correct slug
+  //    Example: "one-piece" -> find "/manga/komik-one-piece-indo/"
+  try {
+    const keyword = String(slug).replace(/-/g, " ").trim();
+    const searchUrl = `https://komiku.org/?s=${encodeURIComponent(
+      keyword
+    )}&post_type=manga`;
+
+    const { data } = await axios.get(searchUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        Referer: "https://komiku.id/",
+        "Cache-Control": "public, max-age=3600",
+      },
+      timeout: 10000,
+    });
+
+    const $ = cheerio.load(data);
+    let discoveredSlug = "";
+
+    // Prefer new layout selector first
+    const firstCardLink = $(".bge").first().find(".bgei a").attr("href");
+    if (firstCardLink && /\/manga\//.test(firstCardLink)) {
+      const m = firstCardLink.match(/\/manga\/([^/]+)/);
+      if (m && m[1]) discoveredSlug = m[1];
+    }
+
+    // Fallback: generic anchor scan
+    if (!discoveredSlug) {
+      const anchor = $('a[href*="/manga/"]').first().attr("href");
+      if (anchor) {
+        const m = anchor.match(/\/manga\/([^/]+)/);
+        if (m && m[1]) discoveredSlug = m[1];
+      }
+    }
+
+    if (discoveredSlug) {
+      // Try both hosts with the discovered slug
+      for (const host of hosts) {
+        try {
+          const url = buildUrl(host, discoveredSlug);
+          return await scrapeKomikDetail(url);
+        } catch (err) {
+          lastError = err;
+        }
+      }
+    }
+  } catch (searchErr) {
+    lastError = searchErr;
+  }
+
+  // 3) Fallback: use our own local /search endpoint (avoids external protections)
+  try {
+    const keyword = String(slug).replace(/-/g, " ").trim();
+    const localBase = `http://localhost:${process.env.PORT || 5000}`;
+    const localResp = await axios.get(
+      `${localBase}/search?q=${encodeURIComponent(keyword)}`,
+      { timeout: 15000 }
+    );
+    const items = localResp?.data?.data || [];
+    const first = Array.isArray(items) ? items[0] : null;
+    const candidateSlug = first?.slug;
+    if (candidateSlug) {
+      for (const host of hosts) {
+        try {
+          const url = buildUrl(host, candidateSlug);
+          return await scrapeKomikDetail(url);
+        } catch (err) {
+          lastError = err;
+        }
+      }
+    }
+  } catch (localSearchErr) {
+    lastError = localSearchErr;
+  }
+
+  // If everything failed, throw the last captured error
+  throw lastError || new Error("Detail not found for slug: " + slug);
+}
+
 const getDetail = async (req, res) => {
   try {
     const { slug } = req.params;
-
-    const komikUrl = `${URL}manga/${slug}/`;
-
-    const komikDetail = await scrapeKomikDetail(komikUrl);
+    const komikDetail = await resolveAndFetchDetailBySlug(slug);
     res.json(komikDetail);
   } catch (err) {
     console.error("Error fetching komik detail:", err);

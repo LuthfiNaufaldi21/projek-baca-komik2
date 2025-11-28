@@ -1,19 +1,39 @@
 import { useParams, Link } from "react-router-dom";
-import { comics } from "../data/comics";
 import { useAuth } from "../hooks/useAuth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getComicBySlug } from "../services/comicService";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
-  const { id } = useParams();
+  const { id } = useParams(); // treat as slug
   const { isBookmarked, addBookmark, removeBookmark, isLoggedIn } = useAuth();
   const [isLoadingBookmark, setIsLoadingBookmark] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState(null);
 
-  // Cari komik berdasarkan ID dari URL
-  const comic = comics.find((c) => c.id === id);
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await getComicBySlug(id);
+        if (!mounted) return;
+        setDetail(data);
+      } catch (e) {
+        console.error("Failed to load detail:", e);
+        setDetail(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   // Jika komik tidak ditemukan
-  if (!comic) {
+  if (!loading && !detail) {
     return (
       <div className="detail-page__not-found">
         <h2 className="detail-page__not-found-title">
@@ -29,7 +49,8 @@ export default function DetailPage() {
     );
   }
 
-  const bookmarked = isBookmarked(comic.id);
+  const bookmarkKey = detail?.slug || id;
+  const bookmarked = isBookmarked(bookmarkKey);
 
   const handleBookmarkClick = async () => {
     if (!isLoggedIn) {
@@ -40,9 +61,9 @@ export default function DetailPage() {
     setIsLoadingBookmark(true);
     try {
       if (bookmarked) {
-        await removeBookmark(comic.id);
+        await removeBookmark(bookmarkKey);
       } else {
-        await addBookmark(comic.id);
+        await addBookmark(bookmarkKey);
       }
     } catch (error) {
       console.error("Error toggling bookmark:", error);
@@ -52,13 +73,29 @@ export default function DetailPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="detail-page__not-found">
+        <p>Memuat detail komik...</p>
+      </div>
+    );
+  }
+
+  const cover = detail?.thumbnail;
+  const title = detail?.title || "";
+  const author = detail?.info?.Pengarang || detail?.info?.Author || "-";
+  const rating = detail?.info?.Rating || "-";
+  const tags = detail?.genres || [];
+  const synopsis = detail?.sinopsis || detail?.description || "";
+  const chapters = Array.isArray(detail?.chapters) ? detail.chapters : [];
+
   return (
     <div className="detail-page__container">
       {/* Hero Banner Background */}
       <div className="detail-page__hero-banner">
         <div
           className="detail-page__hero-bg"
-          style={{ backgroundImage: `url('${comic.cover}')` }}
+          style={{ backgroundImage: `url('${cover}')` }}
         ></div>
         <div className="detail-page__hero-overlay"></div>
       </div>
@@ -69,8 +106,8 @@ export default function DetailPage() {
           <div className="detail-page__cover-container">
             <div className="detail-page__cover-wrapper">
               <img
-                src={comic.cover}
-                alt={comic.title}
+                src={cover}
+                alt={title}
                 className="detail-page__cover-image"
               />
             </div>
@@ -143,7 +180,7 @@ export default function DetailPage() {
 
           {/* Kolom Kanan: Detail Info & Chapter */}
           <div className="detail-page__info">
-            <h1 className="detail-page__title">{comic.title}</h1>
+            <h1 className="detail-page__title">{title}</h1>
 
             <div className="detail-page__meta">
               <div className="detail-page__rating-badge">
@@ -154,7 +191,7 @@ export default function DetailPage() {
                 >
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
-                <span className="font-bold">{comic.rating}</span>
+                <span className="font-bold">{String(rating)}</span>
                 <span className="opacity-75 ml-1">/ 10</span>
               </div>
 
@@ -172,7 +209,7 @@ export default function DetailPage() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span>{comic.author}</span>
+                <span>{author}</span>
               </div>
 
               <div className="detail-page__meta-item">
@@ -195,7 +232,7 @@ export default function DetailPage() {
 
             {/* Tags */}
             <div className="detail-page__tags">
-              {comic.tags?.map((tag, index) => (
+              {tags?.map((tag, index) => (
                 <Link
                   to={`/genre/${encodeURIComponent(tag)}`}
                   key={index}
@@ -209,7 +246,7 @@ export default function DetailPage() {
             {/* Sinopsis */}
             <div className="detail-page__synopsis-container">
               <h3 className="detail-page__synopsis-title">Sinopsis</h3>
-              <p className="detail-page__synopsis-text">{comic.synopsis}</p>
+              <p className="detail-page__synopsis-text">{synopsis}</p>
             </div>
           </div>
         </div>
@@ -218,17 +255,16 @@ export default function DetailPage() {
         <div className="detail-page__chapters">
           <h2 className="detail-page__chapters-title">Daftar Chapter</h2>
 
-          {comic.chapters && comic.chapters.length > 0 ? (
+          {chapters && chapters.length > 0 ? (
             <div className="detail-page__chapters-list">
-              {comic.chapters.map((chapter) => (
+              {chapters.map((chapter, idx) => (
                 <Link
-                  key={chapter.id}
-                  // LINK INI YANG MENGHUBUNGKAN KE READER PAGE
-                  to={`/read/${comic.id}/${chapter.id}`}
+                  key={chapter.apiLink || idx}
+                  to={`/read/${detail?.slug || id}/${chapter.chapterNumber}`}
                   className="detail-page__chapter-link"
                 >
                   <span className="detail-page__chapter-title">
-                    {chapter.title}
+                    {chapter.title || `Chapter ${chapter.chapterNumber}`}
                   </span>
                 </Link>
               ))}

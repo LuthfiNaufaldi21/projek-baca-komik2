@@ -30,20 +30,26 @@ export const AuthProvider = ({ children }) => {
 
   // Updated login function to work with backend
   const login = async (email, password) => {
+    console.log("🔐 [AuthContext] Login initiated");
     try {
       const userData = await authService.login(email, password);
+      console.log("💾 [AuthContext] User data received, setting state...");
       setUser(userData);
       setIsLoggedIn(true);
 
       // Refresh user data from backend to get latest bookmarks and history
+      console.log("🔄 [AuthContext] Refreshing user data from backend...");
       const freshUserData = await authService.getCurrentUser();
       if (freshUserData) {
+        console.log(
+          "✅ [AuthContext] Fresh user data received, updating state"
+        );
         setUser(freshUserData);
       }
 
       return userData;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("❌ [AuthContext] Login failed:", error);
       throw error;
     }
   };
@@ -80,14 +86,17 @@ export const AuthProvider = ({ children }) => {
   const addBookmark = async (comicId) => {
     if (!isLoggedIn || !user) return;
 
+    console.log("🔖 [AuthContext] Adding bookmark for:", comicId);
     try {
       await authService.toggleBookmark(comicId);
+      console.log("🔄 [AuthContext] Refreshing user data after bookmark...");
 
       // Refresh user data from backend
       const updatedUser = await authService.getCurrentUser();
+      console.log("✅ [AuthContext] User state updated with new bookmarks");
       setUser(updatedUser);
     } catch (error) {
-      console.error("Error adding bookmark:", error);
+      console.error("❌ [AuthContext] Error adding bookmark:", error);
       // Fallback to localStorage on error
       const updatedUser = { ...user };
       if (!updatedUser.bookmarks) updatedUser.bookmarks = [];
@@ -103,14 +112,19 @@ export const AuthProvider = ({ children }) => {
   const removeBookmark = async (comicId) => {
     if (!isLoggedIn || !user) return;
 
+    console.log("❌ [AuthContext] Removing bookmark for:", comicId);
     try {
       await authService.toggleBookmark(comicId);
+      console.log(
+        "🔄 [AuthContext] Refreshing user data after removing bookmark..."
+      );
 
       // Refresh user data from backend
       const updatedUser = await authService.getCurrentUser();
+      console.log("✅ [AuthContext] User state updated, bookmark removed");
       setUser(updatedUser);
     } catch (error) {
-      console.error("Error removing bookmark:", error);
+      console.error("❌ [AuthContext] Error removing bookmark:", error);
       // Fallback to localStorage on error
       const updatedUser = { ...user };
       if (updatedUser.bookmarks) {
@@ -127,14 +141,24 @@ export const AuthProvider = ({ children }) => {
   const updateReadingHistory = async (comicId, chapterId) => {
     if (!isLoggedIn || !user) return;
 
+    console.log("📖 [AuthContext] Updating reading history:", {
+      comicId,
+      chapterId,
+    });
     try {
       await authService.updateReadingHistory(comicId, chapterId);
+      console.log(
+        "🔄 [AuthContext] Refreshing user data after reading history update..."
+      );
 
       // Refresh user data from backend
       const updatedUser = await authService.getCurrentUser();
+      console.log(
+        "✅ [AuthContext] User state updated with new reading history"
+      );
       setUser(updatedUser);
     } catch (error) {
-      console.error("Error updating reading history:", error);
+      console.error("❌ [AuthContext] Error updating reading history:", error);
       // Fallback to localStorage on error
       const updatedUser = { ...user };
       if (!updatedUser.readingHistory) {
