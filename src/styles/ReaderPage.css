@@ -44,8 +44,28 @@
   @apply w-full max-w-3xl mx-auto bg-black shadow-2xl min-h-screen;
 }
 
+.reader-content--page {
+  @apply flex items-center justify-center min-h-[calc(100vh-140px)];
+}
+
 .reader-image {
   @apply w-full h-auto block; /* block agar tidak ada celah antar gambar */
+}
+
+.reader-image--contain {
+  @apply max-h-[85vh] w-auto object-contain mx-auto cursor-pointer;
+}
+
+.reader-page-view {
+  @apply relative w-full flex flex-col items-center;
+}
+
+.reader-page-controls {
+  @apply mt-4 text-center;
+}
+
+.reader-page-counter {
+  @apply px-4 py-1 bg-gray-800 rounded-full text-xs text-gray-300;
 }
 
 /* Footer Navigation */

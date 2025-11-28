@@ -1,14 +1,24 @@
 import { useParams, Link } from "react-router-dom";
 import { comics } from "../data/comics";
 import { useAuth } from "../hooks/useAuth";
+import Breadcrumbs from "../components/Breadcrumbs";
+import CommentSection from "../components/CommentSection";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
   const { id } = useParams();
-  const { isBookmarked, addBookmark, removeBookmark, isLoggedIn } = useAuth();
+  const {
+    isBookmarked,
+    addBookmark,
+    removeBookmark,
+    isLoggedIn,
+    getReadingHistory,
+  } = useAuth();
 
   // Cari komik berdasarkan ID dari URL
   const comic = comics.find((c) => c.id === id);
+  const readingHistory = getReadingHistory();
+  const lastReadChapterId = readingHistory[id];
 
   // Jika komik tidak ditemukan
   if (!comic) {
@@ -41,8 +51,15 @@ export default function DetailPage() {
     }
   };
 
+  const breadcrumbItems = [
+    { label: "Daftar Komik", to: "/daftar-komik" },
+    { label: comic.title, to: null },
+  ];
+
   return (
     <div className="detail-page__container">
+      <Breadcrumbs items={breadcrumbItems} />
+
       {/* Hero Banner Background */}
       <div className="detail-page__hero-banner">
         <div
@@ -183,18 +200,31 @@ export default function DetailPage() {
 
           {comic.chapters && comic.chapters.length > 0 ? (
             <div className="detail-page__chapters-list">
-              {comic.chapters.map((chapter) => (
-                <Link
-                  key={chapter.id}
-                  // LINK INI YANG MENGHUBUNGKAN KE READER PAGE
-                  to={`/read/${comic.id}/${chapter.id}`}
-                  className="detail-page__chapter-link"
-                >
-                  <span className="detail-page__chapter-title">
-                    {chapter.title}
-                  </span>
-                </Link>
-              ))}
+              {comic.chapters.map((chapter) => {
+                const isRead = lastReadChapterId === chapter.id; // Simple check: is this the LAST read chapter?
+                // Or better: check if this chapter is "older" or equal to last read chapter if we had order.
+                // For now, let's just mark the specific last read chapter or maybe all if we had a list.
+                // Since readingHistory is { comicId: lastChapterId }, we only know the LAST one.
+
+                return (
+                  <Link
+                    key={chapter.id}
+                    to={`/read/${comic.id}/${chapter.id}`}
+                    className={`detail-page__chapter-link ${
+                      isRead ? "opacity-60 bg-gray-100 dark:bg-gray-800" : ""
+                    }`}
+                  >
+                    <span className="detail-page__chapter-title">
+                      {chapter.title}
+                    </span>
+                    {isRead && (
+                      <span className="text-xs font-medium text-primary ml-2 bg-primary/10 px-2 py-0.5 rounded">
+                        Terakhir Dibaca
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <p className="detail-page__no-chapters">
@@ -202,6 +232,9 @@ export default function DetailPage() {
             </p>
           )}
         </div>
+
+        {/* Comment Section */}
+        <CommentSection comicId={comic.id} />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react"; // Tambah useRef
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
+import { comics } from "../data/comics"; // Import comics data
 import "../styles/Navbar.css";
 
 export default function Navbar() {
