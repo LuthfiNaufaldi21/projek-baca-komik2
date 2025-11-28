@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { comics as fallbackComics } from "../data/comics";
 import { getAllComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
@@ -7,7 +6,7 @@ import FilterBar from "../components/FilterBar";
 import "../styles/DaftarKomikPage.css";
 
 export default function DaftarKomikPage() {
-  const [comics, setComics] = useState(fallbackComics);
+  const [comics, setComics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilters, setActiveFilters] = useState([]);
@@ -19,24 +18,10 @@ export default function DaftarKomikPage() {
       try {
         setIsLoading(true);
         const data = await getAllComics();
-
-        if (data && data.length > 0) {
-          // Map backend data to expected format
-          const mappedData = data.map((comic, index) => ({
-            id: comic.id || index + 1,
-            title: comic.title || comic.name,
-            image: comic.thumbnail || comic.image,
-            rating: comic.rating || 4.5,
-            genre: comic.genre || "Fantasy",
-            type: comic.type || "Manga",
-            tags: comic.tags || [],
-            slug: comic.slug || comic.apiDetailLink?.split("/").pop(),
-          }));
-          setComics(mappedData);
-        }
+        setComics(data);
       } catch (error) {
         console.error("Error fetching comics:", error);
-        // Keep using fallback data
+        // Keep empty or previously loaded data
       } finally {
         setIsLoading(false);
       }

@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { getComicBySlug } from "../services/comicService";
+import { get } from "../services/api";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
@@ -10,15 +11,31 @@ export default function DetailPage() {
   const [isLoadingBookmark, setIsLoadingBookmark] = useState(false);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
+  const [liveChapters, setLiveChapters] = useState([]);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
         setLoading(true);
-        const data = await getComicBySlug(id);
+        // Get basic info from local dummy
+        const localData = await getComicBySlug(id);
         if (!mounted) return;
-        setDetail(data);
+
+        // Try to fetch live chapter list from backend
+        try {
+          const liveData = await get(`/detail-komik/${id}`);
+          if (liveData && liveData.chapters) {
+            setLiveChapters(liveData.chapters);
+          }
+        } catch (err) {
+          console.log(
+            "Could not fetch live chapters, using local:",
+            err.message
+          );
+        }
+
+        setDetail(localData);
       } catch (e) {
         console.error("Failed to load detail:", e);
         setDetail(null);
@@ -81,13 +98,21 @@ export default function DetailPage() {
     );
   }
 
-  const cover = detail?.thumbnail;
+  const cover = detail?.cover || detail?.thumbnail || detail?.image;
   const title = detail?.title || "";
-  const author = detail?.info?.Pengarang || detail?.info?.Author || "-";
-  const rating = detail?.info?.Rating || "-";
-  const tags = detail?.genres || [];
-  const synopsis = detail?.sinopsis || detail?.description || "";
-  const chapters = Array.isArray(detail?.chapters) ? detail.chapters : [];
+  const author =
+    detail?.author || detail?.info?.Pengarang || detail?.info?.Author || "-";
+  const rating = detail?.rating || detail?.info?.Rating || "-";
+  const tags = detail?.tags || detail?.genres || [];
+  const synopsis =
+    detail?.synopsis || detail?.sinopsis || detail?.description || "";
+  // Use live chapters if available, fallback to local dummy
+  const chapters =
+    liveChapters.length > 0
+      ? liveChapters
+      : Array.isArray(detail?.chapters)
+      ? detail.chapters
+      : [];
 
   return (
     <div className="detail-page__container">
@@ -257,17 +282,29 @@ export default function DetailPage() {
 
           {chapters && chapters.length > 0 ? (
             <div className="detail-page__chapters-list">
-              {chapters.map((chapter, idx) => (
-                <Link
-                  key={chapter.apiLink || idx}
-                  to={`/read/${detail?.slug || id}/${chapter.chapterNumber}`}
-                  className="detail-page__chapter-link"
-                >
-                  <span className="detail-page__chapter-title">
-                    {chapter.title || `Chapter ${chapter.chapterNumber}`}
-                  </span>
-                </Link>
-              ))}
+              {chapters.map((chapter, idx) => {
+                // Use chapterNumber from API or fallback to index
+                const chapterNum =
+                  chapter.chapterNumber || chapter.id || idx + 1;
+                // Always encode apiLink to avoid path conflicts in URL
+                const linkParam = chapter.apiLink
+                  ? encodeURIComponent(chapter.apiLink)
+                  : chapterNum;
+
+                return (
+                  <Link
+                    key={chapter.id || chapter.apiLink || idx}
+                    to={`/read/${
+                      detail?.slug || detail?.id || id
+                    }/${linkParam}`}
+                    className="detail-page__chapter-link"
+                  >
+                    <span className="detail-page__chapter-title">
+                      {chapter.title || `Chapter ${chapterNum}`}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <p className="detail-page__no-chapters">

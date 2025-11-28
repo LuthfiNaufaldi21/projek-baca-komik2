@@ -1,16 +1,29 @@
-import { useState } from "react";
-import { comics } from "../data/comics";
+import { useState, useEffect } from "react";
+import { getComicsByType } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
 import "../styles/CategoryPage.css";
 
 export default function ManhwaPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [filteredComics, setFilteredComics] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
-  const filteredComics = comics.filter((comic) =>
-    comic.tags?.includes("Manhwa")
-  );
+  useEffect(() => {
+    const fetchComics = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getComicsByType("manhwa");
+        setFilteredComics(data);
+      } catch (error) {
+        console.error("Error fetching manhwa:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchComics();
+  }, []);
 
   const totalPages = Math.ceil(filteredComics.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -29,7 +42,9 @@ export default function ManhwaPage() {
         Koleksi Manhwa Korea ({filteredComics.length} komik)
       </p>
 
-      {filteredComics.length === 0 ? (
+      {isLoading ? (
+        <div className="category-page__loading">Loading...</div>
+      ) : filteredComics.length === 0 ? (
         <p className="category-page__empty">Tidak ada manhwa saat ini.</p>
       ) : (
         <>

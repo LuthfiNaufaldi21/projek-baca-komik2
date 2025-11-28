@@ -41,10 +41,42 @@ const getBacaChapter = async (req, res) => {
     let baseUsed = URL_BASE;
     let lastError = null;
 
-    // Try both hosts with constructed chapter path
-    for (const host of HOSTS) {
+    // Check if chapter param is a full encoded URL (starts with http)
+    let chapterUrl = null;
+    if (chapter.startsWith("http://") || chapter.startsWith("https://")) {
+      // chapter is already a full URL from apiLink
+      chapterUrl = chapter;
+    } else {
+      // Traditional approach: construct URL from slug and chapter number
+      // Try both hosts with constructed chapter path
+      for (const host of HOSTS) {
+        try {
+          chapterUrl = `${host}${slug}-chapter-${chapter}/`;
+          const resp = await axios.get(chapterUrl, {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+              Accept:
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+              "Accept-Language": "en-US,en;q=0.5",
+              Referer: "https://komiku.id/",
+              "Cache-Control": "public, max-age=3600",
+            },
+            timeout: 10000,
+          });
+          data = resp.data;
+          baseUsed = host;
+          break;
+        } catch (err) {
+          lastError = err;
+          // continue to next host
+        }
+      }
+    }
+
+    // If we have a full URL, try to fetch it directly
+    if (chapterUrl && chapterUrl.startsWith("http") && !data) {
       try {
-        const chapterUrl = `${host}${slug}-chapter-${chapter}/`;
         const resp = await axios.get(chapterUrl, {
           headers: {
             "User-Agent":
@@ -58,11 +90,13 @@ const getBacaChapter = async (req, res) => {
           timeout: 10000,
         });
         data = resp.data;
-        baseUsed = host;
-        break;
+        baseUsed = chapterUrl.startsWith("https://komiku.id")
+          ? "https://komiku.id/"
+          : chapterUrl.startsWith("https://komiku.org")
+          ? "https://komiku.org/"
+          : URL_BASE;
       } catch (err) {
         lastError = err;
-        // continue to next host
       }
     }
 

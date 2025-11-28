@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { comics as fallbackComics } from "../data/comics";
 import { getPopularComics, getLatestComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import HeroSlider from "../components/HeroSlider";
 import "../styles/HomePage.css";
 
 export default function HomePage() {
-  const [featuredComics, setFeaturedComics] = useState(
-    fallbackComics.slice(0, 5)
-  );
-  const [latestComics, setLatestComics] = useState(fallbackComics.slice(0, 10));
+  const [featuredComics, setFeaturedComics] = useState([]);
+  const [latestComics, setLatestComics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -18,35 +15,13 @@ export default function HomePage() {
       try {
         setIsLoading(true);
 
-        // Fetch popular comics for featured section
+        // Fetch popular comics for featured section (local service)
         const popular = await getPopularComics();
-        if (popular && popular.length > 0) {
-          // Map backend data to expected format
-          const mappedPopular = popular.slice(0, 5).map((comic, index) => ({
-            id: index + 1,
-            title: comic.title || comic.name,
-            image: comic.thumbnail || comic.image,
-            rating: 4.5,
-            slug: comic.slug || comic.apiDetailLink?.split("/").pop(),
-          }));
-          setFeaturedComics(mappedPopular);
-        }
+        setFeaturedComics(popular.slice(0, 5));
 
         // Fetch latest comics
         const latest = await getLatestComics();
-        if (latest && latest.length > 0) {
-          // Map backend data to expected format
-          const mappedLatest = latest.slice(0, 10).map((comic, index) => ({
-            id: index + 1,
-            title: comic.title || comic.name,
-            image: comic.thumbnail || comic.image,
-            rating: 4.5,
-            genre: comic.genre || "Fantasy",
-            type: comic.type || "Manga",
-            slug: comic.slug || comic.apiDetailLink?.split("/").pop(),
-          }));
-          setLatestComics(mappedLatest);
-        }
+        setLatestComics(latest.slice(0, 10));
       } catch (error) {
         console.error("Error fetching comics:", error);
         // Keep using fallback data

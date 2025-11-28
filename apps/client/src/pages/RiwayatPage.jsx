@@ -38,12 +38,44 @@ export default function RiwayatPage() {
         const comic = comics.find((c) => c.id === comicId);
         if (!comic) return null;
 
-        const lastChapter = comic.chapters?.find((ch) => ch.id === chapterId);
+        // Parse chapter info from chapterId
+        // chapterId could be: number, /baca-chapter/slug/num, or full URL
+        let chapterInfo = "Chapter Terakhir";
+        let displayChapterId = chapterId;
+
+        try {
+          if (typeof chapterId === "string") {
+            if (chapterId.startsWith("/baca-chapter/")) {
+              // Extract chapter number from path like /baca-chapter/one-piece/1133
+              const parts = chapterId.split("/");
+              const chapterNum = parts[parts.length - 1];
+              chapterInfo = `Chapter ${chapterNum}`;
+              displayChapterId = chapterId;
+            } else if (chapterId.startsWith("http")) {
+              // Extract from URL
+              const urlParts = chapterId.split("/");
+              const lastPart =
+                urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+              const match = lastPart.match(/chapter[_-]?(\d+)/i);
+              chapterInfo = match ? `Chapter ${match[1]}` : "Chapter Terakhir";
+              displayChapterId = chapterId;
+            } else {
+              // Plain chapter number or ID
+              chapterInfo = `Chapter ${chapterId}`;
+              displayChapterId = chapterId;
+            }
+          } else {
+            chapterInfo = `Chapter ${chapterId}`;
+            displayChapterId = chapterId;
+          }
+        } catch (e) {
+          console.error("Error parsing chapter info:", e);
+        }
 
         return {
           ...comic,
-          lastReadChapter: lastChapter?.title || "Chapter Terhapus",
-          lastReadChapterId: chapterId,
+          lastReadChapter: chapterInfo,
+          lastReadChapterId: displayChapterId,
         };
       })
       .filter(Boolean);
@@ -85,22 +117,32 @@ export default function RiwayatPage() {
       ) : (
         <>
           <div className="riwayat-page__grid">
-            {currentComics.map((comic) => (
-              <div key={comic.id} className="riwayat-page__card-wrapper">
-                <ComicCard comic={comic} />
-                
-                {/* Info Chapter Terakhir */}
-                <Link
-                  to={`/read/${comic.id}/${comic.lastReadChapterId}`}
-                  className="riwayat-page__info"
-                >
-                  <FiClock className="riwayat-page__info-icon" />
-                  <span className="riwayat-page__info-text">
-                    {comic.lastReadChapter}
-                  </span>
-                </Link>
-              </div>
-            ))}
+            {currentComics.map((comic) => {
+              // Encode chapterId if it's a path or URL to avoid routing issues
+              const encodedChapterId =
+                typeof comic.lastReadChapterId === "string" &&
+                (comic.lastReadChapterId.startsWith("/") ||
+                  comic.lastReadChapterId.startsWith("http"))
+                  ? encodeURIComponent(comic.lastReadChapterId)
+                  : comic.lastReadChapterId;
+
+              return (
+                <div key={comic.id} className="riwayat-page__card-wrapper">
+                  <ComicCard comic={comic} />
+
+                  {/* Info Chapter Terakhir */}
+                  <Link
+                    to={`/read/${comic.id}/${encodedChapterId}`}
+                    className="riwayat-page__info"
+                  >
+                    <FiClock className="riwayat-page__info-icon" />
+                    <span className="riwayat-page__info-text">
+                      {comic.lastReadChapter}
+                    </span>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
 
           <Pagination

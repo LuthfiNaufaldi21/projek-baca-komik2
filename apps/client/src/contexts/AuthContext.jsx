@@ -205,6 +205,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUserData = async () => {
+    if (!isLoggedIn) return;
+
+    console.log("🔄 [AuthContext] Manually refreshing user data...");
+    try {
+      const freshUser = await authService.getCurrentUser();
+      setUser(freshUser);
+      console.log("✅ [AuthContext] User data refreshed successfully");
+      return freshUser;
+    } catch (error) {
+      console.error("❌ [AuthContext] Error refreshing user data:", error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     isLoggedIn,
@@ -216,6 +231,7 @@ export const AuthProvider = ({ children }) => {
     updateReadingHistory,
     getReadingHistory,
     updateProfile,
+    refreshUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

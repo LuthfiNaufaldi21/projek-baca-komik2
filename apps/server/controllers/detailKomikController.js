@@ -236,12 +236,27 @@ async function resolveAndFetchDetailBySlug(slug) {
 
   const buildUrl = (host, s) => `${host}manga/${s}/`;
 
+  // Slug mapping for known comics that don't match our dummy data slug
+  const slugMapping = {
+    "solo-leveling": "solo-leveling-id",
+    "jujutsu-kaisen": "jujutsu-kaisen-indo",
+    "attack-on-titan": "shingeki-no-kyojin",
+    "the-beginning-after-the-end": "the-beginning-after-the-end",
+    tbate: "the-beginning-after-the-end", // Alias for TBATE
+    "my-hero-academia": "boku-no-hero-academia-indonesia",
+    "demon-slayer": "kimetsu-no-yaiba-indonesia",
+    "battle-through-the-heavens": "51231-battle-through-the-heavens",
+  };
+
+  // Apply slug mapping if exists
+  const actualSlug = slugMapping[slug] || slug;
+
   let lastError = null;
 
-  // 1) Try both hosts with the incoming slug as-is
+  // 1) Try both hosts with the mapped slug
   for (const host of hosts) {
     try {
-      const url = buildUrl(host, slug);
+      const url = buildUrl(host, actualSlug);
       return await scrapeKomikDetail(url);
     } catch (err) {
       lastError = err;
