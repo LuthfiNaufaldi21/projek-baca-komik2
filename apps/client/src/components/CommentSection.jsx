@@ -3,6 +3,51 @@ import { useAuth } from "../hooks/useAuth";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import "../styles/CommentSection.css";
 
+// Helper functions for recursive updates
+const addReplyRecursively = (comments, targetId, newReply) => {
+  return comments.map((comment) => {
+    if (comment.id === targetId) {
+      return { ...comment, replies: [...(comment.replies || []), newReply] };
+    }
+    if (comment.replies && comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: addReplyRecursively(comment.replies, targetId, newReply),
+      };
+    }
+    return comment;
+  });
+};
+
+const editCommentRecursively = (comments, targetId, newText) => {
+  return comments.map((comment) => {
+    if (comment.id === targetId) {
+      return { ...comment, text: newText };
+    }
+    if (comment.replies && comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: editCommentRecursively(comment.replies, targetId, newText),
+      };
+    }
+    return comment;
+  });
+};
+
+const deleteCommentRecursively = (comments, targetId) => {
+  return comments
+    .filter((c) => c.id !== targetId)
+    .map((comment) => {
+      if (comment.replies && comment.replies.length > 0) {
+        return {
+          ...comment,
+          replies: deleteCommentRecursively(comment.replies, targetId),
+        };
+      }
+      return comment;
+    });
+};
+
 export default function CommentSection({ comicId }) {
   const { user, isLoggedIn } = useAuth();
   const [comments, setComments] = useState([]);
@@ -46,27 +91,12 @@ export default function CommentSection({ comicId }) {
     setNewComment("");
   };
 
-  const handleDelete = (commentId, parentId = null) => {
+  const handleDelete = (commentId) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus komentar ini?"))
       return;
 
-    if (parentId) {
-      // Delete reply
-      const updatedComments = comments.map((c) => {
-        if (c.id === parentId) {
-          return {
-            ...c,
-            replies: c.replies.filter((r) => r.id !== commentId),
-          };
-        }
-        return c;
-      });
-      updateLocalStorage(updatedComments);
-    } else {
-      // Delete top-level comment
-      const updatedComments = comments.filter((c) => c.id !== commentId);
-      updateLocalStorage(updatedComments);
-    }
+    const updatedComments = deleteCommentRecursively(comments, commentId);
+    updateLocalStorage(updatedComments);
   };
 
   const startEdit = (comment) => {
@@ -75,30 +105,15 @@ export default function CommentSection({ comicId }) {
     setReplyingId(null);
   };
 
-  const saveEdit = (commentId, parentId = null) => {
+  const saveEdit = (commentId) => {
     if (!editText.trim()) return;
 
-    if (parentId) {
-      // Edit reply
-      const updatedComments = comments.map((c) => {
-        if (c.id === parentId) {
-          return {
-            ...c,
-            replies: c.replies.map((r) =>
-              r.id === commentId ? { ...r, text: editText } : r
-            ),
-          };
-        }
-        return c;
-      });
-      updateLocalStorage(updatedComments);
-    } else {
-      // Edit top-level comment
-      const updatedComments = comments.map((c) =>
-        c.id === commentId ? { ...c, text: editText } : c
-      );
-      updateLocalStorage(updatedComments);
-    }
+    const updatedComments = editCommentRecursively(
+      comments,
+      commentId,
+      editText
+    );
+    updateLocalStorage(updatedComments);
     setEditingId(null);
     setEditText("");
   };
@@ -119,18 +134,10 @@ export default function CommentSection({ comicId }) {
       avatar: user?.avatar,
       text: replyText,
       date: new Date().toISOString(),
+      replies: [],
     };
 
-    const updatedComments = comments.map((c) => {
-      if (c.id === parentId) {
-        return {
-          ...c,
-          replies: [...(c.replies || []), reply],
-        };
-      }
-      return c;
-    });
-
+    const updatedComments = addReplyRecursively(comments, parentId, reply);
     updateLocalStorage(updatedComments);
     setReplyingId(null);
     setReplyText("");
@@ -144,7 +151,7 @@ export default function CommentSection({ comicId }) {
     });
   };
 
-  const renderCommentItem = (comment, parentId = null) => {
+  const renderCommentItem = (comment) => {
     const isEditing = editingId === comment.id;
     const isReplying = replyingId === comment.id;
     const isOwner = user && user.email === comment.userId;
@@ -190,7 +197,7 @@ export default function CommentSection({ comicId }) {
                     Batal
                   </button>
                   <button
-                    onClick={() => saveEdit(comment.id, parentId)}
+                    onClick={() => saveEdit(comment.id)}
                     className="comment-item__save-btn"
                   >
                     Simpan
@@ -204,7 +211,7 @@ export default function CommentSection({ comicId }) {
             {/* Actions: Reply, Edit, Delete */}
             {!isEditing && (
               <div className="comment-item__actions">
-                {isLoggedIn && !parentId && (
+                {isLoggedIn && (
                   <button
                     onClick={() => startReply(comment.id)}
                     className="comment-item__action-btn"
@@ -221,7 +228,7 @@ export default function CommentSection({ comicId }) {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(comment.id, parentId)}
+                      onClick={() => handleDelete(comment.id)}
                       className="comment-item__action-btn comment-item__action-btn--delete"
                     >
                       Hapus
@@ -263,9 +270,7 @@ export default function CommentSection({ comicId }) {
         {/* Render Replies */}
         {comment.replies && comment.replies.length > 0 && (
           <div className="comment-item__replies">
-            {comment.replies.map((reply) =>
-              renderCommentItem(reply, comment.id)
-            )}
+            {comment.replies.map((reply) => renderCommentItem(reply))}
           </div>
         )}
       </div>
