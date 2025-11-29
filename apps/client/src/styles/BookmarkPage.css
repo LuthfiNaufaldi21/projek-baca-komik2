@@ -1,0 +1,54 @@
+/* src/styles/BookmarkPage.css */
+
+.bookmark-page__container {
+  /* min-h-[60vh] menjaga agar halaman tidak memendek jelek saat kosong */
+  @apply max-w-7xl mx-auto px-4 py-8 min-h-[60vh];
+}
+
+/* Tampilan Belum Login */
+.bookmark-page__auth-required {
+  @apply flex flex-col items-center justify-center py-20 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700;
+}
+
+.bookmark-page__auth-title {
+  @apply text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2;
+}
+
+.bookmark-page__auth-link {
+  @apply px-6 py-2.5 mt-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all shadow-lg font-medium inline-block;
+}
+
+/* Header */
+.bookmark-page__header {
+  @apply mb-8 border-b border-gray-200 dark:border-gray-700 pb-4;
+}
+
+.bookmark-page__title {
+  @apply text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2;
+}
+
+.bookmark-page__count {
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+/* Tampilan Kosong (Empty State) */
+.bookmark-page__empty {
+  @apply flex flex-col items-center justify-center py-20 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700;
+}
+
+.bookmark-page__empty-icon {
+  @apply w-16 h-16 text-gray-300 dark:text-gray-600 mb-4;
+}
+
+.bookmark-page__empty-text {
+  @apply text-lg text-gray-500 dark:text-gray-400 mb-6;
+}
+
+.bookmark-page__browse-button {
+  @apply px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all shadow-lg font-medium;
+}
+
+/* Grid */
+.bookmark-page__grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5;
+}
