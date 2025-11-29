@@ -1,35 +1,15 @@
 /* BookmarkPage Styles */
 
-.bookmark-page__auth-container {
-  @apply min-h-[60vh] flex items-center justify-center px-4;
-}
-
-.bookmark-page__auth-card {
-  @apply max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center border border-gray-100 dark:border-gray-700;
-}
-
-.bookmark-page__auth-icon {
-  @apply w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center text-primary;
-}
-
-.bookmark-page__auth-icon svg {
-  @apply w-10 h-10;
+.bookmark-page__auth-required {
+  @apply text-center py-12;
 }
 
 .bookmark-page__auth-title {
-  @apply text-2xl font-bold text-gray-900 dark:text-white mb-3;
+  @apply text-3xl font-bold text-gray-700 dark:text-gray-200 mb-4;
 }
 
-.bookmark-page__auth-desc {
-  @apply text-gray-600 dark:text-gray-400 mb-8 leading-relaxed;
-}
-
-.bookmark-page__auth-button {
-  @apply inline-block w-full py-3 px-6 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl transition-all transform hover:-translate-y-0.5 shadow-lg shadow-primary/30 mb-6;
-}
-
-.bookmark-page__auth-footer {
-  @apply text-sm text-gray-500 dark:text-gray-400;
+.bookmark-page__auth-link {
+  @apply text-primary hover:underline;
 }
 
 .bookmark-page__title {

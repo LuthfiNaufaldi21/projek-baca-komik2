@@ -13,38 +13,13 @@ export default function BookmarkPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className="bookmark-page__auth-container">
-        <div className="bookmark-page__auth-card">
-          <div className="bookmark-page__auth-icon">
-            <svg
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-              />
-            </svg>
-          </div>
-          <h2 className="bookmark-page__auth-title">Simpan Komik Favoritmu!</h2>
-          <p className="bookmark-page__auth-desc">
-            Login untuk mengakses bookmark dan melanjutkan bacaanmu dari
-            perangkat mana saja.
-          </p>
-          <Link to="/login" className="bookmark-page__auth-button">
-            Login Sekarang
-          </Link>
-          <p className="bookmark-page__auth-footer">
-            Belum punya akun?{" "}
-            <Link to="/login" className="text-primary hover:underline">
-              Daftar disini
-            </Link>
-          </p>
-        </div>
+      <div className="bookmark-page__auth-required">
+        <h2 className="bookmark-page__auth-title">
+          Anda harus login terlebih dahulu
+        </h2>
+        <Link to="/login" className="bookmark-page__auth-link">
+          Klik di sini untuk login
+        </Link>
       </div>
     );
   }
