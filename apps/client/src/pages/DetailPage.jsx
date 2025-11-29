@@ -3,15 +3,26 @@ import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { getComicBySlug } from "../services/comicService";
 import { get } from "../services/api";
+import Breadcrumbs from "../components/Breadcrumbs";
+import CommentSection from "../components/CommentSection";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
   const { id } = useParams(); // treat as slug
-  const { isBookmarked, addBookmark, removeBookmark, isLoggedIn } = useAuth();
+  const {
+    isBookmarked,
+    addBookmark,
+    removeBookmark,
+    isLoggedIn,
+    getReadingHistory,
+  } = useAuth();
   const [isLoadingBookmark, setIsLoadingBookmark] = useState(false);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
   const [liveChapters, setLiveChapters] = useState([]);
+
+  const readingHistory = getReadingHistory();
+  const lastReadChapterId = readingHistory[id];
 
   useEffect(() => {
     let mounted = true;
@@ -114,8 +125,15 @@ export default function DetailPage() {
       ? detail.chapters
       : [];
 
+  const breadcrumbItems = [
+    { label: "Daftar Komik", to: "/daftar-komik" },
+    { label: detail?.title || "Loading...", to: null },
+  ];
+
   return (
     <div className="detail-page__container">
+      <Breadcrumbs items={breadcrumbItems} />
+
       {/* Hero Banner Background */}
       <div className="detail-page__hero-banner">
         <div
@@ -291,17 +309,31 @@ export default function DetailPage() {
                   ? encodeURIComponent(chapter.apiLink)
                   : chapterNum;
 
+                // Check if this is the last read chapter
+                // We compare with both apiLink and chapterNum to be safe
+                const isRead =
+                  lastReadChapterId &&
+                  (String(lastReadChapterId) === String(chapter.apiLink) ||
+                    String(lastReadChapterId) === String(chapterNum));
+
                 return (
                   <Link
                     key={chapter.id || chapter.apiLink || idx}
                     to={`/read/${
                       detail?.slug || detail?.id || id
                     }/${linkParam}`}
-                    className="detail-page__chapter-link"
+                    className={`detail-page__chapter-link ${
+                      isRead ? "opacity-60 bg-gray-100 dark:bg-gray-800" : ""
+                    }`}
                   >
                     <span className="detail-page__chapter-title">
                       {chapter.title || `Chapter ${chapterNum}`}
                     </span>
+                    {isRead && (
+                      <span className="text-xs font-medium text-primary ml-2 bg-primary/10 px-2 py-0.5 rounded">
+                        Terakhir Dibaca
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -312,6 +344,9 @@ export default function DetailPage() {
             </p>
           )}
         </div>
+
+        {/* Comment Section */}
+        <CommentSection comicId={detail?.id || id} />
       </div>
     </div>
   );

@@ -1,0 +1,108 @@
+.comment-section {
+  @apply mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700;
+}
+
+.comment-section__title {
+  @apply text-xl font-bold text-gray-900 dark:text-white mb-6;
+}
+
+.comment-section__form {
+  @apply mb-8;
+}
+
+.comment-section__input-wrapper {
+  @apply relative;
+}
+
+.comment-section__input {
+  @apply w-full p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-gray-800 dark:text-gray-200 resize-none;
+}
+
+.comment-section__submit {
+  @apply absolute bottom-3 right-3 px-4 py-1.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+.comment-section__auth-message {
+  @apply p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg text-center text-gray-600 dark:text-gray-400 mb-8 border border-dashed border-gray-300 dark:border-gray-700;
+}
+
+.comment-section__list {
+  @apply space-y-6;
+}
+
+.comment-item {
+  @apply flex gap-4;
+}
+
+.comment-item__avatar {
+  @apply flex-shrink-0 w-10 h-10 rounded-full overflow-hidden;
+}
+
+.comment-item__avatar img {
+  @apply w-full h-full object-cover;
+}
+
+.comment-item__initials {
+  @apply w-full h-full flex items-center justify-center text-white text-xs font-bold;
+}
+
+.comment-item__content {
+  @apply flex-grow;
+}
+
+.comment-item__header {
+  @apply flex items-center gap-2 mb-1;
+}
+
+.comment-item__username {
+  @apply font-semibold text-gray-900 dark:text-white text-sm;
+}
+
+.comment-item__date {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+.comment-item__text {
+  @apply text-gray-700 dark:text-gray-300 text-sm leading-relaxed;
+}
+
+.comment-section__empty {
+  @apply text-center text-gray-500 dark:text-gray-400 py-8 italic;
+}
+
+/* New Styles for Actions and Replies */
+.comment-item__actions {
+  @apply flex items-center gap-3 mt-2;
+}
+
+.comment-item__action-btn {
+  @apply text-xs font-medium text-gray-500 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0;
+}
+
+.comment-item__action-btn--delete {
+  @apply hover:text-red-500;
+}
+
+.comment-item__replies {
+  @apply mt-4 ml-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700 space-y-4;
+}
+
+.comment-item__reply-form {
+  @apply mt-3;
+}
+
+.comment-item__edit-form {
+  @apply mt-2;
+}
+
+.comment-item__edit-actions {
+  @apply flex items-center gap-2 mt-2 justify-end;
+}
+
+.comment-item__cancel-btn {
+  @apply px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors bg-transparent border border-gray-300 dark:border-gray-600 rounded;
+}
+
+.comment-item__save-btn {
+  @apply px-3 py-1 text-xs font-medium bg-primary text-white rounded hover:bg-primary-hover transition-colors border-none;
+}
