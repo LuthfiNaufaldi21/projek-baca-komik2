@@ -1,141 +1,130 @@
-/* ============================================================
-   READER PAGE — Tailwind + @apply
-   Maintain original look & feel
-   ============================================================ */
+/* ReaderPage.css */
 
-/* ---------- THEME VARIABLES ---------- */
-:root {
-  --text-title: #a09b9b;
-  --text-subtitle: #5a5a5f;
-  --text-body: #2f2f33;
-  --text-muted: #6c6c72;
-
-  --bg-main: #f5f5f7;
-  --bg-soft: #e7e7ea;
-
-  --btn-primary-light: linear-gradient(135deg, #4f8bff, #3568e6);
-  --btn-primary-dark: linear-gradient(135deg, #6a97ff, #4d71e6);
-  --btn-disabled: #bfc5d6;
-
-  --shadow-soft: rgba(0,0,0,0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-title: #ffffff;
-    --text-subtitle: #c8c8cf;
-    --text-body: #e2e2e6;
-    --text-muted: #9fa1a8;
-
-    --bg-main: #0f1115;
-    --bg-soft: #2a2d33;
-  }
-}
-
-/* ---------- BODY ---------- */
-body {
-  @apply font-sans transition-colors duration-200;
-  background: var(--bg-main);
-  color: var(--text-body);
-}
-
-/* ---------- WRAPPER ---------- */
+/* --- RESET & LAYOUT --- */
 .reader-page {
-  @apply w-full flex flex-col items-center pb-10;
+  /* relative dibutuhkan untuk positioning floating badge */
+  @apply min-h-screen bg-[#111] text-gray-200 flex flex-col relative pb-10;
 }
 
-/* ---------- HEADER ---------- */
+/* --- LOADING STATE --- */
+.reader-loading {
+  @apply min-h-screen flex flex-col items-center justify-center bg-[#111] text-white;
+}
+
+.spinner {
+  @apply w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4;
+}
+
+/* --- ERROR STATE --- */
+.reader-error {
+  @apply min-h-screen flex flex-col items-center justify-center bg-[#111] text-white gap-4;
+}
+
+.reader-btn-back {
+  @apply px-6 py-2 bg-primary rounded-lg hover:bg-primary-hover transition-colors text-white no-underline font-medium;
+}
+
+/* --- STICKY HEADER (Tombol Tutup) --- */
+.reader-header {
+  @apply sticky top-0 z-50 flex justify-between items-center px-4 py-3 
+  bg-[#1a1a1a]/95 backdrop-blur-sm border-b border-gray-800 shadow-lg transition-transform duration-300;
+}
+
+.reader-header__info {
+  @apply flex flex-col;
+}
+
+.reader-header__title {
+  @apply font-bold text-white text-sm md:text-base line-clamp-1;
+}
+
+.reader-header__subtitle {
+  @apply text-xs text-gray-400 block;
+}
+
+.reader-header__close {
+  @apply px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-bold text-white transition-colors;
+}
+
+/* --- CENTER TITLE (Bagian Judul di Tengah Halaman) --- */
+/* Class ini penting agar judul di atas gambar tidak berantakan */
 .reader-title-center {
   @apply text-center my-6 px-5;
 }
 
 .reader-title-center h1 {
-  @apply text-2xl font-bold mb-1 tracking-tight;
-  color: var(--text-title);
+  @apply text-2xl font-bold mb-1 tracking-tight text-white;
 }
 
 .reader-title-center p {
-  @apply text-base font-medium m-0 opacity-85;
-  color: var(--text-subtitle);
+  @apply text-base font-medium m-0 text-gray-400;
 }
 
-/* ---------- CONTENT ---------- */
+/* --- CONTENT IMAGES --- */
 .reader-content {
-  @apply w-full max-w-3xl flex flex-col items-center;
+  @apply w-full max-w-3xl mx-auto bg-black shadow-2xl min-h-screen;
 }
 
 .reader-image {
-  @apply w-full mb-3 rounded-lg shadow-md transition-opacity duration-300;
-  opacity: 0;
-  background: var(--bg-soft);
-  box-shadow: 0 4px 16px var(--shadow-soft);
+  @apply w-full h-auto block; /* block agar tidak ada celah antar gambar */
+  @apply bg-[#1a1a1a]; /* Placeholder color saat loading */
 }
 
-.reader-image[src] {
-  @apply opacity-100;
-}
-
-.reader-image:hover,
-.reader-image:active {
-  @apply opacity-100;
-  transform: none !important;
-}
-
-/* ---------- FOOTER ---------- */
+/* --- FOOTER NAVIGATION --- */
 .reader-footer {
-  @apply w-full mt-7 flex flex-col items-center;
+  @apply max-w-3xl mx-auto w-full px-4 py-8 mt-4;
 }
 
 .reader-nav-buttons {
-  @apply flex justify-center items-center gap-4 w-full max-w-3xl;
+  @apply flex gap-4 mb-6;
 }
 
-/* Prev/Next Chapter Button */
 .reader-nav-btn {
-  @apply px-6 py-3 rounded-lg border-none cursor-pointer text-white font-semibold text-sm shadow-md transition-opacity duration-200;
-  background: var(--btn-primary-light);
-  box-shadow: 0 4px 12px var(--shadow-soft);
-}
-
-@media (prefers-color-scheme: dark) {
-  .reader-nav-btn {
-    background: var(--btn-primary-dark);
-  }
-}
-
-.reader-nav-btn:hover:not(:disabled) {
-  @apply opacity-85;
+  @apply flex-1 py-3 rounded-lg font-bold transition-all duration-200 text-sm md:text-base text-center;
 }
 
 .reader-nav-btn:disabled {
-  @apply cursor-not-allowed shadow-none;
-  background: var(--btn-disabled);
+  @apply bg-gray-900 text-gray-600 cursor-not-allowed opacity-50;
+}
+
+.reader-nav-btn--prev {
+  @apply bg-gray-800 hover:bg-gray-700 text-white;
+}
+
+.reader-nav-btn--next {
+  @apply bg-primary hover:bg-primary-hover text-white shadow-lg transform active:scale-95;
 }
 
 .reader-footer__text {
-  @apply mt-3 text-sm opacity-90;
-  color: var(--text-body);
+  @apply text-center text-xs text-gray-500;
 }
 
-/* ---------- LOADING ---------- */
-.reader-loading {
-  @apply w-full flex flex-col items-center justify-center py-16 text-center;
-  color: var(--text-muted);
+/* --- FLOATING PROGRESS BADGE (Smart Badge) --- */
+.reader-progress-floating {
+  @apply fixed bottom-6 right-6 z-[60] w-12 h-12 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer; 
 }
 
-.spinner {
-  @apply w-10 h-10 mb-4 rounded-full border-4 border-gray-400 border-t-blue-500 animate-spin;
-  border-top-color: #4f8bff;
+.reader-progress-floating:hover { 
+  @apply scale-110 bg-gray-800; 
 }
 
-/* ---------- ERROR ---------- */
-.reader-error {
-  @apply p-12 text-center;
-  color: var(--text-body);
+.reader-progress-text { 
+  @apply text-[10px] font-bold text-white absolute; 
 }
 
-.reader-btn-back {
-  @apply mt-3 px-4 py-2 rounded-lg font-semibold text-white inline-block;
-  background: #4f8bff;
-  text-decoration: none;
+.reader-icon-arrow { 
+  @apply w-5 h-5 text-white absolute animate-bounce; 
+}
+
+.reader-progress-circle { 
+  @apply w-10 h-10 transform -rotate-90 pointer-events-none; 
+}
+
+.circle-bg { 
+  @apply fill-none stroke-gray-700 stroke-[2]; 
+}
+
+.circle-value { 
+  @apply fill-none stroke-primary stroke-[2] transition-all duration-150 ease-out; 
+  stroke-linecap: round; 
 }

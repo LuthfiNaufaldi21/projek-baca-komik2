@@ -18,12 +18,18 @@ export default function ReaderPage() {
   const [prevChapter, setPrevChapter] = useState(null);
   const [nextChapter, setNextChapter] = useState(null);
 
+  // --- [FITUR DARI MASTER] STATE UNTUK SMART BADGE ---
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  // -------------------------------------------
+
+  // Decode chapterId (menangani karakter encoding di URL)
   let decodedChapterId = chapterId;
   try {
     decodedChapterId = decodeURIComponent(chapterId);
   } catch {}
 
-  // Load detail komik + daftar chapter
+  // 1. Load detail komik + daftar chapter
   useEffect(() => {
     let mounted = true;
     const loadDetail = async () => {
@@ -75,13 +81,17 @@ export default function ReaderPage() {
     return () => (mounted = false);
   }, [comicId, decodedChapterId]);
 
-  // Load gambar
+  // 2. Load gambar
   useEffect(() => {
     let mounted = true;
     const loadImages = async () => {
       try {
         setLoading(true);
         window.scrollTo({ top: 0, behavior: "instant" });
+        
+        // --- [FITUR DARI MASTER] RESET PROGRESS SAAT GANTI CHAPTER ---
+        setScrollProgress(0);
+        // -----------------------------------------------------
 
         const data = await getChapterImages(comicId, decodedChapterId);
         if (!mounted) return;
@@ -110,12 +120,41 @@ export default function ReaderPage() {
     return () => (mounted = false);
   }, [comicId, decodedChapterId]);
 
+  // 3. Update History
   useEffect(() => {
     if (comicId && decodedChapterId) {
       updateReadingHistory(comicId, decodedChapterId);
     }
-  }, [comicId, decodedChapterId]);
+  }, [comicId, decodedChapterId, updateReadingHistory]);
 
+  // --- [FITUR DARI MASTER] LOGIC SCROLL LISTENER ---
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const currentScroll = window.scrollY;
+      if (totalHeight > 0) {
+        setScrollProgress(Math.min((currentScroll / totalHeight) * 100, 100));
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // Sembunyikan back-to-top global agar tidak tumpang tindih dengan smart badge
+    const style = document.createElement('style');
+    style.innerHTML = '.back-to-top { display: none !important; }';
+    document.head.appendChild(style);
+
+    return () => { 
+        window.removeEventListener("scroll", handleScroll);
+        document.head.removeChild(style);
+    };
+  }, []);
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  // ------------------------------------------
+
+  // Handler Navigasi
   const handleNavigate = (targetChapter) => {
     const linkParam = targetChapter.apiLink
       ? encodeURIComponent(targetChapter.apiLink)
@@ -144,8 +183,41 @@ export default function ReaderPage() {
 
   return (
     <div className="reader-page">
+      {/* --- [FITUR DARI MASTER] FLOATING SMART BADGE --- */}
+      <button 
+        onClick={handleScrollToTop}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="reader-progress-floating"
+      >
+        {isHovered ? (
+          <svg className="reader-icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7 7 7 M12 3v18" />
+          </svg>
+        ) : (
+          <span className="reader-progress-text">{Math.round(scrollProgress)}%</span>
+        )}
+        <svg className="reader-progress-circle" viewBox="0 0 36 36">
+          <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path className="circle-value" strokeDasharray={`${scrollProgress}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+      </button>
+      {/* ----------------------------------------- */}
 
-      {/* === JUDUL DI ATAS, TENGAH === */}
+      {/* --- [FITUR DARI MASTER] Header Sticky (Tombol Tutup) --- */}
+      <header className="reader-header">
+        <div className="reader-header__info">
+          <h1 className="reader-header__title">{detail?.title || comicId}</h1>
+          <span className="reader-header__subtitle">
+            {currentChapter.title}
+          </span>
+        </div>
+        <Link to={`/detail/${comicId}`} className="reader-header__close">
+          ✕ Tutup
+        </Link>
+      </header>
+
+      {/* --- [LAYOUT DARI BRANCH BARU] JUDUL DI ATAS, TENGAH --- */}
       <div className="reader-title-center">
         <h1>{detail?.title || comicId}</h1>
         <p>{currentChapter.title}</p>

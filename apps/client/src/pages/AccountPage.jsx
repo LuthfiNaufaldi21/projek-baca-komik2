@@ -8,17 +8,17 @@ import {
   FiHeart,
   FiLogOut,
   FiMail,
-  FiLock,
+  FiTrash2,
   FiCamera,
   FiList,
   FiClock,
 } from "react-icons/fi";
-import EditProfileModal from "../components/EditProfileModal";
-import ChangePasswordModal from "../components/ChangePasswordModal";
+import EditProfileModalNew from "../components/EditProfileModalNew";
 import UploadAvatarModal from "../components/UploadAvatarModal";
 import ComicCard from "../components/ComicCard";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import * as formatDate from "../utils/formatDate";
+import * as authService from "../services/authService";
 import { comics } from "../data/comics";
 import "../styles/AccountPage.css";
 import accountImage from "../assets/images/account-img.jpg";
@@ -28,7 +28,6 @@ export default function AccountPage() {
     useAuth();
   const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   useEffect(() => {
@@ -52,9 +51,31 @@ export default function AccountPage() {
     }
   };
 
-  const handleChangePassword = () => {
-    // Modal will handle the API call
-    setShowPasswordModal(false);
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus akun?\n\nSemua data Anda termasuk riwayat bacaan dan bookmark akan dihapus secara permanen dan tidak dapat dikembalikan.\n\nKetik 'HAPUS' untuk melanjutkan."
+    );
+
+    if (!confirmed) return;
+
+    const confirmText = prompt(
+      'Ketik "HAPUS" untuk konfirmasi penghapusan akun:'
+    );
+
+    if (confirmText !== "HAPUS") {
+      alert("Penghapusan akun dibatalkan.");
+      return;
+    }
+
+    try {
+      await authService.deleteAccount();
+      alert("Akun Anda telah berhasil dihapus.");
+      logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert(error.message || "Gagal menghapus akun. Silakan coba lagi.");
+    }
   };
 
   const handleUploadAvatar = async () => {
@@ -193,6 +214,7 @@ export default function AccountPage() {
             <h2 className="account-page__title">
               {user?.username || "Pengguna"}
             </h2>
+            {user?.bio && <p className="account-page__bio">{user.bio}</p>}
             {user?.email && (
               <p className="account-page__email">
                 <FiMail className="account-page__email-icon" />
@@ -214,11 +236,11 @@ export default function AccountPage() {
               Edit Profil
             </button>
             <button
-              onClick={() => setShowPasswordModal(true)}
-              className="account-page__password-button"
+              onClick={handleDeleteAccount}
+              className="account-page__delete-button"
             >
-              <FiLock />
-              Ganti Password
+              <FiTrash2 />
+              Hapus Akun
             </button>
           </div>
         </div>
@@ -321,17 +343,10 @@ export default function AccountPage() {
       </div>
 
       {showEditModal && (
-        <EditProfileModal
+        <EditProfileModalNew
           user={user}
           onClose={() => setShowEditModal(false)}
           onSave={handleSaveProfile}
-        />
-      )}
-
-      {showPasswordModal && (
-        <ChangePasswordModal
-          onClose={() => setShowPasswordModal(false)}
-          onSave={handleChangePassword}
         />
       )}
 
