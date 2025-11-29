@@ -18,6 +18,7 @@
 
 .account-page__avatar-wrapper {
   position: relative;
+  @apply mb-3;
 }
 
 .account-page__avatar {
@@ -53,7 +54,11 @@
 }
 
 .account-page__bio {
-  @apply text-sm text-gray-200 max-w-2xl mb-2 leading-relaxed;
+  @apply text-sm text-gray-200 max-w-md mb-2 leading-relaxed;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .account-page__joined {
@@ -72,8 +77,8 @@
   @apply flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/30 font-medium;
 }
 
-.account-page__password-button {
-  @apply flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/30 font-medium;
+.account-page__delete-button {
+  @apply flex items-center gap-2 px-4 py-2 bg-red-500/20 backdrop-blur-sm text-white rounded-lg hover:bg-red-500/30 transition-all duration-200 border border-red-400/50 font-medium;
 }
 
 .account-page__content {
@@ -153,7 +158,7 @@
 }
 
 .account-page__history-card-wrapper {
-  @apply relative; 
+  @apply relative;
   /* Hapus 'group' dari sini jika sebelumnya ada, atau biarkan kosong */
 }
 

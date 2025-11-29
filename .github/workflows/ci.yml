@@ -1,0 +1,40 @@
+name: CI KomiKita Monorepo
+
+# Kapan action ini jalan?
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  # Job 1: Cek Kualitas Kode (Linting & Build)
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Ambil kodingan terbaru dari repo
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Siapkan Node.js versi terbaru
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # Otomatis cache node_modules biar cepat
+
+      # 3. Install Dependencies (Cukup sekali di root karena monorepo)
+      - name: Install Dependencies
+        run: npm ci
+
+      # 4. Cek Frontend (Build)
+      # Menggunakan flag -w untuk menargetkan workspace apps/client
+      - name: Build Frontend (Vite)
+        run: npm run build -w apps/client
+
+      # 5. Cek Backend (Optional: Linting atau Test)
+      # Backend Express biasanya tidak butuh 'build' kecuali pakai TypeScript
+      # Tapi kita bisa pastikan tidak ada syntax error
+      - name: Check Backend Syntax
+        run: node --check apps/server/index.js
