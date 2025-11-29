@@ -18,6 +18,11 @@ export default function ReaderPage() {
   const [prevChapter, setPrevChapter] = useState(null);
   const [nextChapter, setNextChapter] = useState(null);
 
+  // --- [FITUR BARU] STATE UNTUK SMART BADGE ---
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  // -------------------------------------------
+
   // Always try to decode chapterId (could be encoded path or URL)
   let decodedChapterId = chapterId;
   try {
@@ -99,6 +104,11 @@ export default function ReaderPage() {
       try {
         setLoading(true);
         window.scrollTo({ top: 0, behavior: "instant" });
+        
+        // --- [FITUR BARU] RESET PROGRESS SAAT GANTI CHAPTER ---
+        setScrollProgress(0);
+        // -----------------------------------------------------
+
         const data = await getChapterImages(comicId, decodedChapterId);
         if (!mounted) return;
         const imgs = Array.isArray(data?.images) ? data.images : [];
@@ -136,6 +146,33 @@ export default function ReaderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comicId, decodedChapterId]);
 
+  // --- [FITUR BARU] LOGIC SCROLL LISTENER ---
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const currentScroll = window.scrollY;
+      if (totalHeight > 0) {
+        setScrollProgress(Math.min((currentScroll / totalHeight) * 100, 100));
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // Hide default back-to-top button provided by App globally
+    const style = document.createElement('style');
+    style.innerHTML = '.back-to-top { display: none !important; }';
+    document.head.appendChild(style);
+
+    return () => { 
+        window.removeEventListener("scroll", handleScroll);
+        document.head.removeChild(style);
+    };
+  }, []);
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  // ------------------------------------------
+
   // Handler Navigasi
   const handleNavigate = (targetChapter) => {
     // Always encode apiLink to avoid path conflicts
@@ -171,6 +208,27 @@ export default function ReaderPage() {
 
   return (
     <div className="reader-page">
+      {/* --- [FITUR BARU] FLOATING SMART BADGE --- */}
+      <button 
+        onClick={handleScrollToTop}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="reader-progress-floating"
+      >
+        {isHovered ? (
+          <svg className="reader-icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7 7 7 M12 3v18" />
+          </svg>
+        ) : (
+          <span className="reader-progress-text">{Math.round(scrollProgress)}%</span>
+        )}
+        <svg className="reader-progress-circle" viewBox="0 0 36 36">
+          <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path className="circle-value" strokeDasharray={`${scrollProgress}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+      </button>
+      {/* ----------------------------------------- */}
+
       {/* Header Sticky */}
       <header className="reader-header">
         <div className="reader-header__info">

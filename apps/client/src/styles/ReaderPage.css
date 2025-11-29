@@ -76,3 +76,13 @@
 .reader-footer__text {
   @apply text-center text-xs text-gray-600;
 }
+
+.reader-progress-floating {
+  @apply fixed bottom-6 right-6 z-[60] w-12 h-12 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer; 
+}
+.reader-progress-floating:hover { @apply scale-110 bg-gray-800; }
+.reader-progress-text { @apply text-[10px] font-bold text-white absolute; }
+.reader-icon-arrow { @apply w-5 h-5 text-white absolute animate-bounce; }
+.reader-progress-circle { @apply w-10 h-10 transform -rotate-90 pointer-events-none; }
+.circle-bg { @apply fill-none stroke-gray-700 stroke-[2]; }
+.circle-value { @apply fill-none stroke-primary stroke-[2] transition-all duration-150 ease-out; stroke-linecap: round; }
