@@ -3,6 +3,7 @@ export const comics = [
     id: "solo-leveling",
     title: "Solo Leveling",
     author: "Chugong",
+    status: "Tamat",
     cover:
       "https://thumbor.prod.vidiocdn.com/LhjqB-5aarJcHer2t59usE2xXn8=/filters:quality(70)/vidio-media-production/uploads/image/source/49357/27d5f1.jpg",
     synopsis:
@@ -18,6 +19,7 @@ export const comics = [
     id: "komik-one-piece-indo",
     title: "One Piece",
     author: "Eiichiro Oda",
+    status: "Update Tiap Minggu",
     cover:
       "https://m.media-amazon.com/images/M/MV5BMTNjNGU4NTUtYmVjMy00YjRiLTkxMWUtNzZkMDNiYjZhNmViXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     synopsis:
@@ -30,13 +32,14 @@ export const comics = [
     id: "jujutsu-kaisen",
     title: "Jujutsu Kaisen",
     author: "Gege Akutami",
+    status: "Tamat",
     cover:
       "https://thumbor.prod.vidiocdn.com/w9gDKJuYqIooJcv5svHJOH-JGac=/filters:quality(70)/vidio-media-production/uploads/image/source/49405/0990e8.png",
     synopsis:
       "Yuji Itadori, seorang siswa SMA dengan kekuatan fisik luar biasa, menelan jari terkutuk untuk menyelamatkan temannya...",
     chapters: [
       {
-        id: "chapter-1", // ID ini harus sama dengan yang dicek di ReaderPage
+        id: "chapter-1",
         title: "Chapter 1: Ryomen Sukuna",
       },
     ],
@@ -47,6 +50,7 @@ export const comics = [
     id: "spy-x-family",
     title: "Spy x Family",
     author: "Tatsuya Endo",
+    status: "Update Tiap 2 Minggu",
     cover:
       "https://awsimages.detik.net.id/community/media/visual/2025/09/02/serial-anime-spy-x-family-season-3-1756791886541.webp?w=1200",
     synopsis:
@@ -59,6 +63,7 @@ export const comics = [
     id: "tower-of-god",
     title: "Tower of God",
     author: "S.I.U",
+    status: "Update Tiap Minggu",
     cover:
       "https://upload.wikimedia.org/wikipedia/id/7/7d/Tower_of_God_Volume_1_Cover.jpg",
     synopsis:
@@ -71,6 +76,7 @@ export const comics = [
     id: "attack-on-titan",
     title: "Attack on Titan",
     author: "Hajime Isayama",
+    status: "Tamat",
     cover: "https://posterspy.com/wp-content/uploads/2024/03/aot-poster-2.jpg",
     synopsis:
       "Di dunia di mana umat manusia hidup di dalam kota-kota yang dikelilingi oleh tembok besar sebagai pelindung dari Titan...",
@@ -82,6 +88,7 @@ export const comics = [
     id: "tbate",
     title: "The Beginning After The End",
     author: "TurtleMe",
+    status: "Update Tiap Minggu",
     cover:
       "https://us-a.tapas.io/sa/f7/16e8def2-901b-45ea-8d86-2aa4b05cc86b_z.jpg",
     synopsis:
@@ -94,6 +101,7 @@ export const comics = [
     id: "chainsaw-man",
     title: "Chainsaw Man",
     author: "Tatsuki Fujimoto",
+    status: "Update Tiap 2 Minggu",
     cover:
       "https://m.media-amazon.com/images/M/MV5BZmMzNGVhODktYmU5MS00MDg1LThlNTEtNTMyYTg5MDA0Njk4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     synopsis:
@@ -106,6 +114,7 @@ export const comics = [
     id: "omniscient-reader",
     title: "Omniscient Reader's Viewpoint",
     author: "SingShong",
+    status: "Update Tiap Minggu",
     cover:
       "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1602711402i/55673120.jpg",
     synopsis:
@@ -118,6 +127,7 @@ export const comics = [
     id: "my-hero-academia",
     title: "My Hero Academia",
     author: "Kohei Horikoshi",
+    status: "Tamat",
     cover:
       "https://imgc.allpostersimages.com/img/posters/trends-international-my-hero-academia-season-6-deku-key-art_u-l-q1t16tx0.jpg?artHeight=550&artPerspective=y&artWidth=550&background=ffffff",
     synopsis:
@@ -130,6 +140,7 @@ export const comics = [
     id: "demon-slayer",
     title: "Demon Slayer: Kimetsu no Yaiba",
     author: "Koyoharu Gotouge",
+    status: "Tamat",
     cover:
       "https://images-cdn.ubuy.co.id/634cbc08480a4356f856e6f3-clearly-uzui-tengen-and-his-wives-anime.jpg",
     synopsis:
@@ -142,6 +153,7 @@ export const comics = [
     id: "berserk",
     title: "Berserk",
     author: "Kentaro Miura",
+    status: "Update Tidak Tentu",
     cover:
       "https://images-cdn.ubuy.co.id/667d8d9aed488b1192747544-lugema-classic-anime-berserk-poster.jpg",
     synopsis:
@@ -154,6 +166,7 @@ export const comics = [
     id: "vinland-saga",
     title: "Vinland Saga",
     author: "Makoto Yukimura",
+    status: "Update Tiap Bulan",
     cover:
       "https://images-cdn.ubuy.co.id/634d1cae0ce5565a65234fe6-vinland-saga.jpg",
     synopsis:
@@ -166,6 +179,7 @@ export const comics = [
     id: "fullmetal-alchemist",
     title: "Fullmetal Alchemist",
     author: "Hiromu Arakawa",
+    status: "Tamat",
     cover: "https://m.media-amazon.com/images/I/71YYVENqPaL.jpg",
     synopsis:
       "Dua bersaudara, Edward dan Alphonse Elric, mencari Batu Bertuah untuk memulihkan tubuh mereka setelah eksperimen alkimia gagal.",
@@ -177,6 +191,7 @@ export const comics = [
     id: "death-note",
     title: "Death Note",
     author: "Tsugumi Ohba",
+    status: "Tamat",
     cover:
       "https://i.pinimg.com/originals/05/25/46/052546773e68724069963f851f30a2a8.jpg",
     synopsis:
@@ -189,6 +204,7 @@ export const comics = [
     id: "tales-of-demons-and-gods",
     title: "Tales of Demons and Gods",
     author: "Mad Snail",
+    status: "Update Tiap Minggu",
     cover:
       "https://m.media-amazon.com/images/I/81wDz65+NOL._AC_UF1000,1000_QL80_.jpg",
     synopsis:
@@ -201,6 +217,7 @@ export const comics = [
     id: "battle-through-the-heavens",
     title: "Battle Through the Heavens",
     author: "Tian Can Tu Dou",
+    status: "Update Tiap Minggu",
     cover:
       "https://cdn.kobo.com/book-images/659526c1-395f-4f9f-b319-c8dbd04a09b0/1200/1200/False/battle-through-the-heavens-t01.jpg",
     synopsis:
@@ -213,6 +230,7 @@ export const comics = [
     id: "soul-land",
     title: "Soul Land (Douluo Dalu)",
     author: "Tang Jia San Shao",
+    status: "Tamat",
     cover:
       "https://i.pinimg.com/736x/90/ee/43/90ee43b0b1e5a74d48d9194deb467e14.jpg",
     synopsis:
@@ -225,6 +243,7 @@ export const comics = [
     id: "martial-peak",
     title: "Martial Peak",
     author: "Momo",
+    status: "Tamat",
     cover:
       "https://i.pinimg.com/564x/34/71/ba/3471ba77970a7fcd02f397ff70a4949f.jpg",
     synopsis:
@@ -237,6 +256,7 @@ export const comics = [
     id: "apotheosis",
     title: "Apotheosis",
     author: "Ranzai Studio",
+    status: "Update Tiap Minggu",
     cover:
       "https://i.pinimg.com/736x/22/de/b6/22deb6d656c1c1b1caf2bd089b4618db.jpg",
     synopsis:
