@@ -1,6 +1,7 @@
-import { useNavigate, Link } from "react-router-dom"; // Tambah Import Link
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
+import { useToast } from "../hooks/useToast";
 import {
   FiEdit2,
   FiBookmark,
@@ -8,17 +9,17 @@ import {
   FiHeart,
   FiLogOut,
   FiMail,
-  FiTrash2,
+  FiLock,
   FiCamera,
   FiList,
   FiClock,
 } from "react-icons/fi";
-import EditProfileModalNew from "../components/EditProfileModalNew";
+import EditProfileModal from "../components/EditProfileModal";
+import ChangePasswordModal from "../components/ChangePasswordModal";
 import UploadAvatarModal from "../components/UploadAvatarModal";
 import ComicCard from "../components/ComicCard";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import * as formatDate from "../utils/formatDate";
-import * as authService from "../services/authService";
 import { comics } from "../data/comics";
 import "../styles/AccountPage.css";
 import accountImage from "../assets/images/account-img.jpg";
@@ -27,7 +28,11 @@ export default function AccountPage() {
   const { isLoggedIn, user, logout, updateProfile, refreshUserData } =
     useAuth();
   const navigate = useNavigate();
+
+  const { showToast } = useToast();
+
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   useEffect(() => {
@@ -38,7 +43,8 @@ export default function AccountPage() {
 
   const handleLogout = () => {
     logout();
-    alert("Anda telah logout.");
+    // PERUBAHAN DI SINI: Ganti alert jadi showToast
+    showToast("Anda berhasil logout. Sampai jumpa!", "info");
     navigate("/");
   };
 
@@ -46,36 +52,19 @@ export default function AccountPage() {
     try {
       await updateProfile(profileData);
       setShowEditModal(false);
+      showToast("Profil berhasil diperbarui!", "success");
     } catch (error) {
       console.error("Error updating profile:", error);
+      // TAMBAHAN: Notifikasi error
+      showToast("Gagal memperbarui profil.", "error");
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus akun?\n\nSemua data Anda termasuk riwayat bacaan dan bookmark akan dihapus secara permanen dan tidak dapat dikembalikan.\n\nKetik 'HAPUS' untuk melanjutkan."
-    );
-
-    if (!confirmed) return;
-
-    const confirmText = prompt(
-      'Ketik "HAPUS" untuk konfirmasi penghapusan akun:'
-    );
-
-    if (confirmText !== "HAPUS") {
-      alert("Penghapusan akun dibatalkan.");
-      return;
-    }
-
-    try {
-      await authService.deleteAccount();
-      alert("Akun Anda telah berhasil dihapus.");
-      logout();
-      navigate("/");
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      alert(error.message || "Gagal menghapus akun. Silakan coba lagi.");
-    }
+  const handleChangePassword = () => {
+    // Modal will handle the API call
+    setShowPasswordModal(false);
+    // Kita tambahkan notifikasi sukses di sini juga (opsional, karena di modal sudah ada)
+    // showToast("Password berhasil diubah!", "success"); 
   };
 
   const handleUploadAvatar = async () => {
@@ -83,8 +72,10 @@ export default function AccountPage() {
     try {
       await refreshUserData();
       console.log("✅ Avatar updated, user data refreshed");
+      showToast("Foto profil makin kece!", "success");
     } catch (error) {
       console.error("Failed to refresh user data after avatar upload:", error);
+      showToast("Gagal memuat ulang data profil.", "error");
     }
     setShowAvatarModal(false);
   };
@@ -214,7 +205,6 @@ export default function AccountPage() {
             <h2 className="account-page__title">
               {user?.username || "Pengguna"}
             </h2>
-            {user?.bio && <p className="account-page__bio">{user.bio}</p>}
             {user?.email && (
               <p className="account-page__email">
                 <FiMail className="account-page__email-icon" />
@@ -236,11 +226,11 @@ export default function AccountPage() {
               Edit Profil
             </button>
             <button
-              onClick={handleDeleteAccount}
-              className="account-page__delete-button"
+              onClick={() => setShowPasswordModal(true)}
+              className="account-page__password-button"
             >
-              <FiTrash2 />
-              Hapus Akun
+              <FiLock />
+              Ganti Password
             </button>
           </div>
         </div>
@@ -343,10 +333,17 @@ export default function AccountPage() {
       </div>
 
       {showEditModal && (
-        <EditProfileModalNew
+        <EditProfileModal
           user={user}
           onClose={() => setShowEditModal(false)}
           onSave={handleSaveProfile}
+        />
+      )}
+
+      {showPasswordModal && (
+        <ChangePasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onSave={handleChangePassword}
         />
       )}
 

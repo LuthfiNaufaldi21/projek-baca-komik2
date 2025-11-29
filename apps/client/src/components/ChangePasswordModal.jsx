@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FiX, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import * as authService from "../services/authService";
+import { useToast } from "../hooks/useToast";
 import "../styles/ChangePasswordModal.css";
 
 export default function ChangePasswordModal({ onClose }) {
@@ -18,6 +19,8 @@ export default function ChangePasswordModal({ onClose }) {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  
+  const { showToast } = useToast();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,13 +84,15 @@ export default function ChangePasswordModal({ onClose }) {
         formData.newPassword
       );
 
-      alert("Password berhasil diubah!");
+      showToast("Password berhasil diubah!", "success");
       onClose();
     } catch (err) {
       console.error("Change password error:", err);
+      const errorMsg = err.message || "Gagal mengubah password. Silakan coba lagi.";
       setErrors({
-        general: err.message || "Gagal mengubah password. Silakan coba lagi.",
+        general: errorMsg,
       });
+      showToast(errorMsg, "error");
     } finally {
       setIsLoading(false);
     }

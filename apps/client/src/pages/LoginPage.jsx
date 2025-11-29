@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import * as authService from "../services/authService";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useToast } from "../hooks/useToast"; 
 import "../styles/LoginPage.css";
 import loginImage from "../assets/images/login-img.jpg";
 
@@ -14,8 +15,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,37 +26,37 @@ export default function LoginPage() {
 
     try {
       if (isLoginView) {
-        // Login
+        // Login Logic
         if (!email || !password) {
-          alert("Email dan password harus diisi!");
+          showToast("Email dan password harus diisi!", "error");
           setIsLoading(false);
           return;
         }
 
         await login(email, password);
-        alert("Login Berhasil!");
+        showToast("Login Berhasil! Selamat datang.", "success");
         navigate("/akun");
       } else {
-        // Register
+        // Register Logic
         if (!email || !password || !confirmPassword) {
-          alert("Semua field harus diisi!");
+          showToast("Semua field harus diisi!", "error");
           setIsLoading(false);
           return;
         }
         if (password !== confirmPassword) {
-          alert("Password dan konfirmasi password tidak cocok!");
+          showToast("Password dan konfirmasi password tidak cocok!", "error");
           setIsLoading(false);
           return;
         }
 
         const username = email.split("@")[0];
         await authService.register({ username, email, password });
-        alert("Pendaftaran Berhasil! Anda sekarang sudah login.");
+        showToast("Pendaftaran Berhasil! Anda sekarang sudah login.", "success");
         navigate("/akun");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      alert(error.message || "Terjadi kesalahan. Silakan coba lagi.");
+      showToast(error.message || "Terjadi kesalahan. Silakan coba lagi.", "error");
     } finally {
       setIsLoading(false);
     }

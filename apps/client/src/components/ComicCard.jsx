@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast"; // IMPORT HOOK
 import "../styles/ComicCard.css";
 
 export default function ComicCard({ comic }) {
   const { isBookmarked, addBookmark, removeBookmark, isLoggedIn } = useAuth();
+  const { showToast } = useToast(); // PANGGIL HOOK
+
   // Prefer slug; fallback to derive from apiDetailLink; lastly use id
   const derivedSlug =
     comic?.slug ||
@@ -20,13 +23,16 @@ export default function ComicCard({ comic }) {
   const handleBookmarkClick = (e) => {
     e.preventDefault();
     if (!isLoggedIn) {
-      alert("Silakan login terlebih dahulu untuk menambahkan bookmark");
+      // GANTI ALERT JADI TOAST
+      showToast("Login dulu bro buat bookmark!", "error");
       return;
     }
     if (bookmarked) {
       removeBookmark(bookmarkKey);
+      showToast("Dihapus dari bookmark", "info"); // Feedback Halus
     } else {
       addBookmark(bookmarkKey);
+      showToast("Berhasil disimpan!", "success"); // Feedback Halus
     }
   };
 
@@ -37,18 +43,14 @@ export default function ComicCard({ comic }) {
         className="comic-card__link"
       >
         <div className="comic-card__image-wrapper">
-          {/* Main Image */}
           <img
             src={comic.cover || comic.image || comic.thumbnail}
             alt={comic.title}
             className="comic-card__image"
             loading="lazy"
           />
-
-          {/* Gradient Overlay */}
           <div className="comic-card__image-overlay"></div>
 
-          {/* Bookmark Button */}
           <div className="comic-card__bookmark-wrapper">
             <button
               onClick={handleBookmarkClick}
@@ -75,7 +77,6 @@ export default function ComicCard({ comic }) {
             </button>
           </div>
 
-          {/* Always visible bookmark indicator if bookmarked */}
           {bookmarked && (
             <div className="comic-card__bookmark-indicator">
               <div className="comic-card__bookmark-flag">
