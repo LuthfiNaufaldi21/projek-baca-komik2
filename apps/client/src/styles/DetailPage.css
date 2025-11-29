@@ -144,6 +144,22 @@
   @apply text-primary hover:underline;
 }
 
+.detail-page__loading {
+  @apply flex items-center justify-center min-h-screen;
+}
+
+.detail-page__loading-content {
+  @apply flex flex-col items-center gap-4;
+}
+
+.detail-page__loading-spinner {
+  @apply w-12 h-12 text-primary animate-spin;
+}
+
+.detail-page__loading-text {
+  @apply text-lg font-medium text-gray-700 dark:text-gray-300;
+}
+
 .detail-page__icon {
   @apply w-5 h-5;
   flex-shrink: 0;

@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom"; // Tambah Import Link
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
 import { useEffect, useState } from "react";
 import {
   FiEdit2,
@@ -13,8 +14,9 @@ import {
   FiList,
   FiClock,
 } from "react-icons/fi";
-import EditProfileModalNew from "../components/EditProfileModalNew";
+import EditProfileModal from "../components/EditProfileModal";
 import UploadAvatarModal from "../components/UploadAvatarModal";
+import ConfirmModal from "../components/ConfirmModal";
 import ComicCard from "../components/ComicCard";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import * as formatDate from "../utils/formatDate";
@@ -26,9 +28,13 @@ import accountImage from "../assets/images/account-img.jpg";
 export default function AccountPage() {
   const { isLoggedIn, user, logout, updateProfile, refreshUserData } =
     useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -37,8 +43,13 @@ export default function AccountPage() {
   }, [isLoggedIn, navigate]);
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
-    alert("Anda telah logout.");
+    showToast("Anda telah logout.", "info");
+    setShowLogoutConfirm(false);
     navigate("/");
   };
 
@@ -51,30 +62,26 @@ export default function AccountPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus akun?\n\nSemua data Anda termasuk riwayat bacaan dan bookmark akan dihapus secara permanen dan tidak dapat dikembalikan.\n\nKetik 'HAPUS' untuk melanjutkan."
-    );
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(true);
+  };
 
-    if (!confirmed) return;
-
-    const confirmText = prompt(
-      'Ketik "HAPUS" untuk konfirmasi penghapusan akun:'
-    );
-
-    if (confirmText !== "HAPUS") {
-      alert("Penghapusan akun dibatalkan.");
-      return;
-    }
-
+  const confirmDeleteAccount = async () => {
+    setIsDeleting(true);
     try {
       await authService.deleteAccount();
-      alert("Akun Anda telah berhasil dihapus.");
+      showToast("Akun Anda telah berhasil dihapus.", "success");
       logout();
+      setShowDeleteConfirm(false);
       navigate("/");
     } catch (error) {
       console.error("Error deleting account:", error);
-      alert(error.message || "Gagal menghapus akun. Silakan coba lagi.");
+      showToast(
+        error.message || "Gagal menghapus akun. Silakan coba lagi.",
+        "error"
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -343,7 +350,7 @@ export default function AccountPage() {
       </div>
 
       {showEditModal && (
-        <EditProfileModalNew
+        <EditProfileModal
           user={user}
           onClose={() => setShowEditModal(false)}
           onSave={handleSaveProfile}
@@ -357,6 +364,33 @@ export default function AccountPage() {
           onSave={handleUploadAvatar}
         />
       )}
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Logout"
+        message="Apakah Anda yakin ingin keluar dari akun Anda?"
+        confirmText="Ya, Logout"
+        cancelText="Batal"
+        type="info"
+      />
+
+      {/* Delete Account Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteAccount}
+        title="Hapus Akun"
+        message="⚠️ PERINGATAN! Semua data Anda termasuk riwayat bacaan dan bookmark akan dihapus secara permanen dan tidak dapat dikembalikan."
+        confirmText="Hapus Akun"
+        cancelText="Batal"
+        type="danger"
+        requireTyping={true}
+        typingText="HAPUS"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
 import * as authService from "../services/authService";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import "../styles/LoginPage.css";
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -25,35 +27,41 @@ export default function LoginPage() {
       if (isLoginView) {
         // Login
         if (!email || !password) {
-          alert("Email dan password harus diisi!");
+          showToast("Email dan password harus diisi!", "error");
           setIsLoading(false);
           return;
         }
 
         await login(email, password);
-        alert("Login Berhasil!");
+        showToast("Login Berhasil!", "success");
         navigate("/akun");
       } else {
         // Register
         if (!email || !password || !confirmPassword) {
-          alert("Semua field harus diisi!");
+          showToast("Semua field harus diisi!", "error");
           setIsLoading(false);
           return;
         }
         if (password !== confirmPassword) {
-          alert("Password dan konfirmasi password tidak cocok!");
+          showToast("Password dan konfirmasi password tidak cocok!", "error");
           setIsLoading(false);
           return;
         }
 
         const username = email.split("@")[0];
         await authService.register({ username, email, password });
-        alert("Pendaftaran Berhasil! Anda sekarang sudah login.");
+        showToast(
+          "Pendaftaran Berhasil! Anda sekarang sudah login.",
+          "success"
+        );
         navigate("/akun");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      alert(error.message || "Terjadi kesalahan. Silakan coba lagi.");
+      showToast(
+        error.message || "Terjadi kesalahan. Silakan coba lagi.",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }

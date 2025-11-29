@@ -1,15 +1,19 @@
 import { useState, useRef } from "react";
 import { FiX, FiCamera, FiUpload, FiTrash2 } from "react-icons/fi";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
+import { useToast } from "../hooks/useToast";
+import ConfirmModal from "./ConfirmModal";
 import * as authService from "../services/authService";
 import "../styles/UploadAvatarModal.css";
 
 export default function UploadAvatarModal({ user, onClose, onSave }) {
+  const { showToast } = useToast();
   const [preview, setPreview] = useState(user?.avatar || null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [wantsToRemove, setWantsToRemove] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -40,10 +44,27 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   };
 
   const handleRemovePhoto = () => {
+    if (user?.avatar) {
+      // If user has existing avatar, show confirmation
+      setShowRemoveConfirm(true);
+    } else {
+      // If just removing selected file (no existing avatar), no confirmation needed
+      setPreview(null);
+      setSelectedFile(null);
+      setWantsToRemove(true);
+      setError(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const confirmRemovePhoto = () => {
     setPreview(null);
     setSelectedFile(null);
     setWantsToRemove(true);
     setError(null);
+    setShowRemoveConfirm(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -58,7 +79,7 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
       try {
         await authService.removeAvatar();
         onSave({ avatar: null });
-        alert("Foto profil berhasil dihapus!");
+        showToast("Foto profil berhasil dihapus!", "success");
         onClose();
       } catch (err) {
         console.error("Remove avatar error:", err);
@@ -84,7 +105,7 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
       // Call onSave with new avatar URL from backend
       onSave({ avatar: response.avatar });
 
-      alert("Foto profil berhasil diperbarui!");
+      showToast("Foto profil berhasil diperbarui!", "success");
       onClose();
     } catch (err) {
       console.error("Upload avatar error:", err);
@@ -199,6 +220,18 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
           </button>
         </div>
       </div>
+
+      {/* Remove Avatar Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showRemoveConfirm}
+        onClose={() => setShowRemoveConfirm(false)}
+        onConfirm={confirmRemovePhoto}
+        title="Hapus Foto Profil"
+        message="Apakah Anda yakin ingin menghapus foto profil Anda? Foto akan diganti dengan inisial nama."
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        type="warning"
+      />
     </div>
   );
 }

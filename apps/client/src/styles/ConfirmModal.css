@@ -1,0 +1,119 @@
+/* Confirm Modal Styles */
+
+.confirm-modal__overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-modal__content {
+  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.confirm-modal__close {
+  @apply absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors;
+}
+
+.confirm-modal__close svg {
+  @apply w-6 h-6;
+}
+
+.confirm-modal__icon {
+  @apply w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center;
+}
+
+.confirm-modal__icon svg {
+  @apply w-8 h-8;
+}
+
+.confirm-modal__icon--warning {
+  @apply bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400;
+}
+
+.confirm-modal__icon--danger {
+  @apply bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400;
+}
+
+.confirm-modal__icon--info {
+  @apply bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400;
+}
+
+.confirm-modal__title {
+  @apply text-2xl font-bold text-gray-900 dark:text-white text-center mb-2;
+}
+
+.confirm-modal__message {
+  @apply text-gray-600 dark:text-gray-300 text-center mb-6 leading-relaxed;
+}
+
+.confirm-modal__input-wrapper {
+  @apply mb-6;
+}
+
+.confirm-modal__label {
+  @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+}
+
+.confirm-modal__label strong {
+  @apply text-red-600 dark:text-red-400;
+}
+
+.confirm-modal__input {
+  @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-all;
+}
+
+.confirm-modal__input--error {
+  @apply border-red-500 dark:border-red-400 focus:ring-red-500;
+}
+
+.confirm-modal__error {
+  @apply text-red-600 dark:text-red-400 text-sm mt-1;
+}
+
+.confirm-modal__actions {
+  @apply flex gap-3;
+}
+
+.confirm-modal__button {
+  @apply flex-1 px-6 py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.confirm-modal__button--cancel {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+}
+
+.confirm-modal__button--confirm {
+  @apply text-white;
+}
+
+.confirm-modal__button--warning {
+  @apply bg-yellow-500 hover:bg-yellow-600;
+}
+
+.confirm-modal__button--danger {
+  @apply bg-red-500 hover:bg-red-600;
+}
+
+.confirm-modal__button--info {
+  @apply bg-blue-500 hover:bg-blue-600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

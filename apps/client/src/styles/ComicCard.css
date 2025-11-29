@@ -28,8 +28,21 @@
   @apply absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300;
 }
 
+/* Show bookmark button when loading, even without hover */
+.comic-card__bookmark-button--loading {
+  opacity: 1 !important;
+}
+
+.comic-card__bookmark-wrapper:has(.comic-card__bookmark-button--loading) {
+  opacity: 1 !important;
+}
+
 .comic-card__bookmark-button {
   @apply p-2 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200;
+}
+
+.comic-card__bookmark-button:disabled {
+  @apply cursor-not-allowed;
 }
 
 .comic-card__bookmark-button--saved {
@@ -40,8 +53,16 @@
   @apply bg-white text-gray-700 hover:text-primary;
 }
 
+.comic-card__bookmark-button--loading {
+  @apply bg-gray-100 text-gray-500;
+}
+
 .comic-card__bookmark-icon {
   @apply w-5 h-5;
+}
+
+.comic-card__bookmark-icon--spinner {
+  @apply animate-spin;
 }
 
 .comic-card__bookmark-indicator {

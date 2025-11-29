@@ -118,8 +118,11 @@ export default function DetailPage() {
 
   if (loading)
     return (
-      <div className="detail-page__not-found">
-        <p>Memuat...</p>
+      <div className="detail-page__loading">
+        <div className="detail-page__loading-content">
+          <FaSpinner className="detail-page__loading-spinner" />
+          <p className="detail-page__loading-text">Memuat detail komik...</p>
+        </div>
       </div>
     );
 
