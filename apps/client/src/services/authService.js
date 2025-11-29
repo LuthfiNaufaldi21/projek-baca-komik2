@@ -5,7 +5,7 @@
  * Connected to backend API.
  */
 
-import { post, put, get } from "./api";
+import { post, put, get, deleteRequest as del } from "./api";
 
 /**
  * Login user
@@ -282,7 +282,6 @@ export const uploadAvatar = async (file) => {
       throw new Error("Not authenticated");
     }
 
-    // Create FormData for file upload
     const formData = new FormData();
     formData.append("avatar", file);
 
@@ -300,26 +299,59 @@ export const uploadAvatar = async (file) => {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Failed to upload avatar");
+      throw new Error(error.msg || "Failed to upload avatar");
     }
 
     const data = await response.json();
-
-    // Update localStorage with new avatar path (full URL)
-    const userStr = localStorage.getItem("komikita-user");
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      user.avatar = data.avatar ? `${API_BASE_URL}${data.avatar}` : null;
-      localStorage.setItem("komikita-user", JSON.stringify(user));
-    }
-
-    return {
-      ...data,
-      avatar: data.avatar ? `${API_BASE_URL}${data.avatar}` : null,
-    };
+    return data;
   } catch (error) {
     console.error("Error uploading avatar:", error);
-    throw error;
+    throw new Error(error.response?.data?.error || "Gagal mengupload avatar");
+  }
+};
+
+/**
+ * Delete user account
+ * @returns {Promise} - Success message
+ */
+export const deleteAccount = async () => {
+  try {
+    const token = localStorage.getItem("komikita-token");
+
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+
+    const response = await del("/api/user/account");
+
+    // Clear local storage after successful deletion
+    localStorage.removeItem("komikita-token");
+    localStorage.removeItem("komikita-user");
+
+    return response;
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    throw new Error(error.response?.data?.error || "Gagal menghapus akun");
+  }
+};
+
+/**
+ * Remove user avatar
+ * @returns {Promise} - Success message
+ */
+export const removeAvatar = async () => {
+  try {
+    const token = localStorage.getItem("komikita-token");
+
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+
+    const response = await del("/api/user/avatar");
+    return response;
+  } catch (error) {
+    console.error("Error removing avatar:", error);
+    throw new Error(error.response?.data?.error || "Gagal menghapus avatar");
   }
 };
 
@@ -390,6 +422,8 @@ export default {
   updateProfile,
   changePassword,
   uploadAvatar,
+  removeAvatar,
+  deleteAccount,
   toggleBookmark,
   updateReadingHistory,
 };

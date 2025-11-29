@@ -9,6 +9,7 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [wantsToRemove, setWantsToRemove] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -41,6 +42,7 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   const handleRemovePhoto = () => {
     setPreview(null);
     setSelectedFile(null);
+    setWantsToRemove(true);
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -48,6 +50,26 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   };
 
   const handleSave = async () => {
+    // If user wants to remove photo
+    if (wantsToRemove && !selectedFile) {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        await authService.removeAvatar();
+        onSave({ avatar: null });
+        alert("Foto profil berhasil dihapus!");
+        onClose();
+      } catch (err) {
+        console.error("Remove avatar error:", err);
+        setError(err.message || "Gagal menghapus foto profil");
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // If no file selected and not removing
     if (!selectedFile) {
       setError("Pilih foto terlebih dahulu");
       return;
@@ -171,9 +193,9 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
           <button
             onClick={handleSave}
             className="upload-avatar-modal__footer-button upload-avatar-modal__footer-button--save"
-            disabled={!selectedFile || isLoading}
+            disabled={(!selectedFile && !wantsToRemove) || isLoading}
           >
-            {isLoading ? "Mengupload..." : "Simpan"}
+            {isLoading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
       </div>
