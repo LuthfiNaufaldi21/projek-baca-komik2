@@ -1,30 +1,37 @@
 /* ReaderPage.css */
 
-/* Reset scroll bar untuk halaman baca */
+/* --- RESET & LAYOUT --- */
 .reader-page {
-  @apply min-h-screen bg-[#111] text-gray-200 flex flex-col relative;
+  /* relative dibutuhkan untuk positioning floating badge */
+  @apply min-h-screen bg-[#111] text-gray-200 flex flex-col relative pb-10;
 }
 
-/* Loading State */
+/* --- LOADING STATE --- */
 .reader-loading {
   @apply min-h-screen flex flex-col items-center justify-center bg-[#111] text-white;
 }
+
 .spinner {
   @apply w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4;
 }
 
-/* Error State */
+/* --- ERROR STATE --- */
 .reader-error {
   @apply min-h-screen flex flex-col items-center justify-center bg-[#111] text-white gap-4;
 }
+
 .reader-btn-back {
-  @apply px-6 py-2 bg-primary rounded-lg hover:bg-primary-hover transition-colors;
+  @apply px-6 py-2 bg-primary rounded-lg hover:bg-primary-hover transition-colors text-white no-underline font-medium;
 }
 
-/* Header */
+/* --- STICKY HEADER (Tombol Tutup) --- */
 .reader-header {
   @apply sticky top-0 z-50 flex justify-between items-center px-4 py-3 
   bg-[#1a1a1a]/95 backdrop-blur-sm border-b border-gray-800 shadow-lg transition-transform duration-300;
+}
+
+.reader-header__info {
+  @apply flex flex-col;
 }
 
 .reader-header__title {
@@ -39,18 +46,33 @@
   @apply px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-bold text-white transition-colors;
 }
 
-/* Content Images */
+/* --- CENTER TITLE (Bagian Judul di Tengah Halaman) --- */
+/* Class ini penting agar judul di atas gambar tidak berantakan */
+.reader-title-center {
+  @apply text-center my-6 px-5;
+}
+
+.reader-title-center h1 {
+  @apply text-2xl font-bold mb-1 tracking-tight text-white;
+}
+
+.reader-title-center p {
+  @apply text-base font-medium m-0 text-gray-400;
+}
+
+/* --- CONTENT IMAGES --- */
 .reader-content {
   @apply w-full max-w-3xl mx-auto bg-black shadow-2xl min-h-screen;
 }
 
 .reader-image {
   @apply w-full h-auto block; /* block agar tidak ada celah antar gambar */
+  @apply bg-[#1a1a1a]; /* Placeholder color saat loading */
 }
 
-/* Footer Navigation */
+/* --- FOOTER NAVIGATION --- */
 .reader-footer {
-  @apply max-w-3xl mx-auto w-full px-4 py-8;
+  @apply max-w-3xl mx-auto w-full px-4 py-8 mt-4;
 }
 
 .reader-nav-buttons {
@@ -58,7 +80,7 @@
 }
 
 .reader-nav-btn {
-  @apply flex-1 py-3 rounded-lg font-bold transition-all duration-200 text-sm md:text-base;
+  @apply flex-1 py-3 rounded-lg font-bold transition-all duration-200 text-sm md:text-base text-center;
 }
 
 .reader-nav-btn:disabled {
@@ -74,15 +96,35 @@
 }
 
 .reader-footer__text {
-  @apply text-center text-xs text-gray-600;
+  @apply text-center text-xs text-gray-500;
 }
 
+/* --- FLOATING PROGRESS BADGE (Smart Badge) --- */
 .reader-progress-floating {
   @apply fixed bottom-6 right-6 z-[60] w-12 h-12 rounded-full bg-gray-900/90 backdrop-blur-md border border-gray-700 flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer; 
 }
-.reader-progress-floating:hover { @apply scale-110 bg-gray-800; }
-.reader-progress-text { @apply text-[10px] font-bold text-white absolute; }
-.reader-icon-arrow { @apply w-5 h-5 text-white absolute animate-bounce; }
-.reader-progress-circle { @apply w-10 h-10 transform -rotate-90 pointer-events-none; }
-.circle-bg { @apply fill-none stroke-gray-700 stroke-[2]; }
-.circle-value { @apply fill-none stroke-primary stroke-[2] transition-all duration-150 ease-out; stroke-linecap: round; }
+
+.reader-progress-floating:hover { 
+  @apply scale-110 bg-gray-800; 
+}
+
+.reader-progress-text { 
+  @apply text-[10px] font-bold text-white absolute; 
+}
+
+.reader-icon-arrow { 
+  @apply w-5 h-5 text-white absolute animate-bounce; 
+}
+
+.reader-progress-circle { 
+  @apply w-10 h-10 transform -rotate-90 pointer-events-none; 
+}
+
+.circle-bg { 
+  @apply fill-none stroke-gray-700 stroke-[2]; 
+}
+
+.circle-value { 
+  @apply fill-none stroke-primary stroke-[2] transition-all duration-150 ease-out; 
+  stroke-linecap: round; 
+}

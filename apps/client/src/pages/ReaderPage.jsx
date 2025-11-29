@@ -6,7 +6,7 @@ import { get } from "../services/api";
 import "../styles/ReaderPage.css";
 
 export default function ReaderPage() {
-  const { comicId, chapterId } = useParams(); // comicId is slug, chapterId could be number or encoded URL
+  const { comicId, chapterId } = useParams();
   const navigate = useNavigate();
   const { updateReadingHistory } = useAuth();
 
@@ -18,33 +18,31 @@ export default function ReaderPage() {
   const [prevChapter, setPrevChapter] = useState(null);
   const [nextChapter, setNextChapter] = useState(null);
 
-  // --- [FITUR BARU] STATE UNTUK SMART BADGE ---
+  // --- [FITUR DARI MASTER] STATE UNTUK SMART BADGE ---
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   // -------------------------------------------
 
-  // Always try to decode chapterId (could be encoded path or URL)
+  // Decode chapterId (menangani karakter encoding di URL)
   let decodedChapterId = chapterId;
   try {
     decodedChapterId = decodeURIComponent(chapterId);
-  } catch (e) {
-    // Decoding failed, use as-is
-  }
+  } catch {}
 
-  // Load komik detail untuk mendapatkan daftar chapter (untuk prev/next)
+  // 1. Load detail komik + daftar chapter
   useEffect(() => {
     let mounted = true;
     const loadDetail = async () => {
       try {
-        // Get local dummy data for basic info
         const localData = await getComicBySlug(comicId);
         if (!mounted) return;
+
         setDetail(localData);
 
-        // Try to get live chapters from backend
         let chapters = Array.isArray(localData?.chapters)
           ? localData.chapters
           : [];
+
         try {
           const liveData = await get(`/detail-komik/${comicId}`);
           if (
@@ -54,20 +52,12 @@ export default function ReaderPage() {
           ) {
             chapters = liveData.chapters;
           }
-        } catch (liveErr) {
-          console.log("Using dummy chapters, live fetch failed:", liveErr);
-        }
+        } catch {}
 
-        // Find current chapter - match by apiLink if it's a path or URL, otherwise by chapterNumber
         let idx = -1;
-        if (
-          decodedChapterId.startsWith("/") ||
-          decodedChapterId.startsWith("http")
-        ) {
-          // Match by apiLink (path like /baca-chapter/slug/num or full URL)
+        if (decodedChapterId.startsWith("/") || decodedChapterId.startsWith("http")) {
           idx = chapters.findIndex((ch) => ch.apiLink === decodedChapterId);
         } else {
-          // Match by chapterNumber
           idx = chapters.findIndex(
             (ch) => String(ch.chapterNumber) === String(decodedChapterId)
           );
@@ -75,29 +65,23 @@ export default function ReaderPage() {
 
         const cur = idx >= 0 ? chapters[idx] : null;
         setCurrentChapter(cur);
-        // Chapters are usually ordered from newest to oldest (1185, 1184, ..., 2, 1)
-        // So prev chapter (older) is idx+1, next chapter (newer) is idx-1
+
         setNextChapter(idx > 0 ? chapters[idx - 1] : null);
         setPrevChapter(
           idx >= 0 && idx < chapters.length - 1 ? chapters[idx + 1] : null
         );
-      } catch (e) {
-        console.error("Failed to load detail list:", e);
+      } catch {
         setDetail(null);
-        setCurrentChapter(null);
-        setPrevChapter(null);
-        setNextChapter(null);
       } finally {
         if (mounted) setLoadingDetail(false);
       }
     };
+
     loadDetail();
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [comicId, decodedChapterId]);
 
-  // Load gambar chapter dari backend
+  // 2. Load gambar
   useEffect(() => {
     let mounted = true;
     const loadImages = async () => {
@@ -105,15 +89,14 @@ export default function ReaderPage() {
         setLoading(true);
         window.scrollTo({ top: 0, behavior: "instant" });
         
-        // --- [FITUR BARU] RESET PROGRESS SAAT GANTI CHAPTER ---
+        // --- [FITUR DARI MASTER] RESET PROGRESS SAAT GANTI CHAPTER ---
         setScrollProgress(0);
         // -----------------------------------------------------
 
         const data = await getChapterImages(comicId, decodedChapterId);
         if (!mounted) return;
-        const imgs = Array.isArray(data?.images) ? data.images : [];
-        // Normalize to array of objects { src, fallbackSrc }
-        const normalized = imgs
+
+        const normalized = (Array.isArray(data?.images) ? data.images : [])
           .map((it) =>
             typeof it === "string"
               ? { src: it, fallbackSrc: it }
@@ -124,29 +107,27 @@ export default function ReaderPage() {
                 }
           )
           .filter((it) => it.src);
+
         setImages(normalized);
-      } catch (e) {
-        console.error("Failed to load chapter images:", e);
+      } catch {
         setImages([]);
       } finally {
         if (mounted) setLoading(false);
       }
     };
+
     loadImages();
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [comicId, decodedChapterId]);
 
-  // 4. Update History (Bug Fixed: Dependency minimal)
+  // 3. Update History
   useEffect(() => {
     if (comicId && decodedChapterId) {
       updateReadingHistory(comicId, decodedChapterId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [comicId, decodedChapterId]);
+  }, [comicId, decodedChapterId, updateReadingHistory]);
 
-  // --- [FITUR BARU] LOGIC SCROLL LISTENER ---
+  // --- [FITUR DARI MASTER] LOGIC SCROLL LISTENER ---
   useEffect(() => {
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -157,7 +138,7 @@ export default function ReaderPage() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     
-    // Hide default back-to-top button provided by App globally
+    // Sembunyikan back-to-top global agar tidak tumpang tindih dengan smart badge
     const style = document.createElement('style');
     style.innerHTML = '.back-to-top { display: none !important; }';
     document.head.appendChild(style);
@@ -175,16 +156,13 @@ export default function ReaderPage() {
 
   // Handler Navigasi
   const handleNavigate = (targetChapter) => {
-    // Always encode apiLink to avoid path conflicts
     const linkParam = targetChapter.apiLink
       ? encodeURIComponent(targetChapter.apiLink)
       : targetChapter.chapterNumber;
+
     navigate(`/read/${comicId}/${linkParam}`);
   };
 
-  // --- TAMPILAN ---
-
-  // Show loading state first while data is being fetched
   if (loading || loadingDetail) {
     return (
       <div className="reader-loading">
@@ -194,21 +172,18 @@ export default function ReaderPage() {
     );
   }
 
-  // After loading is done, check if chapter was found
   if (!currentChapter || images.length === 0) {
     return (
       <div className="reader-error">
         <h2>Chapter tidak ditemukan</h2>
-        <Link to="/" className="reader-btn-back">
-          Kembali ke Home
-        </Link>
+        <Link to="/" className="reader-btn-back">Kembali ke Home</Link>
       </div>
     );
   }
 
   return (
     <div className="reader-page">
-      {/* --- [FITUR BARU] FLOATING SMART BADGE --- */}
+      {/* --- [FITUR DARI MASTER] FLOATING SMART BADGE --- */}
       <button 
         onClick={handleScrollToTop}
         onMouseEnter={() => setIsHovered(true)}
@@ -229,7 +204,7 @@ export default function ReaderPage() {
       </button>
       {/* ----------------------------------------- */}
 
-      {/* Header Sticky */}
+      {/* --- [FITUR DARI MASTER] Header Sticky (Tombol Tutup) --- */}
       <header className="reader-header">
         <div className="reader-header__info">
           <h1 className="reader-header__title">{detail?.title || comicId}</h1>
@@ -242,7 +217,13 @@ export default function ReaderPage() {
         </Link>
       </header>
 
-      {/* Area Baca */}
+      {/* --- [LAYOUT DARI BRANCH BARU] JUDUL DI ATAS, TENGAH --- */}
+      <div className="reader-title-center">
+        <h1>{detail?.title || comicId}</h1>
+        <p>{currentChapter.title}</p>
+      </div>
+
+      {/* === AREA KOMIK === */}
       <main className="reader-content">
         {images.map((img, index) => (
           <img
@@ -260,13 +241,13 @@ export default function ReaderPage() {
         ))}
       </main>
 
-      {/* Navigasi Bawah */}
+      {/* === NAVIGASI BAWAH === */}
       <footer className="reader-footer">
         <div className="reader-nav-buttons">
           <button
             onClick={() => prevChapter && handleNavigate(prevChapter)}
             disabled={!prevChapter}
-            className="reader-nav-btn reader-nav-btn--prev"
+            className="reader-nav-btn"
           >
             ← Prev Chapter
           </button>
@@ -274,14 +255,11 @@ export default function ReaderPage() {
           <button
             onClick={() => nextChapter && handleNavigate(nextChapter)}
             disabled={!nextChapter}
-            className="reader-nav-btn reader-nav-btn--next"
+            className="reader-nav-btn"
           >
             Next Chapter →
           </button>
         </div>
-        <p className="reader-footer__text">
-          Kamu sedang membaca {currentChapter.title}
-        </p>
       </footer>
     </div>
   );
