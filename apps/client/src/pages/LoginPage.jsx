@@ -165,11 +165,15 @@ export default function LoginPage() {
                 </div>
                 {!isLoginView && (
                   <div className="login-page__password-requirements">
-                    <p className="login-page__requirements-title">Syarat Password:</p>
+                    <p className="login-page__requirements-title">
+                      Syarat Password:
+                    </p>
                     <ul className="login-page__requirements-list">
                       <li
                         className={`login-page__requirement-item ${
-                          hasMinLength ? "login-page__requirement-item--valid" : ""
+                          hasMinLength
+                            ? "login-page__requirement-item--valid"
+                            : ""
                         }`}
                       >
                         <span
@@ -185,7 +189,9 @@ export default function LoginPage() {
                       </li>
                       <li
                         className={`login-page__requirement-item ${
-                          hasNumberOrSymbol ? "login-page__requirement-item--valid" : ""
+                          hasNumberOrSymbol
+                            ? "login-page__requirement-item--valid"
+                            : ""
                         }`}
                       >
                         <span
