@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getChapterImages, getComicBySlug } from "../services/comicService";
 import { get } from "../services/api";
+// 1. Tambah FiArrowUp di sini
+import { FiChevronLeft, FiChevronRight, FiChevronDown, FiArrowUp } from "react-icons/fi"; 
 import "../styles/ReaderPage.css";
 
 export default function ReaderPage() {
-  const { comicId, chapterId } = useParams(); // comicId is slug, chapterId could be number or encoded URL
+  const { comicId, chapterId } = useParams();
   const navigate = useNavigate();
-  const { updateReadingHistory } = useAuth();
+  const { updateReadingHistory, isLoggedIn } = useAuth();
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,135 +20,109 @@ export default function ReaderPage() {
   const [prevChapter, setPrevChapter] = useState(null);
   const [nextChapter, setNextChapter] = useState(null);
 
-  // --- [FITUR BARU] STATE UNTUK SMART BADGE ---
+  const [allChapters, setAllChapters] = useState([]);
+
+  // State Dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  // -------------------------------------------
 
-  // Always try to decode chapterId (could be encoded path or URL)
   let decodedChapterId = chapterId;
   try {
     decodedChapterId = decodeURIComponent(chapterId);
-  } catch (e) {
-    // Decoding failed, use as-is
-  }
+  } catch (e) {}
 
-  // Load komik detail untuk mendapatkan daftar chapter (untuk prev/next)
+  // Close dropdown saat klik di luar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     const loadDetail = async () => {
       try {
-        // Get local dummy data for basic info
         const localData = await getComicBySlug(comicId);
         if (!mounted) return;
         setDetail(localData);
 
-        // Try to get live chapters from backend
-        let chapters = Array.isArray(localData?.chapters)
-          ? localData.chapters
-          : [];
+        let chapters = Array.isArray(localData?.chapters) ? localData.chapters : [];
         try {
           const liveData = await get(`/detail-komik/${comicId}`);
-          if (
-            liveData &&
-            Array.isArray(liveData.chapters) &&
-            liveData.chapters.length > 0
-          ) {
+          if (liveData && Array.isArray(liveData.chapters) && liveData.chapters.length > 0) {
             chapters = liveData.chapters;
           }
         } catch (liveErr) {
-          console.log("Using dummy chapters, live fetch failed:", liveErr);
+          console.log("Using dummy chapters:", liveErr);
         }
 
-        // Find current chapter - match by apiLink if it's a path or URL, otherwise by chapterNumber
+        setAllChapters(chapters);
+
         let idx = -1;
-        if (
-          decodedChapterId.startsWith("/") ||
-          decodedChapterId.startsWith("http")
-        ) {
-          // Match by apiLink (path like /baca-chapter/slug/num or full URL)
+        if (decodedChapterId.startsWith("/") || decodedChapterId.startsWith("http")) {
           idx = chapters.findIndex((ch) => ch.apiLink === decodedChapterId);
         } else {
-          // Match by chapterNumber
-          idx = chapters.findIndex(
-            (ch) => String(ch.chapterNumber) === String(decodedChapterId)
-          );
+          idx = chapters.findIndex((ch) => String(ch.chapterNumber) === String(decodedChapterId));
         }
 
         const cur = idx >= 0 ? chapters[idx] : null;
         setCurrentChapter(cur);
-        // Chapters are usually ordered from newest to oldest (1185, 1184, ..., 2, 1)
-        // So prev chapter (older) is idx+1, next chapter (newer) is idx-1
         setNextChapter(idx > 0 ? chapters[idx - 1] : null);
-        setPrevChapter(
-          idx >= 0 && idx < chapters.length - 1 ? chapters[idx + 1] : null
-        );
+        setPrevChapter(idx >= 0 && idx < chapters.length - 1 ? chapters[idx + 1] : null);
       } catch (e) {
-        console.error("Failed to load detail list:", e);
-        setDetail(null);
-        setCurrentChapter(null);
-        setPrevChapter(null);
-        setNextChapter(null);
+        console.error("Failed to load detail:", e);
       } finally {
         if (mounted) setLoadingDetail(false);
       }
     };
     loadDetail();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [comicId, decodedChapterId]);
 
-  // Load gambar chapter dari backend
   useEffect(() => {
     let mounted = true;
     const loadImages = async () => {
       try {
         setLoading(true);
         window.scrollTo({ top: 0, behavior: "instant" });
-        
-        // --- [FITUR BARU] RESET PROGRESS SAAT GANTI CHAPTER ---
         setScrollProgress(0);
-        // -----------------------------------------------------
 
         const data = await getChapterImages(comicId, decodedChapterId);
         if (!mounted) return;
         const imgs = Array.isArray(data?.images) ? data.images : [];
-        // Normalize to array of objects { src, fallbackSrc }
         const normalized = imgs
           .map((it) =>
             typeof it === "string"
               ? { src: it, fallbackSrc: it }
-              : {
-                  src: it?.src || it?.url || "",
-                  fallbackSrc: it?.fallbackSrc || it?.src || it?.url || "",
-                  alt: it?.alt || "",
-                }
+              : { src: it?.src || it?.url || "", fallbackSrc: it?.fallbackSrc || it?.src || "", alt: it?.alt || "" }
           )
           .filter((it) => it.src);
         setImages(normalized);
       } catch (e) {
-        console.error("Failed to load chapter images:", e);
+        console.error("Failed to load images:", e);
         setImages([]);
       } finally {
         if (mounted) setLoading(false);
       }
     };
     loadImages();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [comicId, decodedChapterId]);
 
-  // 4. Update History (Bug Fixed: Dependency minimal)
   useEffect(() => {
-    if (comicId && decodedChapterId) {
+    if (comicId && decodedChapterId && isLoggedIn) {
       updateReadingHistory(comicId, decodedChapterId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [comicId, decodedChapterId]);
+    // eslint-disable-next-line
+  }, [comicId, decodedChapterId, isLoggedIn]);
 
-  // --- [FITUR BARU] LOGIC SCROLL LISTENER ---
   useEffect(() => {
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -156,35 +132,29 @@ export default function ReaderPage() {
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    
-    // Hide default back-to-top button provided by App globally
-    const style = document.createElement('style');
-    style.innerHTML = '.back-to-top { display: none !important; }';
+
+    const style = document.createElement("style");
+    style.innerHTML = ".back-to-top { display: none !important; }";
     document.head.appendChild(style);
 
-    return () => { 
-        window.removeEventListener("scroll", handleScroll);
-        document.head.removeChild(style);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (document.head.contains(style)) document.head.removeChild(style);
     };
   }, []);
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  // ------------------------------------------
 
-  // Handler Navigasi
   const handleNavigate = (targetChapter) => {
-    // Always encode apiLink to avoid path conflicts
     const linkParam = targetChapter.apiLink
       ? encodeURIComponent(targetChapter.apiLink)
       : targetChapter.chapterNumber;
+    setIsDropdownOpen(false);
     navigate(`/read/${comicId}/${linkParam}`);
   };
 
-  // --- TAMPILAN ---
-
-  // Show loading state first while data is being fetched
   if (loading || loadingDetail) {
     return (
       <div className="reader-loading">
@@ -194,7 +164,6 @@ export default function ReaderPage() {
     );
   }
 
-  // After loading is done, check if chapter was found
   if (!currentChapter || images.length === 0) {
     return (
       <div className="reader-error">
@@ -208,41 +177,63 @@ export default function ReaderPage() {
 
   return (
     <div className="reader-page">
-      {/* --- [FITUR BARU] FLOATING SMART BADGE --- */}
-      <button 
+      {/* Floating Badge (Updated Icon) */}
+      <button
         onClick={handleScrollToTop}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="reader-progress-floating"
       >
         {isHovered ? (
-          <svg className="reader-icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7 7 7 M12 3v18" />
-          </svg>
+          // 2. Menggunakan FiArrowUp menggantikan <svg> manual
+          <FiArrowUp className="reader-icon-arrow" />
         ) : (
           <span className="reader-progress-text">{Math.round(scrollProgress)}%</span>
         )}
+        
+        {/* Lingkaran Progress tetap SVG karena butuh kalkulasi strokeDasharray */}
         <svg className="reader-progress-circle" viewBox="0 0 36 36">
           <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          <path className="circle-value" strokeDasharray={`${scrollProgress}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path
+            className="circle-value"
+            strokeDasharray={`${scrollProgress}, 100`}
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
         </svg>
       </button>
-      {/* ----------------------------------------- */}
 
-      {/* Header Sticky */}
+      {/* Header */}
       <header className="reader-header">
         <div className="reader-header__info">
           <h1 className="reader-header__title">{detail?.title || comicId}</h1>
-          <span className="reader-header__subtitle">
-            {currentChapter.title}
-          </span>
+          <span className="reader-header__subtitle">{currentChapter.title}</span>
         </div>
+
+        <div className="reader-header__actions">
+          <button
+            onClick={() => prevChapter && handleNavigate(prevChapter)}
+            disabled={!prevChapter}
+            className="reader-header__btn"
+            title="Chapter Sebelumnya"
+          >
+            <FiChevronLeft />
+          </button>
+          <span className="reader-header__divider"></span>
+          <button
+            onClick={() => nextChapter && handleNavigate(nextChapter)}
+            disabled={!nextChapter}
+            className="reader-header__btn"
+            title="Chapter Selanjutnya"
+          >
+            <FiChevronRight />
+          </button>
+        </div>
+
         <Link to={`/detail/${comicId}`} className="reader-header__close">
           ✕ Tutup
         </Link>
       </header>
 
-      {/* Area Baca */}
       <main className="reader-content">
         {images.map((img, index) => (
           <img
@@ -260,25 +251,61 @@ export default function ReaderPage() {
         ))}
       </main>
 
-      {/* Navigasi Bawah */}
+      {/* Footer Navigation */}
       <footer className="reader-footer">
         <div className="reader-nav-buttons">
+          
+          {/* Prev Button */}
           <button
             onClick={() => prevChapter && handleNavigate(prevChapter)}
             disabled={!prevChapter}
             className="reader-nav-btn reader-nav-btn--prev"
           >
-            ← Prev Chapter
+            <FiChevronLeft className="mr-2" /> Prev
           </button>
 
+          {/* CUSTOM DROPDOWN */}
+          <div className="reader-dropdown-wrapper" ref={dropdownRef}>
+            <button
+              className="reader-dropdown-trigger"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span>{currentChapter.title}</span>
+              <FiChevronDown
+                className={`reader-dropdown-icon ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="reader-dropdown-menu">
+                {allChapters.map((ch) => {
+                   const isActive = ch.apiLink === currentChapter.apiLink || 
+                                    String(ch.chapterNumber) === String(currentChapter.chapterNumber);
+                   return (
+                    <div
+                      key={ch.apiLink || ch.chapterNumber}
+                      className={`reader-dropdown-item ${isActive ? "active" : ""}`}
+                      onClick={() => handleNavigate(ch)}
+                    >
+                      {ch.title}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Next Button */}
           <button
             onClick={() => nextChapter && handleNavigate(nextChapter)}
             disabled={!nextChapter}
             className="reader-nav-btn reader-nav-btn--next"
           >
-            Next Chapter →
+            Next <FiChevronRight className="ml-2" />
           </button>
+
         </div>
+
         <p className="reader-footer__text">
           Kamu sedang membaca {currentChapter.title}
         </p>
