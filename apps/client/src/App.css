@@ -1,7 +1,13 @@
 .app__wrapper {
-  @apply min-h-screen bg-slate-50 dark:bg-gray-900;
+  @apply flex flex-col min-h-screen bg-slate-50 dark:bg-gray-900;
 }
 
 .app__main {
-  @apply max-w-6xl mx-auto p-4 md:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-700/50 my-8 min-w-[175vh];
+  @apply flex-grow;
+  
+  @apply max-w-6xl mx-auto my-8 p-4 md:p-6;
+  
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-700/50;
+  
+  @apply min-w-[175vh];
 }

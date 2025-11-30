@@ -2,12 +2,16 @@
   @apply fixed bottom-8 right-8 
     flex items-center 
     justify-center cursor-pointer
-    p-3 rounded-full 
-    bg-primary text-white shadow-lg 
-    transition-all duration-300 z-50 
-    hover:bg-primary-hover hover:scale-110 
-    focus:outline-none focus:ring-2 
-    focus:ring-offset-2 focus:ring-primary;
+    w-12 h-12 rounded-2xl
+    bg-gradient-to-br from-primary to-primary-hover
+    text-white shadow-2xl
+    transition-all duration-300 ease-out z-50
+    hover:scale-110 hover:shadow-primary/50
+    hover:-translate-y-1
+    focus:outline-none focus:ring-4
+    focus:ring-primary/30
+    backdrop-blur-sm
+    border border-white/10;
 }
 
 .back-to-top--visible {
@@ -19,5 +23,10 @@
 }
 
 .back-to-top__icon {
-  @apply w-6 h-6 mt-0.5;
+  @apply w-6 h-6 stroke-2;
+}
+
+/* Dark mode adjustments */
+:root.dark .back-to-top {
+  @apply shadow-xl shadow-primary/30;
 }

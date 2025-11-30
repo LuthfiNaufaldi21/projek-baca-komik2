@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import "../styles/HeroSlider.css";
 
 export default function HeroSlider({ comics }) {
@@ -78,32 +79,16 @@ export default function HeroSlider({ comics }) {
                     ))}
                   </div>
 
-                  <h2 className="hero-slider__title">
-                    {comic.title}
-                  </h2>
+                  <h2 className="hero-slider__title">{comic.title}</h2>
 
-                  <p className="hero-slider__synopsis">
-                    {comic.synopsis}
-                  </p>
+                  <p className="hero-slider__synopsis">{comic.synopsis}</p>
 
                   <Link
                     to={`/detail/${comic.id}`}
                     className="hero-slider__cta-button"
                   >
                     <span>Baca Sekarang</span>
-                    <svg
-                      className="hero-slider__cta-icon"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
+                    <FiArrowRight className="hero-slider__cta-icon" />
                   </Link>
                 </div>
               </div>
@@ -135,37 +120,13 @@ export default function HeroSlider({ comics }) {
         }
         className="hero-slider__nav-button hero-slider__nav-button--prev"
       >
-        <svg
-          className="hero-slider__nav-icon"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
+        <FiChevronLeft className="hero-slider__nav-icon" />
       </button>
       <button
         onClick={() => setCurrentSlide((prev) => (prev + 1) % comics.length)}
         className="hero-slider__nav-button hero-slider__nav-button--next"
       >
-        <svg
-          className="hero-slider__nav-icon"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
+        <FiChevronRight className="hero-slider__nav-icon" />
       </button>
     </div>
   );

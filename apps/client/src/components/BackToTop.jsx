@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FiArrowUp } from "react-icons/fi";
 import "../styles/BackToTop.css";
 
 export default function BackToTop() {
@@ -34,19 +35,7 @@ export default function BackToTop() {
       title="Kembali ke atas"
       aria-label="Back to top"
     >
-      <svg
-        className="back-to-top__icon"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M5 10l7-7 7 7 M19 14l-7-7-7 7"
-        />
-      </svg>
+      <FiArrowUp className="back-to-top__icon" />
     </button>
   );
 }

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { ToastProvider } from "./contexts/ToastContext";
+import { ToastProvider } from "./components/ToastProvider";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
@@ -13,11 +13,13 @@ function AppContent() {
   useScrollToTop();
 
   return (
-    <div className="app__wrapper flex flex-col min-h-screen">
+    <div className="app__wrapper">
       <Navbar />
-      <main className="app__main flex-grow">
+
+      <main className="app__main">
         <AppRouter />
       </main>
+
       <Footer />
       <BackToTop />
     </div>

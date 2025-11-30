@@ -12,6 +12,7 @@
   @apply max-w-7xl mx-auto flex justify-between items-center p-4;
 }
 
+/* Logo Section */
 .navbar__logo-link {
   @apply flex items-center;
 }
@@ -32,7 +33,6 @@
   @apply relative h-8 w-auto transform transition-transform duration-200;
 }
 
-
 .navbar__logo-glow-wrapper:hover .navbar__logo {
   @apply scale-110;
 }
@@ -45,26 +45,34 @@
   @apply scale-105 text-primary;
 }
 
+/* Content & Links */
 .navbar__content {
   @apply flex items-center space-x-8;
 }
 
 .navbar__links {
-  @apply hidden md:flex items-center space-x-6;
+  /* Menggunakan gap lebih modern daripada space-x */
+  @apply hidden md:flex items-center gap-6; 
 }
 
 .navbar__link {
   @apply text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors relative;
 }
 
+.navbar__link--active {
+  @apply text-primary dark:text-primary;
+}
+
 .navbar__link-underline {
   @apply absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300;
 }
 
-.navbar__link:hover .navbar__link-underline {
+.navbar__link:hover .navbar__link-underline,
+.navbar__link--active .navbar__link-underline {
   @apply w-full;
 }
 
+/* Actions Section (Search, Theme, Profile) */
 .navbar__actions {
   @apply flex items-center space-x-4;
 }
@@ -89,6 +97,7 @@
   @apply w-5 h-5;
 }
 
+/* Profile Section (Merged & Optimized) */
 .navbar__profile-link {
   @apply relative;
 }
@@ -97,22 +106,22 @@
   @apply w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 p-[2px];
 }
 
+/* Class ini menangani Avatar Image (bg-cover) & Fallback Background */
 .navbar__profile-inner {
-  @apply w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center;
+  @apply w-full h-full rounded-full flex items-center justify-center 
+  bg-cover bg-center bg-no-repeat 
+  bg-gray-200 dark:bg-gray-700 
+  transition-all duration-200;
+}
+
+.navbar__profile-initials {
+  @apply w-full h-full flex items-center justify-center rounded-full text-xs font-semibold text-white;
 }
 
 .navbar__profile-icon {
-  @apply w-5 h-5 text-gray-600 dark:text-gray-300 transition-colors;
+  @apply w-5 h-5 text-gray-500 dark:text-gray-300 transition-colors;
 }
 
 .navbar__profile-link:hover .navbar__profile-icon {
   @apply text-primary;
-}
-
-.navbar__link--active {
-  @apply text-primary dark:text-primary;
-}
-
-.navbar__link--active .navbar__link-underline {
-  @apply w-full;
 }

@@ -108,13 +108,30 @@
   @apply font-bold text-[#4a56e2] hover:underline transition-colors;
 }
 
+/* Update bagian ini */
+.login-page__input--error {
+  /* Menambahkan warna border merah dan ring merah saat error */
+  @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+}
+
+/* Tambahkan class baru untuk pesan error */
+.login-page__error-message {
+  @apply text-red-500 text-xs mt-1 ml-1;
+}
+
+/* Update toggle link agar menghapus default style button */
+.login-page__toggle-link {
+  /* Reset default button styles + style link */
+  @apply bg-transparent border-none p-0 cursor-pointer font-bold text-[#4a56e2] hover:underline transition-colors;
+}
+
 /* Password Requirements */
 .login-page__password-requirements {
   @apply mt-2 text-sm;
 }
 
 .login-page__requirements-title {
-  @apply text-gray-600 mb-1;
+  @apply text-gray-600 mb-1 dark:text-gray-400;
 }
 
 .login-page__requirements-list {
