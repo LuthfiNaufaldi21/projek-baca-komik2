@@ -19,6 +19,11 @@ export default function LoginPage() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  // Password Validation Logic
+  const hasMinLength = password.length >= 8;
+  const hasNumberOrSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(password);
+  const isPasswordValid = hasMinLength && hasNumberOrSymbol;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -42,13 +47,23 @@ export default function LoginPage() {
           setIsLoading(false);
           return;
         }
+
+        if (!isPasswordValid) {
+          showToast("Password belum memenuhi syarat!", "error");
+          setIsLoading(false);
+          return;
+        }
+
         if (password !== confirmPassword) {
           showToast("Password dan konfirmasi password tidak cocok!", "error");
           setIsLoading(false);
           return;
         }
 
-        const username = email.split("@")[0];
+        // Generate username dari email + random number untuk menghindari duplikat
+        const username =
+          email.split("@")[0] + Math.floor(Math.random() * 10000);
+
         await authService.register({ username, email, password });
         showToast(
           "Pendaftaran Berhasil! Anda sekarang sudah login.",
@@ -172,6 +187,45 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
+                {!isLoginView && (
+                  <div className="mt-2 text-sm">
+                    <p className="text-gray-600 mb-1">Syarat Password:</p>
+                    <ul className="space-y-1">
+                      <li
+                        className={`flex items-center gap-2 ${
+                          hasMinLength ? "text-green-600" : "text-gray-500"
+                        }`}
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] border ${
+                            hasMinLength
+                              ? "bg-green-100 border-green-600"
+                              : "border-gray-400"
+                          }`}
+                        >
+                          {hasMinLength && "✓"}
+                        </span>
+                        Minimal 8 karakter
+                      </li>
+                      <li
+                        className={`flex items-center gap-2 ${
+                          hasNumberOrSymbol ? "text-green-600" : "text-gray-500"
+                        }`}
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] border ${
+                            hasNumberOrSymbol
+                              ? "bg-green-100 border-green-600"
+                              : "border-gray-400"
+                          }`}
+                        >
+                          {hasNumberOrSymbol && "✓"}
+                        </span>
+                        Mengandung angka atau simbol
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {!isLoginView && (
