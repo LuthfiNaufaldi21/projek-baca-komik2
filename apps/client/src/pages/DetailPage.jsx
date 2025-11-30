@@ -6,7 +6,7 @@ import { get } from "../services/api";
 import { useToast } from "../hooks/useToast";
 import { comics as localComicsData } from "../data/comics";
 import ComicCard from "../components/ComicCard";
-// 👇 Import FaRegBookmark (Icon Outline) di sini
+
 import {
   FaStar,
   FaUser,
@@ -26,54 +26,57 @@ export default function DetailPage() {
     isLoggedIn,
     getReadingHistory,
   } = useAuth();
+
   const [isLoadingBookmark, setIsLoadingBookmark] = useState(false);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
   const [liveChapters, setLiveChapters] = useState([]);
 
   const { showToast } = useToast();
-  const readingHistory = getReadingHistory();
-  const lastReadChapterId = readingHistory[id];
+  const readingHistory = getReadingHistory(); // { "one-piece": "chapter-1105", "solo-leveling": "https://api.example.com/chapter/180" }
+  const lastReadKey = readingHistory[id]; // key chapter terakhir yang dibaca
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
         setLoading(true);
-        // Ambil data lokal dulu
+
+        // 1. Data lokal (fallback)
         const localData = await getComicBySlug(id);
         if (!mounted) return;
 
-        // Coba ambil live chapters dari backend
+        // 2. Coba ambil chapter live dari backend
         try {
           const liveData = await get(`/detail-komik/${id}`);
-          if (liveData && liveData.chapters) setLiveChapters(liveData.chapters);
-        } catch {
-          console.log("Using local chapters fallback");
+          if (liveData?.chapters?.length > 0) {
+            setLiveChapters(liveData.chapters);
+          }
+        } catch (err) {
+          console.log("Live chapters gagal → pakai data lokal");
         }
 
         setDetail(localData);
-      } catch {
+      } catch (err) {
         setDetail(null);
       } finally {
         if (mounted) setLoading(false);
       }
     };
+
     load();
     return () => {
       mounted = false;
     };
   }, [id]);
 
-  // --- Variabel Defensive (Cadangan) ---
+  // Defensive data
   const cover = detail?.cover || detail?.thumbnail || detail?.image;
-  const title = detail?.title || "";
+  const title = detail?.title || "Untitled";
   const author =
     detail?.author || detail?.info?.Pengarang || detail?.info?.Author || "-";
   const rating = detail?.rating || detail?.info?.Rating || "-";
-
   const status = detail?.status || "Update Tiap Minggu";
-
   const tags = detail?.tags || detail?.genres || [];
   const synopsis =
     detail?.synopsis ||
@@ -81,8 +84,7 @@ export default function DetailPage() {
     detail?.description ||
     "Sinopsis belum tersedia untuk komik ini.";
 
-  const chapters =
-    liveChapters.length > 0 ? liveChapters : detail?.chapters || [];
+  const chapters = liveChapters.length > 0 ? liveChapters : detail?.chapters || [];
 
   const relatedComics = detail
     ? localComicsData
@@ -116,6 +118,18 @@ export default function DetailPage() {
     }
   };
 
+  const getChapterKey = (chapter) => {
+    if (chapter.apiLink) return chapter.apiLink;
+    if (chapter.chapterNumber !== undefined) return `ch-${chapter.chapterNumber}`;
+    return `idx-${chapters.indexOf(chapter)}`;
+  };
+
+  const isLastReadChapter = (chapter) => {
+    if (!lastReadKey) return false;
+    const chapterKey = getChapterKey(chapter);
+    return String(chapterKey) === String(lastReadKey);
+  };
+
   if (loading)
     return (
       <div className="detail-page__loading">
@@ -126,11 +140,11 @@ export default function DetailPage() {
       </div>
     );
 
-  if (!detail) {
+  if (!detail)
     return (
       <div className="detail-page__not-found">
         <h2 className="detail-page__not-found-title">
-          🚨 404 - Komik Tidak Ditemukan
+          404 - Komik Tidak Ditemukan
         </h2>
         <p className="detail-page__not-found-text">
           Maaf, komik yang Anda cari tidak ada di database kami.
@@ -140,7 +154,6 @@ export default function DetailPage() {
         </Link>
       </div>
     );
-  }
 
   return (
     <div className="detail-page__container">
@@ -154,14 +167,9 @@ export default function DetailPage() {
 
       <div className="detail-page__content">
         <div className="detail-page__layout">
-          {/* KOLOM KIRI: Cover & Tombol */}
           <div className="detail-page__cover-container">
             <div className="detail-page__cover-wrapper">
-              <img
-                src={cover}
-                alt={title}
-                className="detail-page__cover-image"
-              />
+              <img src={cover} alt={title} className="detail-page__cover-image" />
             </div>
 
             <button
@@ -171,9 +179,7 @@ export default function DetailPage() {
                 bookmarked
                   ? "detail-page__bookmark-button--saved"
                   : "detail-page__bookmark-button--unsaved"
-              } ${
-                isLoadingBookmark ? "detail-page__bookmark-button--loading" : ""
-              }`}
+              } ${isLoadingBookmark ? "detail-page__bookmark-button--loading" : ""}`}
             >
               {isLoadingBookmark ? (
                 <>
@@ -182,13 +188,11 @@ export default function DetailPage() {
                 </>
               ) : bookmarked ? (
                 <>
-                  {/* 👇 Ikon Solid (Penuh) jika sudah disimpan */}
                   <FaBookmark className="detail-page__icon" />
                   Tersimpan
                 </>
               ) : (
                 <>
-                  {/* 👇 Ikon Outline (Garis Luar) jika belum disimpan */}
                   <FaRegBookmark className="detail-page__icon" />
                   Bookmark
                 </>
@@ -196,24 +200,18 @@ export default function DetailPage() {
             </button>
           </div>
 
-          {/* KOLOM KANAN: Detail Info */}
           <div className="detail-page__info">
             <h1 className="detail-page__title">{title}</h1>
 
             <div className="detail-page__meta">
               <div className="detail-page__rating-badge">
                 <FaStar className="detail-page__icon" />
-                <span className="detail-page__rating-value">
-                  {String(rating)}
-                </span>
-                /10
+                <span className="detail-page__rating-value">{rating}</span>/10
               </div>
-
               <div className="detail-page__meta-item">
                 <FaUser className="detail-page__icon detail-page__icon--mr" />
                 <span>{author}</span>
               </div>
-
               <div className="detail-page__meta-item">
                 <FaClock className="detail-page__icon detail-page__icon--mr" />
                 <span>{status}</span>
@@ -242,28 +240,30 @@ export default function DetailPage() {
         <div className="detail-page__chapters">
           <h2 className="detail-page__chapters-title">Daftar Chapter</h2>
 
-          {chapters && chapters.length > 0 ? (
+          {chapters.length > 0 ? (
             <div className="detail-page__chapters-list">
               {chapters.map((chapter, idx) => {
-                const chapterNum =
-                  chapter.chapterNumber || chapter.id || idx + 1;
-                const linkParam = chapter.apiLink
+                const chapterNumber = chapter.chapterNumber ?? chapter.id ?? idx + 1;
+                const chapterTitle = chapter.title || `Chapter ${chapterNumber}`;
+                const urlParam = chapter.apiLink
                   ? encodeURIComponent(chapter.apiLink)
-                  : chapterNum;
-                const isRead = String(lastReadChapterId) === String(linkParam);
+                  : chapterNumber;
+
+                const isLastRead = isLastReadChapter(chapter);
 
                 return (
                   <Link
                     key={idx}
-                    to={`/read/${detail.slug || id}/${linkParam}`}
+                    to={`/read/${detail.slug || id}/${urlParam}`}
                     className={`detail-page__chapter-link ${
-                      isRead ? "detail-page__chapter-link--read" : ""
+                      isLastRead ? "detail-page__chapter-link--read" : ""
                     }`}
                   >
                     <span className="detail-page__chapter-title">
-                      {chapter.title || `Chapter ${chapterNum}`}
+                      {chapterTitle}
                     </span>
-                    {isRead && (
+
+                    {isLastRead && (
                       <span className="detail-page__chapter-badge">
                         Terakhir Dibaca
                       </span>
