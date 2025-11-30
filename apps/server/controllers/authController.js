@@ -82,7 +82,7 @@ exports.loginUser = async (req, res) => {
     jwt.sign(
       payload,
       process.env.JWT_SECRET, // Menggunakan kunci rahasia dari .env
-      { expiresIn: "1h" }, // Token berlaku 1 jam
+      { expiresIn: process.env.JWT_EXPIRES_IN },
       (err, token) => {
         if (err) throw err;
         res.json({
