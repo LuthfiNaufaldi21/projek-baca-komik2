@@ -1,4 +1,3 @@
-# Vercel Configuration for Client (Frontend)
 {
   "version": 2,
   "builds": [
