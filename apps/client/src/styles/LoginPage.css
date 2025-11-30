@@ -107,3 +107,32 @@
 .login-page__toggle-link {
   @apply font-bold text-[#4a56e2] hover:underline transition-colors;
 }
+
+/* Password Requirements */
+.login-page__password-requirements {
+  @apply mt-2 text-sm;
+}
+
+.login-page__requirements-title {
+  @apply text-gray-600 mb-1;
+}
+
+.login-page__requirements-list {
+  @apply space-y-1;
+}
+
+.login-page__requirement-item {
+  @apply flex items-center gap-2 text-gray-500;
+}
+
+.login-page__requirement-item--valid {
+  @apply text-green-600;
+}
+
+.login-page__requirement-icon {
+  @apply w-4 h-4 rounded-full flex items-center justify-center text-[10px] border border-gray-400;
+}
+
+.login-page__requirement-icon--valid {
+  @apply bg-green-100 border-green-600;
+}
