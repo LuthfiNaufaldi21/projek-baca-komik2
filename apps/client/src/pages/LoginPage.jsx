@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import * as authService from "../services/authService";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiMail, FiLock, FiCheck } from "react-icons/fi";
 import "../styles/LoginPage.css";
 import loginImage from "../assets/images/login-img.jpg";
 
@@ -126,19 +126,7 @@ export default function LoginPage() {
                 <label className="login-page__label">Alamat email</label>
                 <div className="login-page__input-group">
                   <div className="login-page__input-icon">
-                    <svg
-                      className="login-page__icon"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <FiMail className="login-page__icon" />
                   </div>
                   <input
                     type="email"
@@ -154,19 +142,7 @@ export default function LoginPage() {
                 <label className="login-page__label">Password</label>
                 <div className="login-page__input-group">
                   <div className="login-page__input-icon">
-                    <svg
-                      className="login-page__icon"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
+                    <FiLock className="login-page__icon" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -188,38 +164,44 @@ export default function LoginPage() {
                   </button>
                 </div>
                 {!isLoginView && (
-                  <div className="mt-2 text-sm">
-                    <p className="text-gray-600 mb-1">Syarat Password:</p>
-                    <ul className="space-y-1">
+                  <div className="login-page__password-requirements">
+                    <p className="login-page__requirements-title">
+                      Syarat Password:
+                    </p>
+                    <ul className="login-page__requirements-list">
                       <li
-                        className={`flex items-center gap-2 ${
-                          hasMinLength ? "text-green-600" : "text-gray-500"
+                        className={`login-page__requirement-item ${
+                          hasMinLength
+                            ? "login-page__requirement-item--valid"
+                            : ""
                         }`}
                       >
                         <span
-                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] border ${
+                          className={`login-page__requirement-icon ${
                             hasMinLength
-                              ? "bg-green-100 border-green-600"
-                              : "border-gray-400"
+                              ? "login-page__requirement-icon--valid"
+                              : ""
                           }`}
                         >
-                          {hasMinLength && "✓"}
+                          {hasMinLength && <FiCheck />}
                         </span>
                         Minimal 8 karakter
                       </li>
                       <li
-                        className={`flex items-center gap-2 ${
-                          hasNumberOrSymbol ? "text-green-600" : "text-gray-500"
+                        className={`login-page__requirement-item ${
+                          hasNumberOrSymbol
+                            ? "login-page__requirement-item--valid"
+                            : ""
                         }`}
                       >
                         <span
-                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] border ${
+                          className={`login-page__requirement-icon ${
                             hasNumberOrSymbol
-                              ? "bg-green-100 border-green-600"
-                              : "border-gray-400"
+                              ? "login-page__requirement-icon--valid"
+                              : ""
                           }`}
                         >
-                          {hasNumberOrSymbol && "✓"}
+                          {hasNumberOrSymbol && <FiCheck />}
                         </span>
                         Mengandung angka atau simbol
                       </li>
@@ -235,19 +217,7 @@ export default function LoginPage() {
                   </label>
                   <div className="login-page__input-group">
                     <div className="login-page__input-icon">
-                      <svg
-                        className="login-page__icon"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                      <FiLock className="login-page__icon" />
                     </div>
                     <input
                       type={showConfirmPassword ? "text" : "password"}
