@@ -29,7 +29,8 @@ const connectDB = async () => {
         initializeModels();
         
         // Sinkronisasi database (membuat table 'users' jika belum ada)
-        await sequelize.sync({ alter: true }); 
+        // HAPUS { alter: true } untuk mencegah duplikasi constraint
+        await sequelize.sync(); 
         console.log('✅ All models were synchronized successfully.');
 
     } catch (error) {
