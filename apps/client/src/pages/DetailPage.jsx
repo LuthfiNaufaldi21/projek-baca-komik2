@@ -14,7 +14,9 @@ import {
   FaBookmark,
   FaRegBookmark,
   FaSpinner,
+  FaCheckCircle,
 } from "react-icons/fa";
+import { FiRefreshCw, FiArrowDown, FiArrowUp } from "react-icons/fi";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
@@ -31,10 +33,28 @@ export default function DetailPage() {
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
   const [liveChapters, setLiveChapters] = useState([]);
+  const [chapterError, setChapterError] = useState(false);
+  const [readChapters, setReadChapters] = useState(new Set());
+  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
 
   const { showToast } = useToast();
   const readingHistory = getReadingHistory(); // { "one-piece": "chapter-1105", "solo-leveling": "https://api.example.com/chapter/180" }
   const lastReadKey = readingHistory[id]; // key chapter terakhir yang dibaca
+
+  // Load read chapters from localStorage
+  useEffect(() => {
+    if (isLoggedIn && id) {
+      const storedReadChapters = localStorage.getItem(`readChapters_${id}`);
+      if (storedReadChapters) {
+        try {
+          const parsed = JSON.parse(storedReadChapters);
+          setReadChapters(new Set(parsed));
+        } catch (e) {
+          console.error("Failed to parse read chapters:", e);
+        }
+      }
+    }
+  }, [id, isLoggedIn]);
 
   useEffect(() => {
     let mounted = true;
@@ -51,13 +71,15 @@ export default function DetailPage() {
           const liveData = await get(`/detail-komik/${id}`);
           if (liveData?.chapters?.length > 0) {
             setLiveChapters(liveData.chapters);
+            setChapterError(false);
           }
-        } catch (err) {
+        } catch {
           console.log("Live chapters gagal → pakai data lokal");
+          setChapterError(true);
         }
 
         setDetail(localData);
-      } catch (err) {
+      } catch {
         setDetail(null);
       } finally {
         if (mounted) setLoading(false);
@@ -84,7 +106,15 @@ export default function DetailPage() {
     detail?.description ||
     "Sinopsis belum tersedia untuk komik ini.";
 
-  const chapters = liveChapters.length > 0 ? liveChapters : detail?.chapters || [];
+  const chapters =
+    liveChapters.length > 0 ? liveChapters : detail?.chapters || [];
+
+  // Sort chapters based on sortOrder
+  const sortedChapters = [...chapters].sort((a, b) => {
+    const numA = a.chapterNumber ?? a.id ?? 0;
+    const numB = b.chapterNumber ?? b.id ?? 0;
+    return sortOrder === "desc" ? numB - numA : numA - numB;
+  });
 
   const relatedComics = detail
     ? localComicsData
@@ -118,9 +148,44 @@ export default function DetailPage() {
     }
   };
 
+  const handleReloadChapters = async () => {
+    try {
+      setChapterError(false);
+      const liveData = await get(`/detail-komik/${id}`);
+      if (liveData?.chapters?.length > 0) {
+        setLiveChapters(liveData.chapters);
+        showToast("Chapter berhasil dimuat!", "success");
+      } else {
+        setChapterError(true);
+        showToast("Tidak ada chapter ditemukan", "error");
+      }
+    } catch {
+      setChapterError(true);
+      showToast("Gagal memuat chapter, coba lagi", "error");
+    }
+  };
+
+  const markChapterAsRead = (chapterKey) => {
+    if (!isLoggedIn) return;
+    const newReadChapters = new Set(readChapters);
+    newReadChapters.add(String(chapterKey));
+    setReadChapters(newReadChapters);
+    // Save to localStorage
+    localStorage.setItem(
+      `readChapters_${id}`,
+      JSON.stringify(Array.from(newReadChapters))
+    );
+  };
+
+  const isChapterRead = (chapter) => {
+    const chapterKey = getChapterKey(chapter);
+    return readChapters.has(String(chapterKey));
+  };
+
   const getChapterKey = (chapter) => {
     if (chapter.apiLink) return chapter.apiLink;
-    if (chapter.chapterNumber !== undefined) return `ch-${chapter.chapterNumber}`;
+    if (chapter.chapterNumber !== undefined)
+      return `ch-${chapter.chapterNumber}`;
     return `idx-${chapters.indexOf(chapter)}`;
   };
 
@@ -149,8 +214,8 @@ export default function DetailPage() {
         <p className="detail-page__not-found-text">
           Maaf, komik yang Anda cari tidak ada di database kami.
         </p>
-        <Link to="/" className="detail-page__not-found-link">
-          Kembali ke Home
+        <Link to="/daftar-komik" className="detail-page__not-found-button">
+          Jelajahi Daftar Komik
         </Link>
       </div>
     );
@@ -169,7 +234,11 @@ export default function DetailPage() {
         <div className="detail-page__layout">
           <div className="detail-page__cover-container">
             <div className="detail-page__cover-wrapper">
-              <img src={cover} alt={title} className="detail-page__cover-image" />
+              <img
+                src={cover}
+                alt={title}
+                className="detail-page__cover-image"
+              />
             </div>
 
             <button
@@ -179,7 +248,9 @@ export default function DetailPage() {
                 bookmarked
                   ? "detail-page__bookmark-button--saved"
                   : "detail-page__bookmark-button--unsaved"
-              } ${isLoadingBookmark ? "detail-page__bookmark-button--loading" : ""}`}
+              } ${
+                isLoadingBookmark ? "detail-page__bookmark-button--loading" : ""
+              }`}
             >
               {isLoadingBookmark ? (
                 <>
@@ -238,28 +309,88 @@ export default function DetailPage() {
         </div>
 
         <div className="detail-page__chapters">
-          <h2 className="detail-page__chapters-title">Daftar Chapter</h2>
+          <div className="detail-page__chapters-header">
+            <h2 className="detail-page__chapters-title">Daftar Chapter</h2>
+            <div className="detail-page__chapters-actions">
+              {/* HANYA TAMPILKAN SORT JIKA ADA CHAPTER */}
+              {sortedChapters.length > 0 && (
+                <button
+                  onClick={() =>
+                    setSortOrder(sortOrder === "desc" ? "asc" : "desc")
+                  }
+                  className="detail-page__sort-button"
+                  title={
+                    sortOrder === "desc"
+                      ? "Urutkan dari Chapter Lama ke Baru"
+                      : "Urutkan dari Chapter Baru ke Lama"
+                  }
+                >
+                  {sortOrder === "desc" ? (
+                    <>
+                      <FiArrowDown className="detail-page__sort-icon" />
+                      Terbaru
+                    </>
+                  ) : (
+                    <>
+                      <FiArrowUp className="detail-page__sort-icon" />
+                      Terlama
+                    </>
+                  )}
+                </button>
+              )}
 
-          {chapters.length > 0 ? (
+              {/* TOMBOL RELOAD */}
+              {chapterError && liveChapters.length === 0 && (
+                <button
+                  onClick={handleReloadChapters}
+                  className="detail-page__reload-button"
+                  title="Muat ulang chapter"
+                >
+                  <FiRefreshCw className="detail-page__reload-icon" />
+                  Muat Ulang
+                </button>
+              )}
+            </div>
+          </div>
+
+          {chapterError &&
+          liveChapters.length === 0 &&
+          chapters.length === 0 ? (
+            <div className="detail-page__chapter-error">
+              <p>Gagal memuat daftar chapter. Silakan coba lagi.</p>
+            </div>
+          ) : sortedChapters.length > 0 ? (
             <div className="detail-page__chapters-list">
-              {chapters.map((chapter, idx) => {
-                const chapterNumber = chapter.chapterNumber ?? chapter.id ?? idx + 1;
-                const chapterTitle = chapter.title || `Chapter ${chapterNumber}`;
+              {sortedChapters.map((chapter, idx) => {
+                const chapterNumber =
+                  chapter.chapterNumber ?? chapter.id ?? idx + 1;
+                const chapterTitle =
+                  chapter.title || `Chapter ${chapterNumber}`;
                 const urlParam = chapter.apiLink
                   ? encodeURIComponent(chapter.apiLink)
                   : chapterNumber;
 
                 const isLastRead = isLastReadChapter(chapter);
+                const isRead = isChapterRead(chapter);
+                const chapterKey = getChapterKey(chapter);
 
                 return (
                   <Link
                     key={idx}
                     to={`/read/${detail.slug || id}/${urlParam}`}
+                    onClick={() => markChapterAsRead(chapterKey)}
                     className={`detail-page__chapter-link ${
                       isLastRead ? "detail-page__chapter-link--read" : ""
+                    } ${
+                      isRead && !isLastRead
+                        ? "detail-page__chapter-link--completed"
+                        : ""
                     }`}
                   >
                     <span className="detail-page__chapter-title">
+                      {isRead && !isLastRead && (
+                        <FaCheckCircle className="detail-page__chapter-check-icon" />
+                      )}
                       {chapterTitle}
                     </span>
 

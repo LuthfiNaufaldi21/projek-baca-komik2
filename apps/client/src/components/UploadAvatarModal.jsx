@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FiX, FiCamera, FiUpload, FiTrash2 } from "react-icons/fi";
+import { FiX, FiUpload, FiTrash2 } from "react-icons/fi";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import { useToast } from "../hooks/useToast";
 import ConfirmModal from "./ConfirmModal";
@@ -153,11 +153,6 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
                   </span>
                 </div>
               )}
-
-              {/* Camera Icon Overlay */}
-              <div className="upload-avatar-modal__preview-overlay">
-                <FiCamera className="upload-avatar-modal__preview-icon" />
-              </div>
             </div>
           </div>
 

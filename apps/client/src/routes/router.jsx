@@ -13,6 +13,7 @@ import SearchPage from "../pages/SearchPage";
 import DetailPage from "../pages/DetailPage";
 import ReaderPage from "../pages/ReaderPage";
 import RiwayatPage from "../pages/RiwayatPage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 export default function AppRouter() {
   return (
@@ -31,6 +32,7 @@ export default function AppRouter() {
       <Route path="/detail/:id" element={<DetailPage />} />
       <Route path="/genre/:tag" element={<GenrePage />} />
       <Route path="/read/:comicId/:chapterId" element={<ReaderPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

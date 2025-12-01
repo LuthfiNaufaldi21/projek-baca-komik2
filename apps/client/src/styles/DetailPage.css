@@ -108,8 +108,53 @@
   @apply bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md;
 }
 
+.detail-page__chapters-header {
+  @apply flex items-center justify-between mb-4;
+}
+
 .detail-page__chapters-title {
-  @apply text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4;
+  @apply text-2xl font-bold text-gray-800 dark:text-gray-100;
+}
+
+.detail-page__chapters-actions {
+  @apply flex items-center gap-2;
+}
+
+.detail-page__sort-button {
+  @apply flex items-center gap-2 px-4 py-2
+    bg-gray-100 dark:bg-gray-700
+    text-gray-700 dark:text-gray-300
+    border border-gray-300 dark:border-gray-600
+    rounded-lg font-medium text-sm
+    hover:bg-gray-200 dark:hover:bg-gray-600
+    hover:border-primary dark:hover:border-primary
+    transition-all duration-200
+    shadow-sm hover:shadow-md;
+}
+
+.detail-page__sort-icon {
+  @apply w-4 h-4;
+}
+
+.detail-page__reload-button {
+  @apply flex items-center gap-2 px-4 py-2
+    bg-primary hover:bg-primary-hover
+    text-white rounded-lg font-medium
+    transition-all duration-200
+    shadow-sm hover:shadow-md
+    active:scale-95;
+}
+
+.detail-page__reload-icon {
+  @apply w-4 h-4;
+}
+
+.detail-page__chapter-error {
+  @apply bg-red-50 dark:bg-red-900/20
+    border border-red-200 dark:border-red-800
+    text-red-600 dark:text-red-400
+    px-4 py-3 rounded-lg mb-4
+    flex items-center gap-2;
 }
 
 .detail-page__chapters-list {
@@ -129,19 +174,21 @@
 }
 
 .detail-page__not-found {
-  @apply text-center py-12;
+  @apply flex flex-col items-center justify-center text-center px-4 min-h-[60vh];
 }
 
 .detail-page__not-found-title {
-  @apply text-3xl font-bold text-red-600 mb-4;
+  @apply text-3xl font-bold text-red-600 dark:text-red-500 mb-4;
 }
 
 .detail-page__not-found-text {
-  @apply text-gray-600 dark:text-gray-400 mb-4;
+  @apply text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto;
 }
 
-.detail-page__not-found-link {
-  @apply text-primary hover:underline;
+.detail-page__not-found-button {
+  @apply px-6 py-3 bg-primary hover:bg-primary-hover 
+    text-white font-medium rounded-lg 
+    transition-all duration-200 shadow-md hover:shadow-lg;
 }
 
 .detail-page__loading {
@@ -186,15 +233,32 @@
 
 .detail-page__chapter-link--read {
   @apply relative bg-primary/5 dark:bg-primary/10 border-l-4 border-primary rounded-md overflow-hidden;
-  background-image: linear-gradient(to right, rgba(59, 130, 246, 0.08), transparent);
+  background-image: linear-gradient(
+    to right,
+    rgba(59, 130, 246, 0.08),
+    transparent
+  );
 }
 
 .detail-page__chapter-link--read::before {
-  content: none; 
+  content: none;
 }
 
 .detail-page__chapter-link--read .detail-page__chapter-title {
   @apply pl-4 pr-32 font-semibold text-primary dark:text-blue-300;
+}
+
+/* Styling untuk chapter yang sudah dibaca (tapi bukan yang terakhir) */
+.detail-page__chapter-link--completed {
+  @apply bg-gray-200 dark:bg-gray-800/30 border-l-2 border-green-500/40;
+}
+
+.detail-page__chapter-link--completed .detail-page__chapter-title {
+  @apply text-gray-500 dark:text-gray-400 pl-3 decoration-slate-400;
+}
+
+.detail-page__chapter-check-icon {
+  @apply inline-block w-4 h-4 mr-2 mb-1 text-green-500 dark:text-green-400;
 }
 
 .detail-page__chapter-badge {

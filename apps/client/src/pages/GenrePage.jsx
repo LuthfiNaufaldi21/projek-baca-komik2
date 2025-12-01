@@ -1,14 +1,23 @@
-import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { getComicsByGenre } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
+import { FiArrowLeft } from "react-icons/fi";
 import "../styles/GenrePage.css";
 
 export default function GenrePage() {
   const { tag } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigationIndexRef = useRef(null);
   const decodedTag = decodeURIComponent(tag);
   const [filtered, setFiltered] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Track navigation index on mount
+  useEffect(() => {
+    navigationIndexRef.current = window.history.length;
+  }, []);
 
   useEffect(() => {
     const fetchComics = async () => {
@@ -25,9 +34,32 @@ export default function GenrePage() {
     fetchComics();
   }, [decodedTag]);
 
+  const handleBack = () => {
+    // Check if previous page was ReaderPage
+    if (window.history.length > 1 && navigationIndexRef.current) {
+      const previousState = location.state;
+      // If coming from ReaderPage, go back twice
+      if (previousState?.fromReader || document.referrer.includes("/read/")) {
+        navigate(-2);
+      } else {
+        navigate(-1);
+      }
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div>
-      <h1 className="genre-page__title">Genre: {decodedTag}</h1>
+      {/* Header dengan tombol kembali */}
+      <div className="genre-page__header">
+        <h1 className="genre-page__header-title">Genre: {decodedTag}</h1>
+        <button onClick={handleBack} className="genre-page__back-button">
+          <FiArrowLeft className="genre-page__back-icon" />
+          Kembali
+        </button>
+      </div>
+
       <p className="genre-page__description">
         Menampilkan {filtered.length} komik dengan genre "{decodedTag}".
       </p>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
@@ -10,8 +10,15 @@ import "../styles/RiwayatPage.css";
 export default function RiwayatPage() {
   const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationIndexRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Track navigation index on mount
+  useEffect(() => {
+    navigationIndexRef.current = window.history.length;
+  }, []);
 
   // Jika belum login
   if (!isLoggedIn) {
@@ -85,23 +92,35 @@ export default function RiwayatPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleBack = () => {
+    // Check if previous page was ReaderPage
+    if (window.history.length > 1 && navigationIndexRef.current) {
+      const previousState = location.state;
+      // If coming from ReaderPage, go back twice
+      if (previousState?.fromReader || document.referrer.includes("/read/")) {
+        navigate(-2);
+      } else {
+        navigate(-1);
+      }
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="riwayat-page__container">
       {/* HEADER + TOMBOL KEMBALI */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
+      <div className="riwayat-page__header">
+        <div className="riwayat-page__header-text">
           <h1 className="riwayat-page__title">Riwayat Bacaan</h1>
           <p className="riwayat-page__count">
             Total {readingHistory.length} komik
           </p>
         </div>
 
-        {/* TOMBOL KEMBALI – PASTI JALAN */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all font-medium shadow-md"
-        >
-          <FiArrowLeft className="w-5 h-5" />
+        {/* TOMBOL KEMBALI */}
+        <button onClick={handleBack} className="riwayat-page__back-button">
+          <FiArrowLeft className="riwayat-page__back-icon" />
           Kembali
         </button>
       </div>

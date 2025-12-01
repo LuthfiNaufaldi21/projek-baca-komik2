@@ -8,6 +8,7 @@ import {
   FiChevronRight,
   FiChevronDown,
   FiArrowUp,
+  FiRefreshCw,
 } from "react-icons/fi";
 import "../styles/ReaderPage.css";
 
@@ -20,6 +21,7 @@ export default function ReaderPage() {
   const [images, setImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(true); // Ganti nama biar jelas
   const [loadingDetail, setLoadingDetail] = useState(true);
+  const [imageError, setImageError] = useState(false); // Error state for images
 
   const [detail, setDetail] = useState(null);
   const [allChapters, setAllChapters] = useState([]); // Daftar semua chapter
@@ -118,6 +120,7 @@ export default function ReaderPage() {
     const loadImages = async () => {
       try {
         setLoadingImages(true);
+        setImageError(false); // Reset error state
         window.scrollTo({ top: 0, behavior: "instant" });
         setScrollProgress(0);
 
@@ -140,6 +143,7 @@ export default function ReaderPage() {
       } catch (e) {
         console.error("Failed to load images:", e);
         setImages([]);
+        if (mounted) setImageError(true); // Set error state
       } finally {
         if (mounted) setLoadingImages(false);
       }
@@ -150,10 +154,30 @@ export default function ReaderPage() {
     };
   }, [comicId, decodedChapterId]);
 
-  // 4. Update History
+  // 4. Update History & Mark Chapter as Read
   useEffect(() => {
     if (comicId && decodedChapterId && isLoggedIn) {
       updateReadingHistory(comicId, decodedChapterId);
+
+      // Mark chapter as read in localStorage
+      const chapterKey = decodedChapterId;
+      const storageKey = `readChapters_${comicId}`;
+      const storedReadChapters = localStorage.getItem(storageKey);
+
+      let readChaptersArray = [];
+      if (storedReadChapters) {
+        try {
+          readChaptersArray = JSON.parse(storedReadChapters);
+        } catch (e) {
+          console.error("Failed to parse read chapters:", e);
+        }
+      }
+
+      // Add current chapter if not already in list
+      if (!readChaptersArray.includes(String(chapterKey))) {
+        readChaptersArray.push(String(chapterKey));
+        localStorage.setItem(storageKey, JSON.stringify(readChaptersArray));
+      }
     }
     // eslint-disable-next-line
   }, [comicId, decodedChapterId, isLoggedIn]);
@@ -219,6 +243,34 @@ export default function ReaderPage() {
     navigate(`/read/${comicId}/${linkParam}`);
   };
 
+  // Reload images when failed
+  const handleReloadImages = async () => {
+    try {
+      setLoadingImages(true);
+      setImageError(false);
+
+      const data = await getChapterImages(comicId, decodedChapterId);
+      const imgs = Array.isArray(data?.images) ? data.images : [];
+      const normalized = imgs
+        .map((it) =>
+          typeof it === "string"
+            ? { src: it, fallbackSrc: it }
+            : {
+                src: it?.src || it?.url || "",
+                fallbackSrc: it?.fallbackSrc || it?.src || "",
+                alt: it?.alt || "",
+              }
+        )
+        .filter((it) => it.src);
+      setImages(normalized);
+    } catch (e) {
+      console.error("Failed to reload images:", e);
+      setImageError(true);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
   if (loadingDetail && allChapters.length === 0) {
     return (
       <div className="reader-loading">
@@ -240,10 +292,23 @@ export default function ReaderPage() {
   if (!currentChapter || (images.length === 0 && !loadingImages)) {
     return (
       <div className="reader-error">
-        <h2>Chapter tidak ditemukan</h2>
-        <Link to={`/detail/${comicId}`} className="reader-btn-back">
-          Kembali ke Detail
-        </Link>
+        <h2>Chapter tidak ditemukan atau gagal dimuat</h2>
+        {imageError && (
+          <p className="reader-error-message">
+            Gagal memuat gambar chapter. Silakan coba lagi.
+          </p>
+        )}
+        <div className="reader-error-actions">
+          {imageError && (
+            <button onClick={handleReloadImages} className="reader-btn-reload">
+              <FiRefreshCw className="reader-icon-reload" />
+              Coba Lagi
+            </button>
+          )}
+          <Link to={`/detail/${comicId}`} className="reader-btn-back">
+            Kembali ke Detail
+          </Link>
+        </div>
       </div>
     );
   }

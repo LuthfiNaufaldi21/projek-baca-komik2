@@ -17,7 +17,23 @@
 }
 
 .riwayat-page__header {
-  @apply mb-8 border-b border-gray-200 dark:border-gray-700 pb-4;
+  @apply flex items-center justify-between mb-6;
+}
+
+.riwayat-page__header-text {
+  @apply flex flex-col;
+}
+
+.riwayat-page__back-button {
+  @apply flex items-center gap-2 px-5 py-2.5 
+    bg-primary hover:bg-primary-hover 
+    text-white rounded-lg font-medium
+    transition-all duration-200
+    shadow-md hover:shadow-lg;
+}
+
+.riwayat-page__back-icon {
+  @apply w-5 h-5;
 }
 
 .riwayat-page__title {
