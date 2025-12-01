@@ -1,0 +1,17 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/client/**/*'
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/server/**/*'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: 'docs/**/*'
+      - any-glob-to-any-file: '**/*.md'
+
+config:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**/*'
+      - any-glob-to-any-file: 'package.json'
