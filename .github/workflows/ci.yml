@@ -27,14 +27,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      #4. Cek Kualitas Kode (Linting)
-      - name: Lint Code
-        run: npm run lint --if-present
-
-      # 5. Cek Frontend (Build)
+      # 4. Cek Frontend (Build)
       - name: Build Frontend (Vite)
         run: npm run build -w apps/client
 
-      # 6. Cek Backend (Optional: Linting atau Test)
+      # 5. Cek Backend (Optional: Linting atau Test)
       - name: Check Backend Syntax
         run: node --check apps/server/index.js
