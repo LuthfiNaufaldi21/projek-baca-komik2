@@ -1,6 +1,5 @@
 name: CI KomiKita Monorepo
 
-# Kapan action ini jalan?
 on:
   push:
     branches: ["master"]
@@ -22,19 +21,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm' # Otomatis cache node_modules biar cepat
+          cache: 'npm'
 
-      # 3. Install Dependencies (Cukup sekali di root karena monorepo)
+      # 3. Install Dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # 4. Cek Frontend (Build)
-      # Menggunakan flag -w untuk menargetkan workspace apps/client
+      #4. Cek Kualitas Kode (Linting)
+      - name: Lint Code
+        run: npm run lint --if-present
+
+      # 5. Cek Frontend (Build)
       - name: Build Frontend (Vite)
         run: npm run build -w apps/client
 
-      # 5. Cek Backend (Optional: Linting atau Test)
-      # Backend Express biasanya tidak butuh 'build' kecuali pakai TypeScript
-      # Tapi kita bisa pastikan tidak ada syntax error
+      # 6. Cek Backend (Optional: Linting atau Test)
       - name: Check Backend Syntax
         run: node --check apps/server/index.js
