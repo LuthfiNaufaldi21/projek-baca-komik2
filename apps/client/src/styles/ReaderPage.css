@@ -85,7 +85,7 @@
 
 /* Footer Navigation */
 .reader-footer {
-  @apply max-w-[800px] mx-auto w-full px-4 py-12 pb-20;
+  @apply max-w-[800px] mx-auto w-full px-3 sm:px-4 py-8 sm:py-12 pb-16 sm:pb-24;
 }
 
 .reader-nav-buttons {
@@ -195,14 +195,22 @@
 
 /* Container Tombol Navigasi (Flexbox) */
 .reader-nav-buttons {
-  /* Mobile: Susun ke bawah (Reverse agar Dropdown paling atas/mudah dijangkau) 
-     Desktop: Sejajar satu baris */
-  @apply flex flex-col-reverse md:flex-row items-stretch md:items-center gap-3 w-full mb-6 relative;
+  /* Mobile: Baris tunggal dengan dropdown di tengah
+     Desktop: Tetap sejajar satu baris */
+  @apply flex flex-row items-center gap-2 sm:gap-3 w-full mb-4 sm:mb-6 relative;
 }
 
 /* Style Tombol Prev & Next */
 .reader-nav-btn {
-  @apply flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-200 text-sm md:text-base border border-transparent whitespace-nowrap;
+  @apply flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2.5 sm:py-3 rounded-xl font-bold transition-all duration-200 text-xs sm:text-sm md:text-base border border-transparent whitespace-nowrap flex-shrink-0;
+}
+
+.reader-nav-btn__icon {
+  @apply w-5 h-5;
+}
+
+.reader-nav-btn__text {
+  @apply hidden sm:inline;
 }
 .reader-nav-btn:disabled {
   @apply bg-gray-900 text-gray-600 cursor-not-allowed opacity-50 border-gray-800;
@@ -218,14 +226,14 @@
 
 /* Wrapper Dropdown (Agar berada di tengah di desktop) */
 .reader-dropdown-wrapper {
-  @apply relative flex-1 z-40; /* z-40 agar muncul di atas elemen footer lain */
+  @apply relative flex-1 z-40 max-w-full; /* z-40 agar muncul di atas elemen footer lain */
 }
 
 /* Tombol Pemicu Dropdown */
 .reader-dropdown-trigger {
-  @apply w-full flex items-center justify-between px-4 py-3 
+  @apply w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm md:text-base
   bg-[#111] hover:bg-[#1a1a1a] text-gray-200 border border-gray-800 
-  rounded-xl transition-all duration-200 cursor-pointer text-sm md:text-base font-medium;
+  rounded-xl transition-all duration-200 cursor-pointer font-medium;
 }
 .reader-dropdown-trigger span {
   @apply truncate mr-2; /* Agar teks panjang tidak merusak layout */
@@ -241,7 +249,7 @@
 
 /* List Menu (Diperbaiki: Menghapus class animasi plugin yang error) */
 .reader-dropdown-menu {
-  @apply absolute bottom-[115%] left-0 w-full 
+  @apply absolute bottom-[calc(100%+8px)] left-0 right-0 sm:w-[400px] sm:mx-auto
   bg-[#111] border border-gray-800 rounded-xl shadow-2xl shadow-black/80 
   max-h-80 overflow-y-auto p-1.5
   origin-bottom transition-all duration-200; /* Class animate-in dihapus agar tidak error */
@@ -249,9 +257,9 @@
 
 /* Item dalam List */
 .reader-dropdown-item {
-  @apply block w-full text-left px-4 py-3 
+  @apply block w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 
   text-gray-400 hover:text-white hover:bg-gray-800 
-  rounded-lg text-sm transition-colors cursor-pointer border-b border-gray-900 last:border-0;
+  rounded-lg text-xs sm:text-sm transition-colors cursor-pointer border-b border-gray-900 last:border-0;
 }
 .reader-dropdown-item.active {
   @apply bg-primary/10 text-primary font-bold border-primary/20;

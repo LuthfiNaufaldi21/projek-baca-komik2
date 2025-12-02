@@ -26,7 +26,6 @@
   @apply w-6 h-6 stroke-2;
 }
 
-/* Dark mode adjustments */
 :root.dark .back-to-top {
   @apply shadow-xl shadow-primary/30;
 }

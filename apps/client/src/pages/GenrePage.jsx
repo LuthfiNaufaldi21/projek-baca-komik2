@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { getComicsByGenre } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
+import Pagination from "../components/Pagination";
 import { FiArrowLeft } from "react-icons/fi";
 import "../styles/GenrePage.css";
 
@@ -13,6 +14,8 @@ export default function GenrePage() {
   const decodedTag = decodeURIComponent(tag);
   const [filtered, setFiltered] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const comicsPerPage = 10;
 
   // Track navigation index on mount
   useEffect(() => {
@@ -34,6 +37,11 @@ export default function GenrePage() {
     fetchComics();
   }, [decodedTag]);
 
+  // Reset to page 1 when tag changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [decodedTag]);
+
   const handleBack = () => {
     // Check if previous page was ReaderPage
     if (window.history.length > 1 && navigationIndexRef.current) {
@@ -48,6 +56,17 @@ export default function GenrePage() {
       navigate("/");
     }
   };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filtered.length / comicsPerPage);
+  const startIndex = (currentPage - 1) * comicsPerPage;
+  const endIndex = startIndex + comicsPerPage;
+  const currentComics = filtered.slice(startIndex, endIndex);
 
   return (
     <div>
@@ -66,11 +85,20 @@ export default function GenrePage() {
       {isLoading ? (
         <div className="genre-page__loading">Loading...</div>
       ) : (
-        <div className="genre-page__grid">
-          {filtered.map((comic) => (
-            <ComicCard key={comic.id} comic={comic} />
-          ))}
-        </div>
+        <>
+          <div className="genre-page__grid">
+            {currentComics.map((comic) => (
+              <ComicCard key={comic.id} comic={comic} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
       )}
       {!isLoading && filtered.length === 0 && (
         <div className="genre-page__empty-state">

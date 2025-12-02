@@ -41,7 +41,7 @@
 }
 
 .login-page__form-section {
-  @apply w-full md:w-1/2 flex items-center justify-center p-8 md:p-12 bg-white dark:bg-gray-800 transition-colors duration-300;
+  @apply w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-12 bg-white dark:bg-gray-800 transition-colors duration-300;
 }
 
 .login-page__form-wrapper {
@@ -49,11 +49,11 @@
 }
 
 .login-page__form-header {
-  @apply text-center mb-10;
+  @apply text-center mb-6 sm:mb-8 md:mb-10;
 }
 
 .login-page__form-title {
-  @apply text-3xl font-bold text-[#4a56e2] mb-2;
+  @apply text-2xl sm:text-3xl font-bold text-[#4a56e2] mb-2;
 }
 
 .login-page__form-subtitle {

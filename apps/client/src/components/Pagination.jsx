@@ -2,7 +2,9 @@ import "../styles/Pagination.css";
 
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   const pages = [];
-  const maxVisiblePages = 5;
+  // Kurangi visible pages di mobile: 3 untuk mobile, 5 untuk desktop
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const maxVisiblePages = isMobile ? 3 : 5;
 
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
