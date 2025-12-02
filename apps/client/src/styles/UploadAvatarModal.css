@@ -6,7 +6,7 @@
 }
 
 .upload-avatar-modal__content {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-[95%] sm:w-full max-w-md mx-4;
   animation: slideUp 0.3s ease-out;
 }
 

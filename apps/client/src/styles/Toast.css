@@ -3,35 +3,65 @@
 }
 
 .toast {
-  @apply min-w-[350px] max-w-md px-6 py-4 bg-white dark:bg-gray-800 
+  @apply min-w-[280px] sm:min-w-[350px] max-w-md px-4 sm:px-6 py-4 bg-white dark:bg-gray-800 
   rounded-2xl shadow-2xl
   flex items-center gap-4 
   pointer-events-auto cursor-pointer
   transition-all duration-500;
-  
+
   transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.toast--hidden { @apply opacity-0 -translate-y-12 scale-90 pointer-events-none; }
+.toast--hidden {
+  @apply opacity-0 -translate-y-12 scale-90 pointer-events-none;
+}
 
-.toast--success { @apply border-l-8 border-l-green-500; }
-.toast--success .toast__icon { @apply text-green-600 bg-green-100 dark:bg-green-900/30; }
+.toast--success {
+  @apply border-l-8 border-l-green-500;
+}
+.toast--success .toast__icon {
+  @apply text-green-600 bg-green-100 dark:bg-green-900/30;
+}
 
-.toast--error { @apply border-l-8 border-l-red-500; }
-.toast--error .toast__icon { @apply text-red-600 bg-red-100 dark:bg-red-900/30; }
+.toast--error {
+  @apply border-l-8 border-l-red-500;
+}
+.toast--error .toast__icon {
+  @apply text-red-600 bg-red-100 dark:bg-red-900/30;
+}
 
-.toast--info { @apply border-l-8 border-l-blue-500; }
-.toast--info .toast__icon { @apply text-blue-600 bg-blue-100 dark:bg-blue-900/30; }
+.toast--info {
+  @apply border-l-8 border-l-blue-500;
+}
+.toast--info .toast__icon {
+  @apply text-blue-600 bg-blue-100 dark:bg-blue-900/30;
+}
 
-.toast__content { @apply flex flex-col; }
-.toast__title { @apply text-base font-bold text-gray-800 dark:text-gray-100; }
-.toast__message { @apply text-sm text-gray-500 dark:text-gray-400 font-medium; }
+.toast__content {
+  @apply flex flex-col;
+}
+.toast__title {
+  @apply text-base font-bold text-gray-800 dark:text-gray-100;
+}
+.toast__message {
+  @apply text-sm text-gray-500 dark:text-gray-400 font-medium;
+}
 
-.toast__icon { @apply w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full; }
-.toast__icon svg { @apply w-6 h-6; }
+.toast__icon {
+  @apply w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full;
+}
+.toast__icon svg {
+  @apply w-6 h-6;
+}
 
 @keyframes popIn {
-  0% { opacity: 0; transform: translateY(-20px) scale(0.8); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

@@ -1,13 +1,11 @@
 .app__wrapper {
-  @apply flex flex-col min-h-screen bg-slate-50 dark:bg-gray-900;
+  @apply flex flex-col min-h-screen bg-slate-50 dark:bg-gray-900 overflow-x-hidden;
 }
 
 .app__main {
   @apply flex-grow;
-  
-  @apply max-w-6xl mx-auto my-8 p-4 md:p-6;
-  
+
+  @apply w-full max-w-6xl mx-auto my-4 sm:my-8 px-3 sm:px-4 md:px-6 py-4 md:py-6;
+
   @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-700/50;
-  
-  @apply min-w-[175vh];
 }

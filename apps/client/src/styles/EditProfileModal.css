@@ -6,7 +6,7 @@
 }
 
 .modal-content {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-[95%] sm:w-full max-w-md max-h-[90vh] overflow-y-auto;
   animation: slideUp 0.3s ease-out;
 }
 

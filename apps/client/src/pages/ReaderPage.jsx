@@ -402,8 +402,10 @@ export default function ReaderPage() {
             onClick={() => prevChapter && handleNavigate(prevChapter)}
             disabled={!prevChapter}
             className="reader-nav-btn reader-nav-btn--prev"
+            title="Chapter Sebelumnya"
           >
-            <FiChevronLeft className="mr-2" /> Prev
+            <FiChevronLeft className="reader-nav-btn__icon" />
+            <span className="reader-nav-btn__text">Prev</span>
           </button>
 
           <div className="reader-dropdown-wrapper" ref={dropdownRef}>
@@ -449,8 +451,10 @@ export default function ReaderPage() {
             onClick={() => nextChapter && handleNavigate(nextChapter)}
             disabled={!nextChapter}
             className="reader-nav-btn reader-nav-btn--next"
+            title="Chapter Selanjutnya"
           >
-            Next <FiChevronRight className="ml-2" />
+            <span className="reader-nav-btn__text">Next</span>
+            <FiChevronRight className="reader-nav-btn__icon" />
           </button>
         </div>
 

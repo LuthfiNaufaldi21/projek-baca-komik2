@@ -1,11 +1,11 @@
 /* SearchPage Styles */
 
 .search-page__title {
-  @apply text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6;
+  @apply text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6;
 }
 
 .search-page__results-count {
-  @apply text-gray-600 dark:text-gray-400 mb-8;
+  @apply text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8;
 }
 
 .search-page__empty-state {

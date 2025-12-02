@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 // Pastikan path logo benar
 import logo from "../assets/logo.svg";
-import { FiSearch, FiSun, FiMoon, FiUser } from "react-icons/fi";
+import { FiSearch, FiSun, FiMoon, FiUser, FiMenu, FiX } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
@@ -13,6 +13,7 @@ export default function Navbar() {
   const { isLoggedIn, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -73,6 +74,15 @@ export default function Navbar() {
 
   if (isReaderPage) return null; // Return null lebih bersih daripada nav display:none
 
+  const navLinks = [
+    { to: "/daftar-komik", label: "Daftar Komik" },
+    { to: "/bookmark", label: "Bookmark" },
+    { to: "/berwarna", label: "Berwarna" },
+    { to: "/manga", label: "Manga" },
+    { to: "/manhwa", label: "Manhwa" },
+    { to: "/manhua", label: "Manhua" },
+  ];
+
   return (
     <nav className={`navbar ${!isVisible ? "navbar--hidden" : ""}`}>
       <div className="navbar__container">
@@ -86,15 +96,9 @@ export default function Navbar() {
         </Link>
 
         <div className="navbar__content">
+          {/* Desktop Links */}
           <div className="navbar__links">
-            {[
-              { to: "/daftar-komik", label: "Daftar Komik" },
-              { to: "/bookmark", label: "Bookmark" },
-              { to: "/berwarna", label: "Berwarna" },
-              { to: "/manga", label: "Manga" },
-              { to: "/manhwa", label: "Manhwa" },
-              { to: "/manhua", label: "Manhua" },
-            ].map((link) => {
+            {navLinks.map((link) => {
               const isActive = location.pathname === link.to;
               return (
                 <Link
@@ -159,9 +163,63 @@ export default function Navbar() {
                 </div>
               </div>
             </Link>
+
+            {/* Hamburger Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="navbar__hamburger"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <FiX className="navbar__hamburger-icon" />
+              ) : (
+                <FiMenu className="navbar__hamburger-icon" />
+              )}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="navbar__mobile-menu">
+          <div className="navbar__mobile-search">
+            <form
+              onSubmit={(e) => {
+                handleSearch(e);
+                setIsMobileMenuOpen(false);
+              }}
+              className="navbar__mobile-search-form"
+            >
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Cari komik..."
+                className="navbar__mobile-search-input"
+              />
+              <button type="submit" className="navbar__mobile-search-button">
+                <FiSearch className="navbar__search-icon" />
+              </button>
+            </form>
+          </div>
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.to;
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`navbar__mobile-link ${
+                  isActive ? "navbar__mobile-link--active" : ""
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </nav>
   );
 }
