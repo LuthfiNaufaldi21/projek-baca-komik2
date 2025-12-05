@@ -7,6 +7,22 @@
 
 import { post, put, get, deleteRequest as del } from "./api";
 
+// Helper function to normalize avatar URL
+const normalizeAvatarUrl = (avatarPath) => {
+  if (!avatarPath) return null;
+
+  // If already a full URL (from Supabase), return as is
+  if (avatarPath.startsWith("http://") || avatarPath.startsWith("https://")) {
+    return avatarPath;
+  }
+
+  // If it's a relative path (old format), prepend API_BASE_URL
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const baseUrl = API_BASE_URL.replace(/\/api\/?$/, "");
+  const path = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
+  return `${baseUrl}${path}`;
+};
+
 /**
  * Login user
  * @param {string} email - User email
@@ -28,18 +44,13 @@ export const login = async (email, password) => {
       console.log("💾 [AuthService] Token saved to localStorage");
     }
     if (response.user) {
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000";
-
       // Keep full bookmarks and readHistory from backend (with comic relations)
       // Backend returns:
       // - bookmarks: [{ id, comic_id, comic: {...fullComicData} }]
       // - readHistory: [{ id, comic_id, chapter_id, read_at, comic: {...} }]
       const userData = {
         ...response.user,
-        avatar: response.user.avatar
-          ? `${API_BASE_URL}${response.user.avatar}`
-          : null,
+        avatar: normalizeAvatarUrl(response.user.avatar),
         role: response.user.role || "user",
         bookmarks: response.user.bookmarks || [], // Keep full array with comic objects
         readHistory: response.user.readHistory || [], // Keep full array with comic objects
@@ -127,13 +138,10 @@ export const getCurrentUser = async () => {
     const response = await get("/api/user/profile");
 
     if (response) {
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000";
-
       // Keep full bookmarks and readHistory from backend
       const userData = {
         ...response,
-        avatar: response.avatar ? `${API_BASE_URL}${response.avatar}` : null,
+        avatar: normalizeAvatarUrl(response.avatar),
         role: response.role || "user",
         bookmarks: response.bookmarks || [], // Keep full array
         readHistory: response.readHistory || [], // Keep full array
@@ -185,9 +193,6 @@ export const updateProfile = async (profileData) => {
     const response = await put("/api/user/profile", profileData);
 
     if (response && response.user) {
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000";
-
       // Convert backend format to frontend format
       const bookmarkIds = Array.isArray(response.user.bookmarks)
         ? response.user.bookmarks.map((b) => {
@@ -208,9 +213,7 @@ export const updateProfile = async (profileData) => {
 
       const userData = {
         ...response.user,
-        avatar: response.user.avatar
-          ? `${API_BASE_URL}${response.user.avatar}`
-          : null,
+        avatar: normalizeAvatarUrl(response.user.avatar),
         role: response.user.role || "user",
         bookmarks: bookmarkIds,
         readingHistory: historyObj,

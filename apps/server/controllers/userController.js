@@ -7,25 +7,13 @@ const {
   Genre,
 } = require("../models");
 const { sequelize } = require("../config/db");
+const supabase = require("../config/supabase");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
 const bcrypt = require("bcryptjs");
 
-// --- KONFIGURASI MULTER ---
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, "../public/uploads/avatars");
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, `user-${req.user.id}-${Date.now()}${ext}`);
-  },
-});
+// --- KONFIGURASI MULTER (Memory Storage untuk Supabase) ---
+const storage = multer.memoryStorage();
 
 const uploadMiddleware = multer({
   storage: storage,
@@ -249,29 +237,52 @@ const uploadAvatar = (req, res) => {
     try {
       const user = await User.findByPk(req.user.id);
       if (!user) {
-        fs.unlinkSync(req.file.path);
         return res.status(404).json({ message: "User tidak ditemukan." });
       }
 
-      const oldAvatarPath = user.avatar
-        ? path.join(__dirname, "..", user.avatar)
-        : null;
-      const newAvatarPath = `/uploads/avatars/${req.file.filename}`;
+      // Generate unique filename
+      const ext = path.extname(req.file.originalname);
+      const fileName = `user-${req.user.id}-${Date.now()}${ext}`;
 
-      user.avatar = newAvatarPath;
-      await user.save();
+      // Upload ke Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
 
-      if (oldAvatarPath && fs.existsSync(oldAvatarPath)) {
-        fs.unlinkSync(oldAvatarPath);
+      if (uploadError) {
+        console.error("Supabase upload error:", uploadError);
+        return res.status(500).json({
+          message: "Gagal mengunggah file ke storage.",
+          error: uploadError.message,
+        });
       }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const avatarUrl = urlData.publicUrl;
+
+      // Hapus avatar lama dari Supabase jika ada
+      if (user.avatar && user.avatar.includes("supabase.co")) {
+        const oldFileName = user.avatar.split("/").pop();
+        await supabase.storage.from("avatars").remove([oldFileName]);
+      }
+
+      // Update user avatar URL
+      user.avatar = avatarUrl;
+      await user.save();
 
       res.status(200).json({
         message: "Foto profil berhasil diunggah",
-        avatar: newAvatarPath,
+        avatar: avatarUrl,
       });
     } catch (error) {
-      console.error(error);
-      fs.unlinkSync(req.file.path);
+      console.error("Upload avatar error:", error);
       res.status(500).json({ message: "Gagal memperbarui foto profil." });
     }
   });
@@ -380,12 +391,10 @@ const deleteAccount = async (req, res) => {
       return res.status(404).json({ msg: "User tidak ditemukan." });
     }
 
-    // Hapus file avatar jika ada
-    if (user.avatar) {
-      const avatarPath = path.join(__dirname, "../public", user.avatar);
-      if (fs.existsSync(avatarPath)) {
-        fs.unlinkSync(avatarPath);
-      }
+    // Hapus file avatar dari Supabase jika ada
+    if (user.avatar && user.avatar.includes("supabase.co")) {
+      const fileName = user.avatar.split("/").pop();
+      await supabase.storage.from("avatars").remove([fileName]);
     }
 
     // Hapus user dari database
@@ -408,12 +417,10 @@ const removeAvatar = async (req, res) => {
       return res.status(404).json({ msg: "User tidak ditemukan." });
     }
 
-    // Hapus file avatar jika ada
-    if (user.avatar) {
-      const avatarPath = path.join(__dirname, "../public", user.avatar);
-      if (fs.existsSync(avatarPath)) {
-        fs.unlinkSync(avatarPath);
-      }
+    // Hapus file avatar dari Supabase jika ada
+    if (user.avatar && user.avatar.includes("supabase.co")) {
+      const fileName = user.avatar.split("/").pop();
+      await supabase.storage.from("avatars").remove([fileName]);
     }
 
     // Set avatar ke null

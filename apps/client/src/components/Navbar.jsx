@@ -6,7 +6,6 @@ import { FiSearch, FiSun, FiMoon, FiUser, FiMenu, FiX } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
-import { API_BASE_URL } from "../utils/constants";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
@@ -58,19 +57,8 @@ export default function Navbar() {
   const avatarInitials = user ? getInitials(user.username || "User") : "";
   const avatarColor = getAvatarColor(user?.username || "User");
 
-  // Logic Avatar URL (Lebih Aman)
-  const getFullAvatarUrl = (avatarPath) => {
-    if (!avatarPath) return null;
-    if (avatarPath.startsWith("http")) return avatarPath;
-
-    // Hapus suffix /api jika ada, lalu gabung
-    const baseUrl = API_BASE_URL.replace(/\/api\/?$/, "");
-    // Pastikan ada slash di antara domain dan path
-    const path = avatarPath.startsWith("/") ? avatarPath : `/${avatarPath}`;
-    return `${baseUrl}${path}`;
-  };
-
-  const fullAvatarUrl = user?.avatar ? getFullAvatarUrl(user.avatar) : null;
+  // Avatar URL is already normalized in authService
+  const avatarUrl = user?.avatar || null;
 
   // if (isReaderPage) return null; // REMOVED: User wants navbar on reader page too
 
@@ -149,12 +137,10 @@ export default function Navbar() {
                 <div
                   className="navbar__profile-inner"
                   style={{
-                    backgroundImage: fullAvatarUrl
-                      ? `url(${fullAvatarUrl})`
-                      : "none",
+                    backgroundImage: avatarUrl ? `url(${avatarUrl})` : "none",
                   }}
                 >
-                  {isLoggedIn && !fullAvatarUrl ? (
+                  {isLoggedIn && !avatarUrl ? (
                     <div
                       className="navbar__profile-initials"
                       style={{ backgroundColor: avatarColor }}

@@ -47,7 +47,7 @@ export default function DetailPage() {
   const [chapterError, setChapterError] = useState(false);
   const [readChapters, setReadChapters] = useState(new Set());
   const [relatedComics, setRelatedComics] = useState([]); // Related comics by genre
-  const [sortOrder, setSortOrder] = useState("asc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
+  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
   const [currentPage, setCurrentPage] = useState(1);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
