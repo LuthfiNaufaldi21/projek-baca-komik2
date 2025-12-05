@@ -82,9 +82,12 @@ exports.loginUser = async (req, res) => {
     jwt.sign(
       payload,
       process.env.JWT_SECRET, // Menggunakan kunci rahasia dari .env
-      { expiresIn: process.env.JWT_EXPIRES_IN },
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+          console.error("JWT Sign Error:", err);
+          return res.status(500).send("Server Error");
+        }
         res.json({
           token,
           user: { id: user.id, username: user.username, email: user.email },
