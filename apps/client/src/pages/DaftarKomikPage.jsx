@@ -83,6 +83,8 @@ export default function DaftarKomikPage() {
     // Apply sorting
     if (sortOrder === "rating_desc") {
       result.sort((a, b) => b.rating - a.rating);
+    } else if (sortOrder === "rating_asc") {
+      result.sort((a, b) => a.rating - b.rating);
     } else if (sortOrder === "title_asc") {
       result.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortOrder === "title_desc") {
