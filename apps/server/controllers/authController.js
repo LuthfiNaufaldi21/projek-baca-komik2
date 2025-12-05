@@ -31,21 +31,27 @@ exports.registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Buat User Baru
+    // 4. Buat User Baru (dengan default role = 'user')
     user = await User.create({
       username,
       email,
       password: hashedPassword,
+      role: "user", // Default role
     });
 
     // 5. Beri respons sukses
     res.status(201).json({
       msg: "Registrasi berhasil",
-      user: { id: user.id, username: user.username, email: user.email },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    console.error("Register Error:", err.message);
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 };
 
@@ -76,6 +82,7 @@ exports.loginUser = async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
+        role: user.role,
       },
     };
 
@@ -87,12 +94,17 @@ exports.loginUser = async (req, res) => {
         if (err) throw err;
         res.json({
           token,
-          user: { id: user.id, username: user.username, email: user.email },
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+          },
         });
       }
     );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    console.error("Login Error:", err.message);
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 };

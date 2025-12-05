@@ -9,6 +9,8 @@ const {
   updatePassword,
   deleteAccount,
   removeAvatar,
+  markChapterRead,
+  getReadChapters,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -26,5 +28,9 @@ router.put("/password", auth, updatePassword);
 // 🎯 ROUTE BARU: Delete Account & Remove Avatar
 router.delete("/account", auth, deleteAccount);
 router.delete("/avatar", auth, removeAvatar);
+
+// 🎯 ROUTE BARU: Read Chapters (untuk DetailPage checkmarks)
+router.post("/read-chapters", auth, markChapterRead); // Mark chapter as read
+router.get("/read-chapters/:comicSlug", auth, getReadChapters); // Get all read chapters for a comic
 
 module.exports = router;

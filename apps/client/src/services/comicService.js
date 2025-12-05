@@ -2,58 +2,85 @@
  * Comic Service
  *
  * Service for comic-related API calls.
- * Connected to backend API with fallback to local data.
+ * All comic metadata fetched from database.
+ * Only chapter list and chapter images are scraped.
  */
 
 import { get } from "./api";
-// Use local dummy data for all lists and details; only chapters use backend.
-const loadLocalComics = async () => {
-  const { comics } = await import("../data/comics");
-  return comics;
-};
 
 /**
- * Get recommended comics
+ * Get recommended comics from database
  * @returns {Promise} - Array of recommended comics
  */
 export const getRecommendedComics = async () => {
-  const comics = await loadLocalComics();
-  return comics.slice(0, 10);
+  try {
+    const response = await get("/api/comics?limit=10");
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching recommended comics:", error);
+    return [];
+  }
 };
 
 /**
- * Get latest comics
+ * Get latest comics from database
  * @returns {Promise} - Array of latest comics
  */
 export const getLatestComics = async () => {
-  const comics = await loadLocalComics();
-  return comics.slice(0, 10);
+  try {
+    const response = await get("/api/comics?limit=10&sort=created_at");
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching latest comics:", error);
+    return [];
+  }
 };
 
 /**
- * Get popular comics
+ * Get popular comics from database (sorted by rating)
  * @returns {Promise} - Array of popular comics
  */
 export const getPopularComics = async () => {
-  const comics = await loadLocalComics();
-  return comics.slice(0, 10);
+  try {
+    const response = await get("/api/comics?limit=10&sort=rating");
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching popular comics:", error);
+    return [];
+  }
 };
 
 /**
- * Get colored comics (berwarna)
+ * Get colored comics from database
  * @returns {Promise} - Array of colored comics
  */
 export const getColoredComics = async () => {
-  const comics = await loadLocalComics();
-  return comics.filter((c) => c.tags?.includes("Warna"));
+  try {
+    const response = await get("/api/comics?genre=warna&limit=50");
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching colored comics:", error);
+    return [];
+  }
 };
 
 /**
- * Get all comics from library
+ * Get all comics from database
+ * @param {Object} params - Query parameters (page, limit, type, search, etc)
  * @returns {Promise} - Array of comics
  */
-export const getAllComics = async () => {
-  return loadLocalComics();
+export const getAllComics = async (params = {}) => {
+  try {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString
+      ? `/api/comics?${queryString}`
+      : "/api/comics?limit=100";
+    const response = await get(endpoint);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching all comics:", error);
+    return [];
+  }
 };
 
 /**
@@ -62,8 +89,28 @@ export const getAllComics = async () => {
  * @returns {Promise} - Comic object with details
  */
 export const getComicBySlug = async (slug) => {
-  const comics = await loadLocalComics();
-  return comics.find((c) => c.id === slug || c.slug === slug);
+  try {
+    // Try to get all comics and find exact slug match
+    // Since backend search only searches title, not slug
+    const response = await get(`/api/comics?limit=100`);
+    if (response?.data?.length > 0) {
+      // Find exact match by slug or id
+      const exactMatch = response.data.find(
+        (c) => c.slug === slug || String(c.id) === String(slug)
+      );
+      if (exactMatch) return exactMatch;
+
+      // Fallback: search by title if slug not found
+      const titleMatch = response.data.find((c) =>
+        c.title.toLowerCase().includes(slug.toLowerCase())
+      );
+      return titleMatch || null;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error getting comic by slug ${slug}:`, error);
+    return null;
+  }
 };
 
 /**
@@ -76,79 +123,82 @@ export const getComicById = async (idOrSlug) => {
 };
 
 /**
- * Search comics by title
+ * Search comics by title from database
  * @param {string} query - Search query
  * @returns {Promise} - Array of matching comics
  */
 export const searchComics = async (query) => {
-  const comics = await loadLocalComics();
-  const q = String(query || "").toLowerCase();
-  return comics.filter((c) => {
-    const tags = Array.isArray(c.tags) ? c.tags : [];
-    return (
-      c.title?.toLowerCase().includes(q) ||
-      c.author?.toLowerCase().includes(q) ||
-      c.synopsis?.toLowerCase().includes(q) ||
-      tags.some((t) => String(t).toLowerCase().includes(q))
+  try {
+    const response = await get(
+      `/api/comics?search=${encodeURIComponent(query)}&limit=50`
     );
-  });
+    return response.data || [];
+  } catch (error) {
+    console.error("Error searching comics:", error);
+    return [];
+  }
 };
 
 /**
- * Get comics by genre
- * @param {string} genre - Genre slug
+ * Get comics by genre from database
+ * @param {string} genreSlug - Genre slug
  * @returns {Promise} - Array of comics
  */
 export const getComicsByGenre = async (genreSlug) => {
-  const comics = await loadLocalComics();
-  const g = String(genreSlug || "").toLowerCase();
-  return comics.filter(
-    (c) =>
-      (c.genre || "").toLowerCase() === g ||
-      (Array.isArray(c.tags) &&
-        c.tags.some((t) => String(t).toLowerCase() === g))
-  );
+  try {
+    const response = await get(
+      `/api/comics?genre=${encodeURIComponent(genreSlug)}&limit=50`
+    );
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching comics by genre:", error);
+    return [];
+  }
 };
 
 /**
- * Get all genres
+ * Get all genres from database
  * @returns {Promise} - Array of genres
  */
 export const getAllGenres = async () => {
-  const comics = await loadLocalComics();
-  const set = new Set();
-  comics.forEach((c) =>
-    Array.isArray(c.tags) ? c.tags.forEach((t) => set.add(t)) : null
-  );
-  return Array.from(set).map((t) => ({
-    name: t,
-    slug: String(t).toLowerCase(),
-  }));
+  try {
+    const response = await get("/genre-all");
+    return response || [];
+  } catch (error) {
+    console.error("Error fetching all genres:", error);
+    return [];
+  }
 };
 
 /**
- * Get genre recommendations
+ * Get genre recommendations from database
  * @returns {Promise} - Array of genre recommendations
  */
 export const getGenreRecommendations = async () => {
-  const comics = await loadLocalComics();
-  return comics.slice(0, 6);
+  try {
+    const response = await get("/genre-rekomendasi");
+    return response || [];
+  } catch (error) {
+    console.error("Error fetching genre recommendations:", error);
+    return [];
+  }
 };
 
 /**
- * Get comics by type (Manga, Manhwa, Manhua)
+ * Get comics by type (Manga, Manhwa, Manhua) from database
  * @param {string} type - Comic type
  * @returns {Promise} - Array of comics
  */
 export const getComicsByType = async (type) => {
-  const comics = await loadLocalComics();
-  const t = String(type || "").toLowerCase();
-  return comics.filter(
-    (c) =>
-      (c.type || "").toLowerCase() === t ||
-      (Array.isArray(c.tags) &&
-        c.tags.some((tag) => String(tag).toLowerCase() === t))
-  );
+  try {
+    const response = await get(
+      `/api/comics?type=${encodeURIComponent(type)}&limit=50`
+    );
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching comics by type:", error);
+    return [];
+  }
 };
 
 /**

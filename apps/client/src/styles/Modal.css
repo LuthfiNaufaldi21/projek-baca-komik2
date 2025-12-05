@@ -1,0 +1,35 @@
+/* Modal Styles */
+
+.modal-content--wide {
+  @apply max-w-3xl max-h-[90vh] overflow-y-auto;
+}
+
+.modal-field-group {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.modal-select {
+  @apply w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors;
+}
+
+/* Genre Grid */
+.genre-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3;
+}
+
+/* Chip Genre (State Normal) */
+.genre-chip {
+  @apply px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all duration-200 cursor-pointer;
+
+  /* Hover State (Normal) */
+  @apply hover:border-primary hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/20;
+}
+
+/* Chip Genre (State Aktif/Terpilih) */
+.genre-chip--active {
+  /* Tambahkan dark:border-primary dan dark:bg-primary agar menimpa warna gray-800 */
+  @apply border-primary bg-primary dark:border-primary dark:bg-primary text-white shadow-md transform scale-105;
+
+  /* Hover State (Aktif) */
+  @apply hover:bg-primary-hover hover:border-primary-hover hover:text-white dark:hover:bg-primary-hover dark:hover:border-primary-hover;
+}

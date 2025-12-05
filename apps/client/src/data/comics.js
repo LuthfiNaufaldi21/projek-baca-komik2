@@ -138,7 +138,7 @@ export const comics = [
   },
   {
     id: "demon-slayer",
-    title: "Demon Slayer: Kimetsu no Yaiba",
+    title: "Demon Slayer",
     author: "Koyoharu Gotouge",
     status: "Tamat",
     cover:

@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
 import { FiClock, FiList, FiLock, FiArrowLeft } from "react-icons/fi";
@@ -20,7 +19,7 @@ export default function RiwayatPage() {
     navigationIndexRef.current = window.history.length;
   }, []);
 
-  // Jika belum login
+  // Not logged in
   if (!isLoggedIn) {
     return (
       <div className="riwayat-page__container">
@@ -37,35 +36,57 @@ export default function RiwayatPage() {
     );
   }
 
-  // === PROSES RIWAYAT BACAAN ===
-  const readingHistory = (() => {
-    if (!user?.readingHistory) return [];
+  // Process reading history from database
+  // Backend returns: user.readHistory = [{ id, comic_id, chapter_slug: "chapter-142", read_at, comic: {...} }]
+  const readingHistory = useMemo(() => {
+    if (!user?.readHistory || !Array.isArray(user.readHistory)) return [];
 
-    return Object.entries(user.readingHistory)
-      .reverse()
-      .map(([comicId, chapterId]) => {
-        const comic = comics.find((c) => c.id === comicId);
+    // Sort by read_at DESC to show latest read first
+    const sorted = [...user.readHistory].sort((a, b) => {
+      const dateA = new Date(a.read_at || 0);
+      const dateB = new Date(b.read_at || 0);
+      return dateB - dateA; // DESC: newest first
+    });
+
+    return sorted
+      .map((historyItem) => {
+        const comic = historyItem.comic;
         if (!comic) return null;
 
-        let chapterInfo = "Chapter Terakhir";
-        let displayChapterId = chapterId;
+        let chapterInfo = "Chapter";
+        let chapterNumber = "";
+        let displayChapterId = historyItem.chapter_slug;
 
         try {
-          if (typeof chapterId === "string") {
-            if (chapterId.startsWith("/baca-chapter/")) {
-              const parts = chapterId.split("/");
-              chapterInfo = `Chapter ${parts[parts.length - 1]}`;
-              displayChapterId = chapterId;
-            } else if (chapterId.startsWith("http")) {
-              const match = chapterId.match(/chapter[-_]?(\d+)/i);
-              chapterInfo = match ? `Chapter ${match[1]}` : "Chapter Terakhir";
-              displayChapterId = chapterId;
-            } else if (!isNaN(chapterId)) {
-              // chapterId berupa angka string, misal "1133"
-              chapterInfo = `Chapter ${chapterId}`;
+          const chapterSlug = historyItem.chapter_slug;
+
+          if (typeof chapterSlug === "string") {
+            // Extract chapter number from various formats
+            if (chapterSlug.startsWith("/baca-chapter/")) {
+              // Format: /baca-chapter/spy-x-family/chapter-142
+              const parts = chapterSlug.split("/");
+              const lastPart = parts[parts.length - 1]; // "chapter-142"
+              const match = lastPart.match(/chapter[-_]?(\d+)/i);
+              chapterNumber = match ? match[1] : lastPart;
+            } else if (chapterSlug.startsWith("http")) {
+              // Format: https://api.example.com/.../chapter-142
+              const match = chapterSlug.match(/chapter[-_]?(\d+)/i);
+              chapterNumber = match ? match[1] : "";
+            } else if (chapterSlug.match(/chapter[-_]?(\d+)/i)) {
+              // Format: chapter-142 or chapter_142
+              const match = chapterSlug.match(/chapter[-_]?(\d+)/i);
+              chapterNumber = match ? match[1] : "";
+            } else if (!isNaN(chapterSlug)) {
+              // Pure number: "142"
+              chapterNumber = chapterSlug;
             }
-          } else if (typeof chapterId === "number") {
-            chapterInfo = `Chapter ${chapterId}`;
+
+            chapterInfo = chapterNumber
+              ? `Chapter ${chapterNumber}`
+              : "Chapter";
+          } else if (typeof chapterSlug === "number") {
+            chapterNumber = String(chapterSlug);
+            chapterInfo = `Chapter ${chapterNumber}`;
           }
         } catch (e) {
           console.error("Error parsing chapter:", e);
@@ -73,12 +94,12 @@ export default function RiwayatPage() {
 
         return {
           ...comic,
-          lastReadChapter: chapterInfo,
+          lastReadChapter: chapterInfo, // "Chapter 142"
           lastReadChapterId: displayChapterId,
         };
       })
       .filter(Boolean);
-  })();
+  }, [user?.readHistory]);
 
   // Pagination
   const totalPages = Math.ceil(readingHistory.length / itemsPerPage);
@@ -151,7 +172,10 @@ export default function RiwayatPage() {
                   : comic.lastReadChapterId;
 
               return (
-                <div key={comic.id} className="riwayat-page__card-wrapper">
+                <div
+                  key={comic.slug || comic.id}
+                  className="riwayat-page__card-wrapper"
+                >
                   <ComicCard comic={comic} />
 
                   <Link

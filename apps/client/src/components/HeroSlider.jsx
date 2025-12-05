@@ -21,9 +21,18 @@ export default function HeroSlider({ comics }) {
   return (
     <div className="hero-slider">
       {comics.map((comic, index) => {
-        const hoverTags = comic.tags
+        // Get genres from database (fallback to tags for compatibility)
+        const allTags = comic.genres
+          ? comic.genres.map((g) => (typeof g === "object" ? g.name : g))
+          : comic.tags || [];
+
+        const hoverTags = allTags
           .filter((t) => !["Warna", "Manga", "Manhwa", "Manhua"].includes(t))
           .slice(0, 3);
+
+        // Get cover image from database
+        const coverImage =
+          comic.cover_url || comic.cover || comic.thumbnail || comic.image;
 
         return (
           <div
@@ -37,7 +46,7 @@ export default function HeroSlider({ comics }) {
             {/* Background Image with Blur */}
             <div
               className="hero-slider__background"
-              style={{ backgroundImage: `url('${comic.cover}')` }}
+              style={{ backgroundImage: `url('${coverImage}')` }}
             >
               <div className="hero-slider__overlay"></div>
             </div>
@@ -53,7 +62,7 @@ export default function HeroSlider({ comics }) {
                   }`}
                 >
                   <img
-                    src={comic.cover}
+                    src={coverImage}
                     alt={comic.title}
                     className="hero-slider__cover"
                   />
@@ -84,7 +93,7 @@ export default function HeroSlider({ comics }) {
                   <p className="hero-slider__synopsis">{comic.synopsis}</p>
 
                   <Link
-                    to={`/detail/${comic.id}`}
+                    to={`/detail/${comic.slug || comic.id}`}
                     className="hero-slider__cta-button"
                   >
                     <span>Baca Sekarang</span>
