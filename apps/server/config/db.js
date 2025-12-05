@@ -14,24 +14,18 @@ const sequelize = new Sequelize(
   }
 );
 
-// Fungsi untuk menginisialisasi semua model (Mencegah Circular Dependency)
-const initializeModels = () => {
-  require("../models/User");
-  // Tambahkan model lain di sini jika ada
-};
-
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("✅ PostgreSQL Connection has been established successfully.");
 
-    // Inisialisasi Model sebelum Sinkronisasi
-    initializeModels();
+    // Initialize all models and associations
+    const { initializeAssociations } = require("../models");
+    initializeAssociations();
 
-    // Sinkronisasi database (membuat table 'users' jika belum ada)
-    // HAPUS { alter: true } untuk mencegah duplikasi constraint
-    await sequelize.sync();
-    console.log("✅ All models were synchronized successfully.");
+    // DO NOT use sync({ alter: true }) or { force: true } - tables already exist in Supabase
+    // Sequelize is only for mapping models and queries
+    console.log("✅ All models and associations initialized successfully.");
   } catch (error) {
     console.error("❌ Unable to connect to the database:", error);
     process.exit(1);

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getColoredComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import { FaSpinner } from "react-icons/fa";
 import "../styles/CategoryPage.css";
 
 export default function BerwarnaPage() {
@@ -43,7 +44,10 @@ export default function BerwarnaPage() {
       </p>
 
       {isLoading ? (
-        <div className="category-page__loading">Loading...</div>
+        <div className="category-page__loading">
+          <FaSpinner className="category-page__loading-spinner" />
+          <p>Memuat komik berwarna...</p>
+        </div>
       ) : filteredComics.length === 0 ? (
         <p className="category-page__empty">
           Tidak ada komik berwarna saat ini.
@@ -52,7 +56,7 @@ export default function BerwarnaPage() {
         <>
           <div className="category-page__grid">
             {currentComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} />
+              <ComicCard key={comic.slug || comic.id} comic={comic} />
             ))}
           </div>
 

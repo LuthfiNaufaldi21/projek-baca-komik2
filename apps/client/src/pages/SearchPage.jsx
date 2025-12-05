@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { searchComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import { FaSpinner } from "react-icons/fa";
 import "../styles/SearchPage.css";
 
 export default function SearchPage() {
@@ -63,7 +64,10 @@ export default function SearchPage() {
       </p>
 
       {isLoading ? (
-        <div className="search-page__loading">Loading...</div>
+        <div className="search-page__loading">
+          <FaSpinner className="search-page__loading-spinner" />
+          <p>Mencari komik...</p>
+        </div>
       ) : searchResults.length === 0 ? (
         <div className="search-page__empty-state">
           <p className="search-page__empty-text">
@@ -77,7 +81,7 @@ export default function SearchPage() {
         <>
           <div className="search-page__grid">
             {currentComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} />
+              <ComicCard key={comic.slug || comic.id} comic={comic} />
             ))}
           </div>
 

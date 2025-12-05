@@ -97,6 +97,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Import routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const comicRoutes = require("./routes/comicRoutes");
 const rekomendasiRoute = require("./routes/rekomendasi");
 const terbaruRoute = require("./routes/terbaru");
 const pustakaRouter = require("./routes/pustaka");
@@ -112,6 +113,7 @@ const genreRekomendasi = require("./routes/genre-rekomendasi");
 // Endpoint Otentikasi dan User Terproteksi
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/comics", comicRoutes);
 
 // Root route
 app.get("/", (req, res) => {

@@ -74,11 +74,18 @@ export const AuthProvider = ({ children }) => {
 
   const isBookmarked = (comicId) => {
     if (!isLoggedIn || !user) return false;
-    // Handle both formats: simple array [id1, id2] or array of objects [{comicId}]
+    // New database format: bookmarks = [{ id, comic_id, comic: {...} }]
+    // Check using comic.id or comic.slug from the nested comic object
     if (Array.isArray(user.bookmarks)) {
-      return user.bookmarks.some((b) =>
-        typeof b === "object" ? b.comicId === comicId : b === comicId
-      );
+      return user.bookmarks.some((bookmark) => {
+        if (!bookmark || !bookmark.comic) return false;
+        // Match by ID or slug
+        return (
+          bookmark.comic.id === comicId ||
+          bookmark.comic.slug === comicId ||
+          String(bookmark.comic.id) === String(comicId)
+        );
+      });
     }
     return false;
   };

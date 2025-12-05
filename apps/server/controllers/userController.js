@@ -1,4 +1,11 @@
-const User = require("../models/User");
+const {
+  User,
+  Comic,
+  Bookmark,
+  ReadHistory,
+  ReadChapter,
+  Genre,
+} = require("../models");
 const { sequelize } = require("../config/db");
 const multer = require("multer");
 const path = require("path");
@@ -43,6 +50,65 @@ const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: { exclude: ["password"] },
+      include: [
+        {
+          model: Bookmark,
+          as: "bookmarks",
+          include: [
+            {
+              model: Comic,
+              as: "comic",
+              attributes: [
+                "id",
+                "slug",
+                "title",
+                "cover_url",
+                "author",
+                "status",
+                "type",
+                "rating",
+              ],
+              include: [
+                {
+                  model: Genre,
+                  as: "genres",
+                  attributes: ["id", "name", "slug"],
+                  through: { attributes: [] },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: ReadHistory,
+          as: "readHistory",
+          include: [
+            {
+              model: Comic,
+              as: "comic",
+              attributes: [
+                "id",
+                "slug",
+                "title",
+                "cover_url",
+                "author",
+                "status",
+                "type",
+                "rating",
+              ],
+              include: [
+                {
+                  model: Genre,
+                  as: "genres",
+                  attributes: ["id", "name", "slug"],
+                  through: { attributes: [] },
+                },
+              ],
+            },
+          ],
+          order: [["read_at", "DESC"]],
+        },
+      ],
     });
 
     if (!user) {
@@ -52,53 +118,63 @@ const getProfile = async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 };
 
 const toggleBookmark = async (req, res) => {
-  const { comicId } = req.body;
+  const { comicSlug } = req.body;
   const userId = req.user.id;
 
-  if (!comicId) {
-    return res.status(400).json({ msg: "comicId wajib diisi." });
+  if (!comicSlug) {
+    return res.status(400).json({ msg: "comicSlug wajib diisi." });
   }
 
   const transaction = await sequelize.transaction();
 
   try {
-    const user = await User.findByPk(userId, { transaction });
-    if (!user) {
+    // Cari comic berdasarkan slug
+    const comic = await Comic.findOne({
+      where: { slug: comicSlug },
+      transaction,
+    });
+    if (!comic) {
       await transaction.rollback();
-      return res.status(404).json({ msg: "User tidak ditemukan." });
+      return res.status(404).json({ msg: "Komik tidak ditemukan." });
     }
 
-    let bookmarks = user.bookmarks || [];
+    // Cek apakah sudah dibookmark
+    const existingBookmark = await Bookmark.findOne({
+      where: { user_id: userId, comic_id: comic.id },
+      transaction,
+    });
 
-    const isBookmarked = bookmarks.some((b) => b.comicId === comicId);
     let responseMsg = "";
+    let isBookmarked = false;
 
-    if (isBookmarked) {
-      bookmarks = bookmarks.filter((b) => b.comicId !== comicId);
+    if (existingBookmark) {
+      // Hapus bookmark
+      await existingBookmark.destroy({ transaction });
       responseMsg = "Bookmark berhasil dihapus";
+      isBookmarked = false;
     } else {
-      bookmarks.push({
-        comicId: comicId,
-        bookmarkedAt: new Date().toISOString(),
-      });
+      // Tambah bookmark
+      await Bookmark.create(
+        {
+          user_id: userId,
+          comic_id: comic.id,
+        },
+        { transaction }
+      );
       responseMsg = "Bookmark berhasil ditambahkan";
+      isBookmarked = true;
     }
-
-    user.changed("bookmarks", true);
-
-    await user.update({ bookmarks: bookmarks }, { transaction });
 
     await transaction.commit();
 
     res.json({
       msg: responseMsg,
-      bookmarked: !isBookmarked,
-      bookmarks: bookmarks,
+      bookmarked: isBookmarked,
     });
   } catch (err) {
     await transaction.rollback();
@@ -110,41 +186,43 @@ const toggleBookmark = async (req, res) => {
 };
 
 const updateHistory = async (req, res) => {
-  const { comicId, chapterId } = req.body;
+  const { comicSlug, chapterSlug } = req.body;
   const userId = req.user.id;
 
-  if (!comicId || !chapterId) {
-    return res.status(400).json({ msg: "comicId dan chapterId wajib diisi." });
+  if (!comicSlug || !chapterSlug) {
+    return res
+      .status(400)
+      .json({ msg: "comicSlug dan chapterSlug wajib diisi." });
   }
 
   const transaction = await sequelize.transaction();
 
   try {
-    const user = await User.findByPk(userId, { transaction });
-    if (!user) {
+    // Cari comic berdasarkan slug
+    const comic = await Comic.findOne({
+      where: { slug: comicSlug },
+      transaction,
+    });
+    if (!comic) {
       await transaction.rollback();
-      return res.status(404).json({ msg: "User tidak ditemukan." });
+      return res.status(404).json({ msg: "Komik tidak ditemukan." });
     }
 
-    let history = user.readingHistory || [];
-
-    history = history.filter((h) => h.comicId !== comicId);
-
-    history.push({
-      comicId: comicId,
-      lastReadChapter: chapterId,
-      readAt: new Date().toISOString(),
-    });
-
-    user.changed("readingHistory", true);
-
-    await user.update({ readingHistory: history }, { transaction });
+    // Upsert: update jika sudah ada, insert jika belum
+    await ReadHistory.upsert(
+      {
+        user_id: userId,
+        comic_id: comic.id,
+        chapter_slug: chapterSlug,
+        read_at: new Date(),
+      },
+      { transaction }
+    );
 
     await transaction.commit();
 
     res.json({
-      msg: `Riwayat bacaan untuk komik ${comicId} bab ${chapterId} diperbarui.`,
-      readingHistory: history,
+      msg: `Riwayat bacaan untuk komik ${comicSlug} chapter ${chapterSlug} diperbarui.`,
     });
   } catch (err) {
     await transaction.rollback();
@@ -200,15 +278,13 @@ const uploadAvatar = (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const { username, email, bio } = req.body;
+  const { username, email } = req.body;
   const userId = req.user.id;
 
-  if (!username && !email && !bio) {
-    return res
-      .status(400)
-      .json({
-        msg: "Setidaknya satu field (username, email, atau bio) harus diisi.",
-      });
+  if (!username && !email) {
+    return res.status(400).json({
+      msg: "Setidaknya satu field (username atau email) harus diisi.",
+    });
   }
 
   try {
@@ -237,10 +313,9 @@ const updateProfile = async (req, res) => {
       }
     }
 
-    // 2. Lakukan Update
+    // 2. Lakukan Update (tanpa bio)
     user.username = username || user.username;
     user.email = email || user.email;
-    if (bio !== undefined) user.bio = bio;
 
     await user.save();
 
@@ -359,6 +434,94 @@ const removeAvatar = async (req, res) => {
   }
 };
 
+// Mark chapter as read (for DetailPage checkmarks)
+const markChapterRead = async (req, res) => {
+  const { comicSlug, chapterSlug } = req.body;
+  const userId = req.user.id;
+
+  if (!comicSlug || !chapterSlug) {
+    return res
+      .status(400)
+      .json({ msg: "comicSlug dan chapterSlug wajib diisi." });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    // Find comic
+    const comic = await Comic.findOne({
+      where: { slug: comicSlug },
+      transaction,
+    });
+    if (!comic) {
+      await transaction.rollback();
+      return res.status(404).json({ msg: "Komik tidak ditemukan." });
+    }
+
+    // Insert or ignore if already exists
+    await ReadChapter.findOrCreate({
+      where: {
+        user_id: userId,
+        comic_id: comic.id,
+        chapter_slug: chapterSlug,
+      },
+      defaults: {
+        user_id: userId,
+        comic_id: comic.id,
+        chapter_slug: chapterSlug,
+        read_at: new Date(),
+      },
+      transaction,
+    });
+
+    await transaction.commit();
+
+    res.json({
+      msg: `Chapter ${chapterSlug} ditandai sudah dibaca.`,
+    });
+  } catch (err) {
+    await transaction.rollback();
+    console.error("CRITICAL DB ERROR during markChapterRead:", err);
+    res
+      .status(500)
+      .json({ msg: "Server Error: Gagal menyimpan chapter yang dibaca." });
+  }
+};
+
+// Get all read chapters for a comic (for DetailPage)
+const getReadChapters = async (req, res) => {
+  const { comicSlug } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // Find comic
+    const comic = await Comic.findOne({ where: { slug: comicSlug } });
+    if (!comic) {
+      return res.status(404).json({ msg: "Komik tidak ditemukan." });
+    }
+
+    // Get all read chapters for this comic
+    const readChapters = await ReadChapter.findAll({
+      where: {
+        user_id: userId,
+        comic_id: comic.id,
+      },
+      attributes: ["chapter_slug", "read_at"],
+      order: [["read_at", "DESC"]],
+    });
+
+    res.json({
+      comicSlug,
+      chapters: readChapters.map((ch) => ch.chapter_slug),
+    });
+  } catch (err) {
+    console.error("ERROR fetching read chapters:", err);
+    res
+      .status(500)
+      .json({ msg: "Server Error: Gagal mengambil data chapter." });
+  }
+};
+
 module.exports = {
   getProfile,
   toggleBookmark,
@@ -368,4 +531,6 @@ module.exports = {
   updatePassword,
   deleteAccount,
   removeAvatar,
+  markChapterRead,
+  getReadChapters,
 };

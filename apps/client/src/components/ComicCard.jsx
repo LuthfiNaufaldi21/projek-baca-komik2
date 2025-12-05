@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import "../styles/ComicCard.css";
 
-export default function ComicCard({ comic }) {
+export default function ComicCard({ comic, maxGenres = 3 }) {
   const { isBookmarked, addBookmark, removeBookmark, isLoggedIn } = useAuth();
   const { showToast } = useToast();
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
@@ -21,7 +21,9 @@ export default function ComicCard({ comic }) {
       ? String(comic.originalLink).split("/").filter(Boolean).pop()
       : null);
 
-  const bookmarkKey = comic?.id || derivedSlug;
+  // For bookmark: MUST use slug (backend expects comicSlug)
+  // For isBookmarked check: can use id or slug (isBookmarked checks both)
+  const bookmarkKey = derivedSlug || comic?.slug || String(comic?.id);
   const bookmarked = isBookmarked(bookmarkKey);
 
   const handleBookmarkClick = async (e) => {
@@ -60,9 +62,11 @@ export default function ComicCard({ comic }) {
         className="comic-card__link"
       >
         <div className="comic-card__image-wrapper">
-          {/* Main Image */}
+          {/* Main Image from database */}
           <img
-            src={comic.cover || comic.image || comic.thumbnail}
+            src={
+              comic.cover_url || comic.cover || comic.image || comic.thumbnail
+            }
             alt={comic.title}
             className="comic-card__image"
             loading="lazy"
@@ -112,16 +116,20 @@ export default function ComicCard({ comic }) {
             {comic.author}
           </p>
 
-          {comic.tags && comic.tags.length > 0 && (
+          {/* Genres from database (fallback to tags for compatibility) */}
+          {((comic.genres && comic.genres.length > 0) ||
+            (comic.tags && comic.tags.length > 0)) && (
             <div className="comic-card__tags">
-              {comic.tags.slice(0, 3).map((tag, index) => (
-                <span key={index} className="comic-card__tag">
-                  {tag}
-                </span>
-              ))}
-              {comic.tags.length > 3 && (
+              {(comic.genres || comic.tags)
+                .slice(0, maxGenres)
+                .map((item, index) => (
+                  <span key={index} className="comic-card__tag">
+                    {typeof item === "object" ? item.name : item}
+                  </span>
+                ))}
+              {(comic.genres || comic.tags).length > maxGenres && (
                 <span className="comic-card__tag-more">
-                  + {comic.tags.length - 3}
+                  + {(comic.genres || comic.tags).length - maxGenres}
                 </span>
               )}
             </div>

@@ -1,21 +1,21 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db'); 
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/db");
 
 const User = sequelize.define(
   "User",
   {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
     },
     username: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
     },
     email: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
       validate: {
@@ -23,33 +23,28 @@ const User = sequelize.define(
       },
     },
     password: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     avatar: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: null,
     },
-    bio: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      defaultValue: "",
-    },
-    readingHistory: {
-      type: DataTypes.JSONB,
-      defaultValue: [],
+    role: {
+      type: DataTypes.STRING(20),
       allowNull: false,
-    },
-    bookmarks: {
-      type: DataTypes.JSONB,
-      defaultValue: [],
-      allowNull: false,
+      defaultValue: "user",
+      validate: {
+        isIn: [["user", "admin"]],
+      },
     },
   },
   {
     tableName: "users",
     timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 

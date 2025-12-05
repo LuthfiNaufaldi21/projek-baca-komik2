@@ -3,8 +3,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { getComicBySlug } from "../services/comicService";
 import { get } from "../services/api";
+import { getReadChapters } from "../services/authService";
 import { useToast } from "../hooks/useToast";
-import { comics as localComicsData } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 
 import {
@@ -26,7 +26,7 @@ export default function DetailPage() {
     addBookmark,
     removeBookmark,
     isLoggedIn,
-    getReadingHistory,
+    user, // Get user to access readHistory from database
   } = useAuth();
 
   const [isLoadingBookmark, setIsLoadingBookmark] = useState(false);
@@ -35,24 +35,36 @@ export default function DetailPage() {
   const [liveChapters, setLiveChapters] = useState([]);
   const [chapterError, setChapterError] = useState(false);
   const [readChapters, setReadChapters] = useState(new Set());
+  const [relatedComics, setRelatedComics] = useState([]); // Related comics by genre
   const [sortOrder, setSortOrder] = useState("desc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
 
   const { showToast } = useToast();
-  const readingHistory = getReadingHistory(); // { "one-piece": "chapter-1105", "solo-leveling": "https://api.example.com/chapter/180" }
-  const lastReadKey = readingHistory[id]; // key chapter terakhir yang dibaca
 
-  // Load read chapters from localStorage
+  // Get last read chapter from DATABASE (user.readHistory)
+  // readHistory = [{ id, comic_id, chapter_slug: "chapter-142", comic: {...} }]
+  const lastReadChapter = user?.readHistory?.find(
+    (h) => h.comic?.slug === id || String(h.comic?.id) === String(id)
+  );
+  const lastReadChapterSlug = lastReadChapter?.chapter_slug; // "chapter-142" or full URL
+
+  // Load read chapters from DATABASE (not localStorage anymore!)
   useEffect(() => {
     if (isLoggedIn && id) {
-      const storedReadChapters = localStorage.getItem(`readChapters_${id}`);
-      if (storedReadChapters) {
+      const loadReadChapters = async () => {
         try {
-          const parsed = JSON.parse(storedReadChapters);
-          setReadChapters(new Set(parsed));
-        } catch (e) {
-          console.error("Failed to parse read chapters:", e);
+          const chapters = await getReadChapters(id);
+          setReadChapters(new Set(chapters));
+          console.log(
+            `✅ [DetailPage] Loaded ${chapters.length} read chapters from database`
+          );
+        } catch (error) {
+          console.error("❌ [DetailPage] Failed to load read chapters:", error);
         }
-      }
+      };
+      loadReadChapters();
+    } else {
+      // Clear read chapters if not logged in
+      setReadChapters(new Set());
     }
   }, [id, isLoggedIn]);
 
@@ -79,6 +91,25 @@ export default function DetailPage() {
         }
 
         setDetail(localData);
+
+        // 3. Fetch related comics by same genre
+        if (localData && localData.genres && localData.genres.length > 0) {
+          try {
+            const firstGenre = localData.genres[0];
+            const genreName =
+              typeof firstGenre === "object" ? firstGenre.name : firstGenre;
+            const relatedData = await get(
+              `/api/comics?genre=${encodeURIComponent(genreName)}&limit=6`
+            );
+            // Filter out current comic from related
+            const filtered = (relatedData.data || []).filter(
+              (c) => c.slug !== localData.slug && c.id !== localData.id
+            );
+            setRelatedComics(filtered.slice(0, 5)); // Show max 5 related comics
+          } catch (error) {
+            console.log("Failed to load related comics:", error);
+          }
+        }
       } catch {
         setDetail(null);
       } finally {
@@ -92,14 +123,22 @@ export default function DetailPage() {
     };
   }, [id]);
 
-  // Defensive data
-  const cover = detail?.cover || detail?.thumbnail || detail?.image;
+  // Defensive data - support both database and dummy format
+  const cover =
+    detail?.cover_url || detail?.cover || detail?.thumbnail || detail?.image;
   const title = detail?.title || "Untitled";
+  const alternativeTitle =
+    detail?.alternative_title || detail?.alternativeTitle || null;
   const author =
     detail?.author || detail?.info?.Pengarang || detail?.info?.Author || "-";
   const rating = detail?.rating || detail?.info?.Rating || "-";
   const status = detail?.status || "Update Tiap Minggu";
-  const tags = detail?.tags || detail?.genres || [];
+
+  // Database format: genres = [{id, name, slug}], Dummy: tags = ["Action"]
+  const tags = detail?.genres
+    ? detail.genres.map((g) => (typeof g === "object" ? g.name : g))
+    : detail?.tags || [];
+
   const synopsis =
     detail?.synopsis ||
     detail?.sinopsis ||
@@ -115,14 +154,6 @@ export default function DetailPage() {
     const numB = b.chapterNumber ?? b.id ?? 0;
     return sortOrder === "desc" ? numB - numA : numA - numB;
   });
-
-  const relatedComics = detail
-    ? localComicsData
-        .filter(
-          (c) => c.id !== detail.id && c.tags?.some((tag) => tags.includes(tag))
-        )
-        .slice(0, 5)
-    : [];
 
   const bookmarkKey = detail?.slug || id;
   const bookmarked = isBookmarked(bookmarkKey);
@@ -189,10 +220,31 @@ export default function DetailPage() {
     return `idx-${chapters.indexOf(chapter)}`;
   };
 
+  // Check if this chapter is the last read chapter from DATABASE
   const isLastReadChapter = (chapter) => {
-    if (!lastReadKey) return false;
+    if (!lastReadChapterSlug) return false;
+
     const chapterKey = getChapterKey(chapter);
-    return String(chapterKey) === String(lastReadKey);
+
+    // Extract chapter slug from various formats
+    let chapterSlug = lastReadChapterSlug;
+    if (chapterSlug.startsWith("/baca-chapter/")) {
+      // Format: /baca-chapter/spy-x-family/chapter-5 → chapter-5
+      const parts = chapterSlug.split("/");
+      chapterSlug = parts[parts.length - 1];
+    } else if (chapterSlug.startsWith("http")) {
+      // Format: https://api.example.com/.../chapter-142 → chapter-142
+      const match = chapterSlug.match(/chapter[-_]?(\d+)/i);
+      chapterSlug = match ? `chapter-${match[1]}` : chapterSlug;
+    }
+
+    // Compare with chapter key
+    return (
+      String(chapterKey) === String(chapterSlug) ||
+      String(chapterKey) === String(lastReadChapterSlug) ||
+      chapterKey.includes(chapterSlug) ||
+      chapterSlug.includes(chapterKey)
+    );
   };
 
   if (loading)
@@ -272,7 +324,18 @@ export default function DetailPage() {
           </div>
 
           <div className="detail-page__info">
-            <h1 className="detail-page__title">{title}</h1>
+            <h1
+              className={`detail-page__title ${
+                alternativeTitle ? "detail-page__title--with-alt" : ""
+              }`}
+            >
+              {title}
+            </h1>
+            {alternativeTitle && (
+              <p className="detail-page__alternative-title">
+                {alternativeTitle}
+              </p>
+            )}
 
             <div className="detail-page__meta">
               <div className="detail-page__rating-badge">
@@ -415,7 +478,7 @@ export default function DetailPage() {
             <h3 className="detail-page__related-title">Komik Sejenis</h3>
             <div className="detail-page__related-grid">
               {relatedComics.map((related) => (
-                <ComicCard key={related.id} comic={related} />
+                <ComicCard key={related.slug || related.id} comic={related} />
               ))}
             </div>
           </div>
