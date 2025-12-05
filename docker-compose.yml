@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   server:
     build: 
@@ -7,22 +9,11 @@ services:
     ports:
       - "5000:5000"
     
-    # --- TAMBAHAN BARU (Volumes) ---
-    volumes:
-      # Petakan folder laptop ke folder docker
-      - ./apps/server:/app
-      # Jangan timpa node_modules docker dengan punya laptop
-      - /app/node_modules
+    env_file:
+      - ./apps/server/.env
 
-    environment:
-      - PORT=5000
-      - DB_HOST=aws-1-ap-southeast-1.pooler.supabase.com
-      - DB_USER=postgres.sohfffbiknllujnotzyi
-      - DB_PASSWORD=qFIHWgZK5PmJ85jE
-      - DB_NAME=postgres
-      - DB_DIALECT=postgres
-      - DB_PORT=6543
-      - JWT_SECRET=ayo_semuanya_kita_baca_komik_di_komikita
-      - JWT_EXPIRES_IN=30d
+    volumes:
+      - ./apps/server:/app
+      - /app/node_modules
 
     restart: always
