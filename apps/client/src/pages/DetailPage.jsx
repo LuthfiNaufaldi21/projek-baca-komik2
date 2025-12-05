@@ -174,12 +174,14 @@ export default function DetailPage() {
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      const listElement = document.querySelector(
-        ".detail-page__chapters-header"
-      );
-      if (listElement) {
-        listElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      setTimeout(() => {
+        const listElement = document.querySelector(
+          ".detail-page__chapters-header"
+        );
+        if (listElement) {
+          listElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
     }
   };
 

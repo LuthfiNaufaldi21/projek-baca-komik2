@@ -118,6 +118,7 @@
 
 .detail-page__chapters-header {
   @apply flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4;
+  scroll-margin-top: 100px;
 }
 
 .detail-page__chapters-title {
