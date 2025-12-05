@@ -205,7 +205,7 @@ DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
 DB_DIALECT=postgres
 DB_PORT=6543
 JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=30d
 PORT=5000
 ```
 

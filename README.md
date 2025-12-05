@@ -190,7 +190,7 @@ DB_USER=postgres
 DB_PASSWORD=password
 
 JWT_SECRET=your_secret_key
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=30d
 
 PORT=5000
 NODE_ENV=development

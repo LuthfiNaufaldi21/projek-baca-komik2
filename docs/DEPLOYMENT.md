@@ -70,7 +70,7 @@ DB_NAME=komikita_db
 DB_USER=your-user
 DB_PASSWORD=your-password
 JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=30d
 PORT=5000
 NODE_ENV=production
 ```
