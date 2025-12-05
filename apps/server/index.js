@@ -23,7 +23,7 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 5000;
 const rateLimiter = require("./middleware/rateLimiter");
 
 // 🎯 KODE BARU: Middleware untuk melayani file statis (avatar)
