@@ -1,7 +1,7 @@
-import { useNavigate, Link } from "react-router-dom"; // Tambah Import Link
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   FiEdit2,
   FiBookmark,
@@ -21,7 +21,6 @@ import ComicCard from "../components/ComicCard";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import * as formatDate from "../utils/formatDate";
 import * as authService from "../services/authService";
-import { comics } from "../data/comics";
 import "../styles/AccountPage.css";
 import accountImage from "../assets/images/account-img.jpg";
 
@@ -96,77 +95,93 @@ export default function AccountPage() {
     setShowAvatarModal(false);
   };
 
-  // 1. Data Bookmark
-  // Handle both formats: [{comicId, bookmarkedAt}] or [comicId]
-  const bookmarkIds = (() => {
+  // 1. Bookmarked Comics from database
+  const bookmarkedComics = useMemo(() => {
     if (!user?.bookmarks || !Array.isArray(user.bookmarks)) return [];
-    return user.bookmarks.map((b) => (typeof b === "object" ? b.comicId : b));
-  })();
+    return user.bookmarks.map((bookmark) => bookmark.comic).filter(Boolean);
+  }, [user?.bookmarks]);
 
-  const bookmarkedComics = comics.filter((comic) =>
-    bookmarkIds.includes(comic.id)
-  );
+  // 2. Reading History from database
+  const readingHistory = useMemo(() => {
+    if (!user?.readHistory || !Array.isArray(user.readHistory)) return [];
 
-  // 2. Data Riwayat Baca
-  const readingHistory = (() => {
-    if (!user?.readingHistory) return [];
+    // Sort by read_at DESC to show latest read first
+    const sorted = [...user.readHistory].sort((a, b) => {
+      const dateA = new Date(a.read_at || 0);
+      const dateB = new Date(b.read_at || 0);
+      return dateB - dateA; // DESC: newest first
+    });
 
-    return Object.entries(user.readingHistory)
-      .reverse()
-      .map(([comicId, chapterId]) => {
-        const comic = comics.find((c) => c.id === comicId);
+    return sorted
+      .map((historyItem) => {
+        const comic = historyItem.comic;
         if (!comic) return null;
 
-        // Parse chapter info from chapterId
-        // chapterId could be: number, /baca-chapter/slug/num, or full URL
-        let chapterInfo = "Chapter Terakhir";
-        let displayChapterId = chapterId;
+        let chapterInfo = "Chapter";
+        let chapterNumber = "";
+        let displayChapterId = historyItem.chapter_slug;
 
         try {
-          if (typeof chapterId === "string") {
-            if (chapterId.startsWith("/baca-chapter/")) {
-              // Extract chapter number from path like /baca-chapter/one-piece/1133
-              const parts = chapterId.split("/");
-              const chapterNum = parts[parts.length - 1];
-              chapterInfo = `Chapter ${chapterNum}`;
-              displayChapterId = chapterId;
-            } else if (chapterId.startsWith("http")) {
-              // Extract from URL
-              const urlParts = chapterId.split("/");
-              const lastPart =
-                urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
-              const match = lastPart.match(/chapter[_-]?(\d+)/i);
-              chapterInfo = match ? `Chapter ${match[1]}` : "Chapter Terakhir";
-              displayChapterId = chapterId;
-            } else {
-              // Plain chapter number or ID
-              chapterInfo = `Chapter ${chapterId}`;
-              displayChapterId = chapterId;
+          const chapterSlug = historyItem.chapter_slug;
+
+          if (typeof chapterSlug === "string") {
+            // Extract chapter number from various formats
+            if (chapterSlug.startsWith("/baca-chapter/")) {
+              // Format: /baca-chapter/spy-x-family/chapter-142
+              const parts = chapterSlug.split("/");
+              const lastPart = parts[parts.length - 1];
+              const match = lastPart.match(/chapter[-_]?(\d+)/i);
+              chapterNumber = match ? match[1] : lastPart;
+            } else if (chapterSlug.startsWith("http")) {
+              // Format: https://api.example.com/.../chapter-142
+              const match = chapterSlug.match(/chapter[-_]?(\d+)/i);
+              chapterNumber = match ? match[1] : "";
+            } else if (chapterSlug.match(/chapter[-_]?(\d+)/i)) {
+              // Format: chapter-142 or chapter_142
+              const match = chapterSlug.match(/chapter[-_]?(\d+)/i);
+              chapterNumber = match ? match[1] : "";
+            } else if (!isNaN(chapterSlug)) {
+              // Pure number: "142"
+              chapterNumber = chapterSlug;
             }
-          } else {
-            chapterInfo = `Chapter ${chapterId}`;
-            displayChapterId = chapterId;
+
+            chapterInfo = chapterNumber
+              ? `Chapter ${chapterNumber}`
+              : "Chapter";
+          } else if (typeof chapterSlug === "number") {
+            chapterNumber = String(chapterSlug);
+            chapterInfo = `Chapter ${chapterNumber}`;
           }
         } catch (e) {
-          console.error("Error parsing chapter info:", e);
+          console.error("Error parsing chapter:", e);
         }
 
         return {
           ...comic,
-          lastReadChapter: chapterInfo,
+          lastReadChapter: chapterInfo, // "Chapter 142"
           lastReadChapterId: displayChapterId,
         };
       })
       .filter(Boolean);
-  })();
+  }, [user?.readHistory]);
 
-  // 3. Genre Favorit
-  const favoriteGenre = (() => {
+  // 3. Favorite Genre from reading history
+  const favoriteGenre = useMemo(() => {
     if (readingHistory.length === 0) return "Belum ada";
 
     const genreCounts = {};
     readingHistory.forEach((comic) => {
-      if (comic.tags) {
+      // Database format: genres array of objects
+      if (Array.isArray(comic.genres)) {
+        comic.genres.forEach((genre) => {
+          const genreName = genre.name || genre;
+          if (!["Manga", "Manhwa", "Manhua", "Warna"].includes(genreName)) {
+            genreCounts[genreName] = (genreCounts[genreName] || 0) + 1;
+          }
+        });
+      }
+      // Fallback: tags array
+      else if (Array.isArray(comic.tags)) {
         comic.tags.forEach((tag) => {
           if (!["Manga", "Manhwa", "Manhua", "Warna"].includes(tag)) {
             genreCounts[tag] = (genreCounts[tag] || 0) + 1;
@@ -179,7 +194,7 @@ export default function AccountPage() {
       (a, b) => b[1] - a[1]
     );
     return sortedGenres.length > 0 ? sortedGenres[0][0] : "Belum ada";
-  })();
+  }, [readingHistory]);
 
   if (!isLoggedIn) {
     return null;
@@ -218,10 +233,14 @@ export default function AccountPage() {
           </div>
 
           <div className="account-page__profile-info">
-            <h2 className="account-page__title">
-              {user?.username || "Pengguna"}
-            </h2>
-            {user?.bio && <p className="account-page__bio">{user.bio}</p>}
+            <div className="account-page__title-wrapper">
+              <h2 className="account-page__title">
+                {user?.username || "Pengguna"}
+              </h2>
+              {user?.role === "admin" && (
+                <span className="account-page__admin-badge">ADMIN</span>
+              )}
+            </div>
             {user?.email && (
               <p className="account-page__email">
                 <FiMail className="account-page__email-icon" />
@@ -230,7 +249,10 @@ export default function AccountPage() {
             )}
             <p className="account-page__joined">
               <FiCalendar className="account-page__joined-icon" />
-              Bergabung {formatDate.relative(user?.joinedAt || new Date())}
+              Bergabung{" "}
+              {formatDate.relative(
+                user?.created_at || user?.joinedAt || new Date()
+              )}
             </p>
           </div>
 
@@ -320,11 +342,11 @@ export default function AccountPage() {
 
                 return (
                   <div
-                    key={comic.id}
+                    key={comic.slug || comic.id}
                     className="account-page__history-card-wrapper"
                   >
                     {/* ComicCard tetap mengarah ke DetailPage (karena internal link-nya) */}
-                    <ComicCard comic={comic} />
+                    <ComicCard comic={comic} maxGenres={2} />
 
                     {/* Tombol Chapter Terakhir (Mengarah langsung ke Reader) */}
                     <Link

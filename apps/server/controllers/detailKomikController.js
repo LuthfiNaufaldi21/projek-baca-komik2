@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
+const { Comic, Genre } = require("../models");
 const router = express.Router();
 
 const URL = "https://komiku.org/";
@@ -352,8 +353,89 @@ async function resolveAndFetchDetailBySlug(slug) {
 const getDetail = async (req, res) => {
   try {
     const { slug } = req.params;
-    const komikDetail = await resolveAndFetchDetailBySlug(slug);
-    res.json(komikDetail);
+
+    // 1. Ambil metadata dari Database
+    const comic = await Comic.findOne({
+      where: { slug },
+      include: [
+        {
+          model: Genre,
+          as: "genres",
+          attributes: ["id", "name", "slug"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+
+    if (!comic) {
+      return res.status(404).json({
+        error: "Komik tidak ditemukan di database",
+        detail: `Slug "${slug}" tidak ada dalam database`,
+      });
+    }
+
+    // 2. Scrape chapter list dari Komiku menggunakan slug yang sama
+    let scrapedData = null;
+    try {
+      scrapedData = await resolveAndFetchDetailBySlug(slug);
+    } catch (scrapingError) {
+      console.warn(
+        `⚠️  Gagal scraping chapter untuk ${slug}:`,
+        scrapingError.message
+      );
+      // Jika scraping gagal, tetap kembalikan data dari DB (tanpa chapter list)
+      scrapedData = {
+        chapters: [],
+        firstChapter: null,
+        latestChapter: null,
+        similarKomik: [],
+      };
+    }
+
+    // 3. Merge: Metadata dari DB + Chapter dari Scraping
+    const mergedData = {
+      // Metadata dari Database
+      id: comic.id,
+      slug: comic.slug,
+      title: comic.title,
+      alternativeTitle: comic.alternative_title || "",
+      author: comic.author || "",
+      status: comic.status || "",
+      thumbnail: comic.cover_url || "",
+      cover_url: comic.cover_url || "",
+      sinopsis: comic.synopsis || "",
+      synopsis: comic.synopsis || "",
+      rating: comic.rating || 0,
+      type: comic.type || "",
+      genres: comic.genres.map((g) => g.name),
+      genresDetail: comic.genres.map((g) => ({
+        id: g.id,
+        name: g.name,
+        slug: g.slug,
+      })),
+
+      // Chapter data dari Scraping
+      chapters: scrapedData.chapters || [],
+      firstChapter: scrapedData.firstChapter || null,
+      latestChapter: scrapedData.latestChapter || null,
+      similarKomik: scrapedData.similarKomik || [],
+
+      // Info tambahan
+      info: {
+        Status: comic.status,
+        Author: comic.author,
+        Type: comic.type,
+        Rating: comic.rating,
+      },
+
+      // Metadata source indicator
+      dataSource: {
+        metadata: "database",
+        chapters: scrapedData.chapters?.length > 0 ? "scraped" : "unavailable",
+      },
+    };
+
+    res.json(mergedData);
   } catch (err) {
     console.error("Error fetching komik detail:", err);
     res.status(500).json({

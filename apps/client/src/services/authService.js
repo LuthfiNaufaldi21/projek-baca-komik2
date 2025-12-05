@@ -31,36 +31,27 @@ export const login = async (email, password) => {
       const API_BASE_URL =
         import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-      // Convert backend format to frontend format
-      const bookmarkIds = Array.isArray(response.user.bookmarks)
-        ? response.user.bookmarks.map((b) =>
-            typeof b === "object" ? b.comicId : b
-          )
-        : [];
-
-      const historyObj = {};
-      if (Array.isArray(response.user.readingHistory)) {
-        response.user.readingHistory.forEach((item) => {
-          historyObj[item.comicId] = item.lastReadChapter;
-        });
-      }
-
+      // Keep full bookmarks and readHistory from backend (with comic relations)
+      // Backend returns:
+      // - bookmarks: [{ id, comic_id, comic: {...fullComicData} }]
+      // - readHistory: [{ id, comic_id, chapter_id, read_at, comic: {...} }]
       const userData = {
         ...response.user,
         avatar: response.user.avatar
           ? `${API_BASE_URL}${response.user.avatar}`
           : null,
-        bio: response.user.bio || "",
-        bookmarks: bookmarkIds,
-        readingHistory: historyObj,
+        role: response.user.role || "user",
+        bookmarks: response.user.bookmarks || [], // Keep full array with comic objects
+        readHistory: response.user.readHistory || [], // Keep full array with comic objects
         favoriteGenres: response.user.favoriteGenres || [],
         joinedAt: response.user.createdAt || new Date().toISOString(),
       };
       localStorage.setItem("komikita-user", JSON.stringify(userData));
-      console.log("💾 [AuthService] User data converted and saved:", {
-        bookmarks: bookmarkIds.length,
-        history: Object.keys(historyObj).length,
+      console.log("💾 [AuthService] User data saved:", {
+        bookmarks: userData.bookmarks.length,
+        history: userData.readHistory.length,
         avatar: userData.avatar ? "Yes" : "No",
+        role: userData.role,
       });
       return userData;
     }
@@ -139,33 +130,23 @@ export const getCurrentUser = async () => {
       const API_BASE_URL =
         import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-      // Convert backend format to frontend format
-      const bookmarkIds = Array.isArray(response.bookmarks)
-        ? response.bookmarks.map((b) => (typeof b === "object" ? b.comicId : b))
-        : [];
-
-      const historyObj = {};
-      if (Array.isArray(response.readingHistory)) {
-        response.readingHistory.forEach((item) => {
-          historyObj[item.comicId] = item.lastReadChapter;
-        });
-      }
-
+      // Keep full bookmarks and readHistory from backend
       const userData = {
         ...response,
         avatar: response.avatar ? `${API_BASE_URL}${response.avatar}` : null,
-        bio: response.bio || "",
-        bookmarks: bookmarkIds,
-        readingHistory: historyObj,
+        role: response.role || "user",
+        bookmarks: response.bookmarks || [], // Keep full array
+        readHistory: response.readHistory || [], // Keep full array
         favoriteGenres: response.favoriteGenres || [],
         joinedAt: response.createdAt || new Date().toISOString(),
       };
       localStorage.setItem("komikita-user", JSON.stringify(userData));
-      console.log("✅ [AuthService] User profile fetched and converted:", {
+      console.log("✅ [AuthService] User profile fetched:", {
         username: userData.username,
-        bookmarks: bookmarkIds.length,
-        history: Object.keys(historyObj).length,
+        bookmarks: userData.bookmarks.length,
+        history: userData.readHistory.length,
         avatar: userData.avatar ? "Yes" : "No",
+        role: userData.role,
       });
       return userData;
     }
@@ -209,15 +190,19 @@ export const updateProfile = async (profileData) => {
 
       // Convert backend format to frontend format
       const bookmarkIds = Array.isArray(response.user.bookmarks)
-        ? response.user.bookmarks.map((b) =>
-            typeof b === "object" ? b.comicId : b
-          )
+        ? response.user.bookmarks.map((b) => {
+            if (typeof b === "object" && b.comic) {
+              return b.comic.slug;
+            }
+            return typeof b === "object" ? b.comicId : b;
+          })
         : [];
 
       const historyObj = {};
-      if (Array.isArray(response.user.readingHistory)) {
-        response.user.readingHistory.forEach((item) => {
-          historyObj[item.comicId] = item.lastReadChapter;
+      if (Array.isArray(response.user.readHistory)) {
+        response.user.readHistory.forEach((item) => {
+          const comicSlug = item.comic?.slug || item.comicId;
+          historyObj[comicSlug] = item.chapter_slug || item.lastReadChapter;
         });
       }
 
@@ -226,7 +211,7 @@ export const updateProfile = async (profileData) => {
         avatar: response.user.avatar
           ? `${API_BASE_URL}${response.user.avatar}`
           : null,
-        bio: response.user.bio || "",
+        role: response.user.role || "user",
         bookmarks: bookmarkIds,
         readingHistory: historyObj,
         favoriteGenres: response.user.favoriteGenres || [],
@@ -360,8 +345,8 @@ export const removeAvatar = async () => {
  * @param {string} comicId - Comic ID to bookmark/unbookmark
  * @returns {Promise} - Updated bookmark list
  */
-export const toggleBookmark = async (comicId) => {
-  console.log("🔖 [AuthService] Toggling bookmark for comic:", comicId);
+export const toggleBookmark = async (comicSlug) => {
+  console.log("🔖 [AuthService] Toggling bookmark for comic:", comicSlug);
   try {
     const token = localStorage.getItem("komikita-token");
 
@@ -369,7 +354,7 @@ export const toggleBookmark = async (comicId) => {
       throw new Error("Not authenticated");
     }
 
-    const response = await post("/api/user/bookmark", { comicId });
+    const response = await post("/api/user/bookmark", { comicSlug });
     console.log(
       "✅ [AuthService] Bookmark toggled successfully:",
       response.msg
@@ -390,10 +375,10 @@ export const toggleBookmark = async (comicId) => {
  * @param {string} chapterId - Chapter ID that was read
  * @returns {Promise} - Updated reading history
  */
-export const updateReadingHistory = async (comicId, chapterId) => {
+export const updateReadingHistory = async (comicSlug, chapterSlug) => {
   console.log("📖 [AuthService] Updating reading history:", {
-    comicId,
-    chapterId,
+    comicSlug,
+    chapterSlug,
   });
   try {
     const token = localStorage.getItem("komikita-token");
@@ -402,7 +387,10 @@ export const updateReadingHistory = async (comicId, chapterId) => {
       throw new Error("Not authenticated");
     }
 
-    const response = await post("/api/user/history", { comicId, chapterId });
+    const response = await post("/api/user/history", {
+      comicSlug,
+      chapterSlug,
+    });
     console.log("✅ [AuthService] Reading history updated successfully");
 
     // Don't update localStorage here, let getCurrentUser handle it
@@ -411,6 +399,64 @@ export const updateReadingHistory = async (comicId, chapterId) => {
   } catch (error) {
     console.error("❌ [AuthService] Error updating reading history:", error);
     throw error;
+  }
+};
+
+/**
+ * Mark a chapter as read (for DetailPage checkmarks)
+ * @param {string} comicSlug - Comic slug
+ * @param {string} chapterSlug - Chapter slug that was read
+ * @returns {Promise} - Success message
+ */
+export const markChapterRead = async (comicSlug, chapterSlug) => {
+  console.log("📖 [AuthService] Marking chapter as read:", {
+    comicSlug,
+    chapterSlug,
+  });
+  try {
+    const token = localStorage.getItem("komikita-token");
+
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+
+    const response = await post("/api/user/read-chapters", {
+      comicSlug,
+      chapterSlug,
+    });
+    console.log("✅ [AuthService] Chapter marked as read");
+
+    return response;
+  } catch (error) {
+    console.error("❌ [AuthService] Error marking chapter as read:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get all read chapters for a comic
+ * @param {string} comicSlug - Comic slug
+ * @returns {Promise<string[]>} - Array of chapter slugs that have been read
+ */
+export const getReadChapters = async (comicSlug) => {
+  try {
+    const token = localStorage.getItem("komikita-token");
+
+    if (!token) {
+      return []; // Return empty array if not logged in
+    }
+
+    const response = await get(`/api/user/read-chapters/${comicSlug}`);
+    console.log(
+      `📚 [AuthService] Loaded ${
+        response.chapters?.length || 0
+      } read chapters for ${comicSlug}`
+    );
+
+    return response.chapters || [];
+  } catch (error) {
+    console.error("❌ [AuthService] Error fetching read chapters:", error);
+    return []; // Return empty array on error
   }
 };
 
@@ -426,4 +472,6 @@ export default {
   deleteAccount,
   toggleBookmark,
   updateReadingHistory,
+  markChapterRead,
+  getReadChapters,
 };

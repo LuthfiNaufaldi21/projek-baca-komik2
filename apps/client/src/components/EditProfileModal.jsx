@@ -1,13 +1,6 @@
-import { useState } from "react";
-import {
-  FiX,
-  FiUser,
-  FiMail,
-  FiLock,
-  FiEye,
-  FiEyeOff,
-  FiFileText,
-} from "react-icons/fi";
+import { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import { FiX, FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { useToast } from "../hooks/useToast";
 import * as authService from "../services/authService";
 import "../styles/EditProfileModal.css";
@@ -16,11 +9,18 @@ export default function EditProfileModal({ user, onClose, onSave }) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("profile"); // 'profile' or 'password'
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   // Profile form state
   const [profileData, setProfileData] = useState({
     username: user?.username || "",
     email: user?.email || "",
-    bio: user?.bio || "",
   });
 
   // Password form state
@@ -41,13 +41,6 @@ export default function EditProfileModal({ user, onClose, onSave }) {
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-
-    // Limit bio to 100 characters
-    if (name === "bio") {
-      if (value.length > 100) {
-        return; // Don't update if exceeds 100 characters
-      }
-    }
 
     setProfileData((prev) => ({
       ...prev,
@@ -128,10 +121,9 @@ export default function EditProfileModal({ user, onClose, onSave }) {
 
     setIsLoading(true);
     try {
-      // Only send username and bio, not email
+      // Only send username, not email or bio
       await onSave({
         username: profileData.username,
-        bio: profileData.bio,
       });
       showToast("Profil berhasil diperbarui!", "success");
       onClose();
@@ -175,9 +167,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
     }
   };
 
-  const bioCharCount = profileData.bio.length;
-
-  return (
+  return ReactDOM.createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content modal-content--tabbed"
@@ -263,29 +253,6 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                   title="Email tidak dapat diubah"
                 />
                 <p className="modal-hint">Email tidak dapat diubah</p>
-              </div>
-
-              {/* Bio */}
-              <div className="modal-field">
-                <label className="modal-label">
-                  <FiFileText className="modal-label-icon" />
-                  Bio
-                  <span className="modal-label-counter">
-                    {bioCharCount}/100 karakter
-                  </span>
-                </label>
-                <textarea
-                  name="bio"
-                  value={profileData.bio}
-                  onChange={handleProfileChange}
-                  className={`modal-textarea ${
-                    errors.bio ? "modal-input--error" : ""
-                  }`}
-                  placeholder="Ceritakan tentang dirimu..."
-                  rows="4"
-                  disabled={isLoading}
-                />
-                {errors.bio && <p className="modal-error">{errors.bio}</p>}
               </div>
 
               {/* Actions */}
@@ -430,6 +397,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

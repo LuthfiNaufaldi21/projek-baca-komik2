@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getPopularComics, getLatestComics } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import HeroSlider from "../components/HeroSlider";
+import { FaSpinner } from "react-icons/fa";
 import "../styles/HomePage.css";
 
 export default function HomePage() {
@@ -38,7 +39,10 @@ export default function HomePage() {
       <h2 className="home-page__title">Komik Populer</h2>
 
       {isLoading ? (
-        <div className="home-page__loading">Loading...</div>
+        <div className="home-page__loading">
+          <FaSpinner className="home-page__loading-spinner" />
+          <p>Memuat komik populer...</p>
+        </div>
       ) : (
         <HeroSlider comics={featuredComics} />
       )}
@@ -50,11 +54,14 @@ export default function HomePage() {
       <hr className="home-page__divider" />
 
       {isLoading ? (
-        <div className="home-page__loading">Loading...</div>
+        <div className="home-page__loading">
+          <FaSpinner className="home-page__loading-spinner" />
+          <p>Memuat komik terbaru...</p>
+        </div>
       ) : (
         <div className="home-page__grid">
           {latestComics.map((comic) => (
-            <ComicCard key={comic.id} comic={comic} />
+            <ComicCard key={comic.slug || comic.id} comic={comic} />
           ))}
         </div>
       )}

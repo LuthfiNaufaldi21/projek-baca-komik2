@@ -4,6 +4,7 @@ import { getComicsByGenre } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
 import { FiArrowLeft } from "react-icons/fi";
+import { FaSpinner } from "react-icons/fa";
 import "../styles/GenrePage.css";
 
 export default function GenrePage() {
@@ -83,12 +84,15 @@ export default function GenrePage() {
         Menampilkan {filtered.length} komik dengan genre "{decodedTag}".
       </p>
       {isLoading ? (
-        <div className="genre-page__loading">Loading...</div>
+        <div className="genre-page__loading">
+          <FaSpinner className="genre-page__loading-spinner" />
+          <p>Memuat komik genre {decodedTag}...</p>
+        </div>
       ) : (
         <>
           <div className="genre-page__grid">
             {currentComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} />
+              <ComicCard key={comic.slug || comic.id} comic={comic} />
             ))}
           </div>
           {totalPages > 1 && (

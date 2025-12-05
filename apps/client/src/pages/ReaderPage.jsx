@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getChapterImages, getComicBySlug } from "../services/comicService";
 import { get } from "../services/api";
+import { markChapterRead } from "../services/authService";
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -35,6 +36,7 @@ export default function ReaderPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const activeChapterRef = useRef(null); // Ref untuk auto-scroll dropdown
+  const dropdownListRef = useRef(null); // Ref untuk container dropdown
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -154,30 +156,25 @@ export default function ReaderPage() {
     };
   }, [comicId, decodedChapterId]);
 
-  // 4. Update History & Mark Chapter as Read
+  // 4. Update History & Mark Chapter as Read (DATABASE)
   useEffect(() => {
     if (comicId && decodedChapterId && isLoggedIn) {
+      // Update read history (last chapter - upsert in read_history table)
       updateReadingHistory(comicId, decodedChapterId);
 
-      // Mark chapter as read in localStorage
-      const chapterKey = decodedChapterId;
-      const storageKey = `readChapters_${comicId}`;
-      const storedReadChapters = localStorage.getItem(storageKey);
-
-      let readChaptersArray = [];
-      if (storedReadChapters) {
-        try {
-          readChaptersArray = JSON.parse(storedReadChapters);
-        } catch (e) {
-          console.error("Failed to parse read chapters:", e);
-        }
-      }
-
-      // Add current chapter if not already in list
-      if (!readChaptersArray.includes(String(chapterKey))) {
-        readChaptersArray.push(String(chapterKey));
-        localStorage.setItem(storageKey, JSON.stringify(readChaptersArray));
-      }
+      // Mark chapter as read (all chapters - insert to read_chapters table)
+      markChapterRead(comicId, decodedChapterId)
+        .then(() => {
+          console.log(
+            `✅ [ReaderPage] Chapter ${decodedChapterId} marked as read in database`
+          );
+        })
+        .catch((error) => {
+          console.error(
+            "❌ [ReaderPage] Failed to mark chapter as read:",
+            error
+          );
+        });
     }
     // eslint-disable-next-line
   }, [comicId, decodedChapterId, isLoggedIn]);
@@ -212,11 +209,16 @@ export default function ReaderPage() {
 
   // 6. UX Dropdown: Auto scroll ke active chapter
   useEffect(() => {
-    if (isDropdownOpen && activeChapterRef.current) {
-      activeChapterRef.current.scrollIntoView({
-        behavior: "auto",
-        block: "center", // Scroll supaya item ada di tengah
-      });
+    if (isDropdownOpen && activeChapterRef.current && dropdownListRef.current) {
+      const container = dropdownListRef.current;
+      const item = activeChapterRef.current;
+
+      // Manual scroll calculation to avoid window scrolling
+      const itemTop = item.offsetTop;
+      const itemHeight = item.offsetHeight;
+      const containerHeight = container.offsetHeight;
+
+      container.scrollTop = itemTop - containerHeight / 2 + itemHeight / 2;
     }
   }, [isDropdownOpen]);
 
@@ -422,7 +424,7 @@ export default function ReaderPage() {
             </button>
 
             {isDropdownOpen && (
-              <div className="reader-dropdown-menu">
+              <div className="reader-dropdown-menu" ref={dropdownListRef}>
                 {allChapters.map((ch) => {
                   const isActive =
                     ch.apiLink === currentChapter.apiLink ||

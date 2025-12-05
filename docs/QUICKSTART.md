@@ -39,7 +39,7 @@ DB_DIALECT=postgres
 # Server Configuration
 PORT=5000
 JWT_SECRET=your_super_secret_key_min_32_chars
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=30d
 NODE_ENV=development
 ```
 

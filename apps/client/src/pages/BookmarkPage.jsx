@@ -1,10 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { comics } from "../data/comics";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
-import { FiBookmark, FiLock } from "react-icons/fi"; // Pastikan install: npm install react-icons
+import { FiBookmark, FiLock } from "react-icons/fi";
 import "../styles/BookmarkPage.css";
 
 export default function BookmarkPage() {
@@ -14,17 +13,12 @@ export default function BookmarkPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // --- LOGIKA DATA (FRONTEND VERSION) ---
-  // Convert user.bookmarks to simple array of comic IDs
-  const bookmarkIds = (() => {
+  // Get bookmarked comics from user.bookmarks (database format)
+  // Backend returns: user.bookmarks = [{ id, comic_id, comic: {...fullComicData} }]
+  const bookmarkedComics = useMemo(() => {
     if (!user?.bookmarks || !Array.isArray(user.bookmarks)) return [];
-    // Handle both formats: [{comicId, bookmarkedAt}] or [comicId]
-    return user.bookmarks.map((b) => (typeof b === "object" ? b.comicId : b));
-  })();
-
-  const bookmarkedComics = comics.filter((comic) =>
-    bookmarkIds.includes(comic.id)
-  );
+    return user.bookmarks.map((bookmark) => bookmark.comic).filter(Boolean);
+  }, [user?.bookmarks]);
 
   const totalPages = Math.ceil(bookmarkedComics.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -80,7 +74,7 @@ export default function BookmarkPage() {
         <>
           <div className="bookmark-page__grid">
             {currentComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} />
+              <ComicCard key={comic.slug || comic.id} comic={comic} />
             ))}
           </div>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getComicsByType } from "../services/comicService";
 import ComicCard from "../components/ComicCard";
 import Pagination from "../components/Pagination";
+import { FaSpinner } from "react-icons/fa";
 import "../styles/CategoryPage.css";
 
 export default function ManhwaPage() {
@@ -14,7 +15,7 @@ export default function ManhwaPage() {
     const fetchComics = async () => {
       try {
         setIsLoading(true);
-        const data = await getComicsByType("manhwa");
+        const data = await getComicsByType("Manhwa");
         setFilteredComics(data);
       } catch (error) {
         console.error("Error fetching manhwa:", error);
@@ -43,14 +44,17 @@ export default function ManhwaPage() {
       </p>
 
       {isLoading ? (
-        <div className="category-page__loading">Loading...</div>
+        <div className="category-page__loading">
+          <FaSpinner className="category-page__loading-spinner" />
+          <p>Memuat manhwa...</p>
+        </div>
       ) : filteredComics.length === 0 ? (
         <p className="category-page__empty">Tidak ada manhwa saat ini.</p>
       ) : (
         <>
           <div className="category-page__grid">
             {currentComics.map((comic) => (
-              <ComicCard key={comic.id} comic={comic} />
+              <ComicCard key={comic.slug || comic.id} comic={comic} />
             ))}
           </div>
 

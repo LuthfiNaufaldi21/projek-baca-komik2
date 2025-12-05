@@ -54,6 +54,14 @@ export default function FilterBar({
             Rating Tertinggi
           </button>
           <button
+            onClick={() => handleSortClick("rating_asc")}
+            className={`filter-bar__sort ${
+              sortOrder === "rating_asc" ? "filter-bar__sort--active" : ""
+            }`}
+          >
+            Rating Terendah
+          </button>
+          <button
             onClick={() => handleSortClick("title_asc")}
             className={`filter-bar__sort ${
               sortOrder === "title_asc" ? "filter-bar__sort--active" : ""

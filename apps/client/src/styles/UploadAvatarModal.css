@@ -3,6 +3,7 @@
 .upload-avatar-modal__overlay {
   @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4;
   animation: fadeIn 0.2s ease-out;
+  overflow-y: auto;
 }
 
 .upload-avatar-modal__content {
