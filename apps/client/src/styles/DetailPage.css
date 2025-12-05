@@ -274,3 +274,23 @@
   @apply absolute right-3 top-1/2 -translate-y-1/2;
   @apply text-xs font-bold text-primary bg-primary/15 dark:bg-primary/20 px-3 py-1 rounded-full border border-primary/40;
 }
+
+/* Pagination */
+.detail-page__pagination {
+  @apply flex justify-center items-center gap-2 mt-6 flex-wrap;
+}
+
+.detail-page__pagination-btn {
+  @apply flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+    bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
+    hover:bg-gray-200 dark:hover:bg-gray-700
+    disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.detail-page__pagination-btn.active {
+  @apply bg-primary text-white hover:bg-primary-hover;
+}
+
+.detail-page__pagination-dots {
+  @apply px-2 text-gray-500 dark:text-gray-400 font-bold;
+}
