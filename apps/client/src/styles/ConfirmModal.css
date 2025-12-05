@@ -3,6 +3,7 @@
 .confirm-modal__overlay {
   @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
   animation: fadeIn 0.2s ease-out;
+  overflow-y: auto;
 }
 
 .confirm-modal__content {

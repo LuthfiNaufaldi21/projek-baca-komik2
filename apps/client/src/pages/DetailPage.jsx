@@ -1,11 +1,13 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { getComicBySlug } from "../services/comicService";
-import { get } from "../services/api";
+import { get, deleteRequest } from "../services/api";
 import { getReadChapters } from "../services/authService";
 import { useToast } from "../hooks/useToast";
 import ComicCard from "../components/ComicCard";
+import EditComicModal from "../components/EditComicModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 import {
   FaStar,
@@ -16,11 +18,20 @@ import {
   FaSpinner,
   FaCheckCircle,
 } from "react-icons/fa";
-import { FiRefreshCw, FiArrowDown, FiArrowUp } from "react-icons/fi";
+import {
+  FiRefreshCw,
+  FiArrowDown,
+  FiArrowUp,
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiTrash2,
+} from "react-icons/fi";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     isBookmarked,
     addBookmark,
@@ -36,7 +47,12 @@ export default function DetailPage() {
   const [chapterError, setChapterError] = useState(false);
   const [readChapters, setReadChapters] = useState(new Set());
   const [relatedComics, setRelatedComics] = useState([]); // Related comics by genre
-  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
+  const [sortOrder, setSortOrder] = useState("asc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const itemsPerPage = 100;
 
   const { showToast } = useToast();
 
@@ -155,6 +171,75 @@ export default function DetailPage() {
     return sortOrder === "desc" ? numB - numA : numA - numB;
   });
 
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedChapters.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentChapters = sortedChapters.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      setTimeout(() => {
+        const listElement = document.querySelector(
+          ".detail-page__chapters-header"
+        );
+        if (listElement) {
+          listElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
+  };
+
+  // Helper for pagination ellipsis
+  const getPaginationItems = () => {
+    const rangeWithDots = [];
+    const delta = 1; // Neighbors around current page
+    const leftSide = 2; // Always show first X pages
+    const rightSide = 2; // Always show last X pages
+
+    const pages = new Set();
+
+    // Add first pages
+    for (let i = 1; i <= leftSide; i++) {
+      if (i <= totalPages) pages.add(i);
+    }
+
+    // Add last pages
+    for (let i = totalPages - rightSide + 1; i <= totalPages; i++) {
+      if (i > 0) pages.add(i);
+    }
+
+    // Add current and neighbors
+    for (let i = currentPage - delta; i <= currentPage + delta; i++) {
+      if (i > 0 && i <= totalPages) pages.add(i);
+    }
+
+    const sortedPages = Array.from(pages).sort((a, b) => a - b);
+
+    let l;
+    for (let i of sortedPages) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push("...");
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
+
+  // Reset page on sort/id change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortOrder, id]);
+
   const bookmarkKey = detail?.slug || id;
   const bookmarked = isBookmarked(bookmarkKey);
 
@@ -193,6 +278,45 @@ export default function DetailPage() {
     } catch {
       setChapterError(true);
       showToast("Gagal memuat chapter, coba lagi", "error");
+    }
+  };
+
+  // Admin functions
+  const handleEditComic = () => {
+    setShowEditModal(true);
+  };
+
+  const handleDeleteComic = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteComic = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteRequest(`/api/comics/${detail.slug}`);
+      showToast(`Komik "${detail.title}" berhasil dihapus!`, "success");
+      setShowDeleteConfirm(false);
+      // Redirect to comics list after successful delete
+      navigate("/daftar-komik");
+    } catch (error) {
+      console.error("Error deleting comic:", error);
+      showToast(
+        error.message || "Gagal menghapus komik. Silakan coba lagi.",
+        "error"
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEditSuccess = async () => {
+    // Refresh comic data
+    try {
+      const localData = await getComicBySlug(id);
+      setDetail(localData);
+      showToast("Data komik berhasil diperbarui!", "success");
+    } catch (error) {
+      console.error("Error refreshing comic data:", error);
     }
   };
 
@@ -280,6 +404,28 @@ export default function DetailPage() {
           style={{ backgroundImage: `url('${cover}')` }}
         ></div>
         <div className="detail-page__hero-overlay"></div>
+
+        {/* Admin Actions - Only visible to admin */}
+        {user?.role === "admin" && (
+          <div className="detail-page__admin-actions">
+            <button
+              onClick={handleEditComic}
+              className="detail-page__admin-button detail-page__admin-button--edit"
+              title="Edit Komik"
+            >
+              <FiEdit2 className="detail-page__admin-icon" />
+              <span className="detail-page__admin-text">Edit</span>
+            </button>
+            <button
+              onClick={handleDeleteComic}
+              className="detail-page__admin-button detail-page__admin-button--delete"
+              title="Hapus Komik"
+            >
+              <FiTrash2 className="detail-page__admin-icon" />
+              <span className="detail-page__admin-text">Hapus</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="detail-page__content">
@@ -422,50 +568,94 @@ export default function DetailPage() {
             <div className="detail-page__chapter-error">
               <p>Gagal memuat daftar chapter. Silakan coba lagi.</p>
             </div>
-          ) : sortedChapters.length > 0 ? (
-            <div className="detail-page__chapters-list">
-              {sortedChapters.map((chapter, idx) => {
-                const chapterNumber =
-                  chapter.chapterNumber ?? chapter.id ?? idx + 1;
-                const chapterTitle =
-                  chapter.title || `Chapter ${chapterNumber}`;
-                const urlParam = chapter.apiLink
-                  ? encodeURIComponent(chapter.apiLink)
-                  : chapterNumber;
+          ) : currentChapters.length > 0 ? (
+            <>
+              <div className="detail-page__chapters-list">
+                {currentChapters.map((chapter, idx) => {
+                  const chapterNumber =
+                    chapter.chapterNumber ?? chapter.id ?? idx + 1;
+                  const chapterTitle =
+                    chapter.title || `Chapter ${chapterNumber}`;
+                  const urlParam = chapter.apiLink
+                    ? encodeURIComponent(chapter.apiLink)
+                    : chapterNumber;
 
-                const isLastRead = isLastReadChapter(chapter);
-                const isRead = isChapterRead(chapter);
-                const chapterKey = getChapterKey(chapter);
+                  const isLastRead = isLastReadChapter(chapter);
+                  const isRead = isChapterRead(chapter);
+                  const chapterKey = getChapterKey(chapter);
 
-                return (
-                  <Link
-                    key={idx}
-                    to={`/read/${detail.slug || id}/${urlParam}`}
-                    onClick={() => markChapterAsRead(chapterKey)}
-                    className={`detail-page__chapter-link ${
-                      isLastRead ? "detail-page__chapter-link--read" : ""
-                    } ${
-                      isRead && !isLastRead
-                        ? "detail-page__chapter-link--completed"
-                        : ""
-                    }`}
-                  >
-                    <span className="detail-page__chapter-title">
-                      {isRead && !isLastRead && (
-                        <FaCheckCircle className="detail-page__chapter-check-icon" />
-                      )}
-                      {chapterTitle}
-                    </span>
-
-                    {isLastRead && (
-                      <span className="detail-page__chapter-badge">
-                        Terakhir Dibaca
+                  return (
+                    <Link
+                      key={idx}
+                      to={`/read/${detail.slug || id}/${urlParam}`}
+                      onClick={() => markChapterAsRead(chapterKey)}
+                      className={`detail-page__chapter-link ${
+                        isLastRead ? "detail-page__chapter-link--read" : ""
+                      } ${
+                        isRead && !isLastRead
+                          ? "detail-page__chapter-link--completed"
+                          : ""
+                      }`}
+                    >
+                      <span className="detail-page__chapter-title">
+                        {isRead && !isLastRead && (
+                          <FaCheckCircle className="detail-page__chapter-check-icon" />
+                        )}
+                        {chapterTitle}
                       </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+
+                      {isLastRead && (
+                        <span className="detail-page__chapter-badge">
+                          Terakhir Dibaca
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="detail-page__pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="detail-page__pagination-btn"
+                  >
+                    <FiChevronLeft /> Prev
+                  </button>
+
+                  {getPaginationItems().map((item, index) =>
+                    item === "..." ? (
+                      <span
+                        key={`dots-${index}`}
+                        className="detail-page__pagination-dots"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => handlePageChange(item)}
+                        className={`detail-page__pagination-btn ${
+                          currentPage === item ? "active" : ""
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="detail-page__pagination-btn"
+                  >
+                    Next <FiChevronRight />
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <p className="detail-page__no-chapters">
               Belum ada chapter tersedia untuk saat ini.
@@ -484,6 +674,28 @@ export default function DetailPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <EditComicModal
+          comic={detail}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteComic}
+        title="Hapus Komik"
+        message={`⚠️ PERINGATAN! Apakah Anda yakin ingin menghapus komik "${detail?.title}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmText="Hapus Komik"
+        cancelText="Batal"
+        type="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
