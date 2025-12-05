@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { FiX, FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { useToast } from "../hooks/useToast";
 import * as authService from "../services/authService";
@@ -7,6 +8,14 @@ import "../styles/EditProfileModal.css";
 export default function EditProfileModal({ user, onClose, onSave }) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("profile"); // 'profile' or 'password'
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -158,7 +167,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
     }
   };
 
-  return (
+  return ReactDOM.createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content modal-content--tabbed"
@@ -388,6 +397,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

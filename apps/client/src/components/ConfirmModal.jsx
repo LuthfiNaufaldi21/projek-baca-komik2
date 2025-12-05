@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { FiAlertTriangle, FiX } from "react-icons/fi";
 import "../styles/ConfirmModal.css";
 
@@ -17,6 +18,16 @@ export default function ConfirmModal({
 }) {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "unset";
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -43,7 +54,7 @@ export default function ConfirmModal({
     if (error) setError("");
   };
 
-  return (
+  return ReactDOM.createPortal(
     <div className="confirm-modal__overlay" onClick={handleClose}>
       <div
         className="confirm-modal__content"
@@ -106,6 +117,7 @@ export default function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

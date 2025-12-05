@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { FiX, FiUpload, FiTrash2 } from "react-icons/fi";
 import { getInitials, getAvatarColor } from "../utils/getInitials";
 import { useToast } from "../hooks/useToast";
@@ -15,6 +16,14 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   const [wantsToRemove, setWantsToRemove] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -118,7 +127,7 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
   const avatarInitials = getInitials(user?.username || "User");
   const avatarColor = getAvatarColor(user?.username || "User");
 
-  return (
+  return ReactDOM.createPortal(
     <div className="upload-avatar-modal__overlay" onClick={onClose}>
       <div
         className="upload-avatar-modal__content"
@@ -227,6 +236,7 @@ export default function UploadAvatarModal({ user, onClose, onSave }) {
         cancelText="Batal"
         type="warning"
       />
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -20,6 +20,36 @@
   @apply absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white/90 dark:to-gray-900/90;
 }
 
+.detail-page__admin-actions {
+  @apply absolute top-4 right-4 z-30 flex gap-2;
+}
+
+.detail-page__admin-button {
+  @apply flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm
+    backdrop-blur-md shadow-lg transition-all duration-200
+    border-2 transform hover:scale-105 active:scale-95;
+}
+
+.detail-page__admin-button--edit {
+  @apply bg-blue-500/90 hover:bg-blue-600 text-white 
+    border-blue-400/50 hover:border-blue-300
+    hover:shadow-blue-500/50;
+}
+
+.detail-page__admin-button--delete {
+  @apply bg-red-500/90 hover:bg-red-600 text-white 
+    border-red-400/50 hover:border-red-300
+    hover:shadow-red-500/50;
+}
+
+.detail-page__admin-icon {
+  @apply w-4 h-4;
+}
+
+.detail-page__admin-text {
+  @apply hidden sm:inline;
+}
+
 .detail-page__content {
   @apply relative z-10 px-4 md:px-8 max-w-6xl mx-auto;
 }

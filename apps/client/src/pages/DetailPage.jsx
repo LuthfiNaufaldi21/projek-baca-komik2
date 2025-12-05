@@ -1,11 +1,13 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { getComicBySlug } from "../services/comicService";
-import { get } from "../services/api";
+import { get, deleteRequest } from "../services/api";
 import { getReadChapters } from "../services/authService";
 import { useToast } from "../hooks/useToast";
 import ComicCard from "../components/ComicCard";
+import EditComicModal from "../components/EditComicModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 import {
   FaStar,
@@ -22,11 +24,14 @@ import {
   FiArrowUp,
   FiChevronLeft,
   FiChevronRight,
+  FiEdit2,
+  FiTrash2,
 } from "react-icons/fi";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     isBookmarked,
     addBookmark,
@@ -44,6 +49,9 @@ export default function DetailPage() {
   const [relatedComics, setRelatedComics] = useState([]); // Related comics by genre
   const [sortOrder, setSortOrder] = useState("asc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
   const [currentPage, setCurrentPage] = useState(1);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const itemsPerPage = 100;
 
   const { showToast } = useToast();
@@ -273,6 +281,45 @@ export default function DetailPage() {
     }
   };
 
+  // Admin functions
+  const handleEditComic = () => {
+    setShowEditModal(true);
+  };
+
+  const handleDeleteComic = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteComic = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteRequest(`/api/comics/${detail.slug}`);
+      showToast(`Komik "${detail.title}" berhasil dihapus!`, "success");
+      setShowDeleteConfirm(false);
+      // Redirect to comics list after successful delete
+      navigate("/daftar-komik");
+    } catch (error) {
+      console.error("Error deleting comic:", error);
+      showToast(
+        error.message || "Gagal menghapus komik. Silakan coba lagi.",
+        "error"
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEditSuccess = async () => {
+    // Refresh comic data
+    try {
+      const localData = await getComicBySlug(id);
+      setDetail(localData);
+      showToast("Data komik berhasil diperbarui!", "success");
+    } catch (error) {
+      console.error("Error refreshing comic data:", error);
+    }
+  };
+
   const markChapterAsRead = (chapterKey) => {
     if (!isLoggedIn) return;
     const newReadChapters = new Set(readChapters);
@@ -357,6 +404,28 @@ export default function DetailPage() {
           style={{ backgroundImage: `url('${cover}')` }}
         ></div>
         <div className="detail-page__hero-overlay"></div>
+
+        {/* Admin Actions - Only visible to admin */}
+        {user?.role === "admin" && (
+          <div className="detail-page__admin-actions">
+            <button
+              onClick={handleEditComic}
+              className="detail-page__admin-button detail-page__admin-button--edit"
+              title="Edit Komik"
+            >
+              <FiEdit2 className="detail-page__admin-icon" />
+              <span className="detail-page__admin-text">Edit</span>
+            </button>
+            <button
+              onClick={handleDeleteComic}
+              className="detail-page__admin-button detail-page__admin-button--delete"
+              title="Hapus Komik"
+            >
+              <FiTrash2 className="detail-page__admin-icon" />
+              <span className="detail-page__admin-text">Hapus</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="detail-page__content">
@@ -605,6 +674,28 @@ export default function DetailPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <EditComicModal
+          comic={detail}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteComic}
+        title="Hapus Komik"
+        message={`⚠️ PERINGATAN! Apakah Anda yakin ingin menghapus komik "${detail?.title}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmText="Hapus Komik"
+        cancelText="Batal"
+        type="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -40,7 +40,7 @@ const statusOptions = [
   { value: "Update Tidak Tentu", label: "Update Tidak Tentu" },
 ];
 
-export default function AddComicModal({ onClose, onSuccess }) {
+export default function EditComicModal({ comic, onClose, onSuccess }) {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -54,7 +54,6 @@ export default function AddComicModal({ onClose, onSuccess }) {
   }, []);
 
   const [formData, setFormData] = useState({
-    slug: "",
     title: "",
     alternative_title: "",
     author: "",
@@ -65,6 +64,25 @@ export default function AddComicModal({ onClose, onSuccess }) {
     type: "Manga",
     genres: [],
   });
+
+  // Load existing comic data
+  useEffect(() => {
+    if (comic) {
+      setFormData({
+        title: comic.title || "",
+        alternative_title: comic.alternative_title || "",
+        author: comic.author || "",
+        status: comic.status || "Ongoing",
+        cover_url: comic.cover_url || "",
+        synopsis: comic.synopsis || "",
+        rating: comic.rating || "",
+        type: comic.type || "Manga",
+        genres: comic.genres
+          ? comic.genres.map((g) => (typeof g === "object" ? g.slug : g))
+          : [],
+      });
+    }
+  }, [comic]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,10 +107,6 @@ export default function AddComicModal({ onClose, onSuccess }) {
 
   const validate = () => {
     const newErrors = {};
-
-    if (!formData.slug.trim()) {
-      newErrors.slug = "Slug wajib diisi";
-    }
 
     if (!formData.title.trim()) {
       newErrors.title = "Judul wajib diisi";
@@ -128,8 +142,8 @@ export default function AddComicModal({ onClose, onSuccess }) {
         rating: formData.rating ? parseFloat(formData.rating) : 0,
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/comics`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE_URL}/api/comics/${comic.slug}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -139,19 +153,19 @@ export default function AddComicModal({ onClose, onSuccess }) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.msg || "Gagal membuat komik");
+        throw new Error(error.msg || "Gagal mengupdate komik");
       }
 
       const data = await response.json();
-      showToast("Komik berhasil ditambahkan!", "success");
+      showToast("Komik berhasil diupdate!", "success");
       onSuccess(data.comic);
       onClose();
     } catch (err) {
-      console.error("Error creating comic:", err);
+      console.error("Error updating comic:", err);
       setErrors({
-        general: err.message || "Gagal membuat komik. Silakan coba lagi.",
+        general: err.message || "Gagal mengupdate komik. Silakan coba lagi.",
       });
-      showToast(err.message || "Gagal membuat komik", "error");
+      showToast(err.message || "Gagal mengupdate komik", "error");
     } finally {
       setIsLoading(false);
     }
@@ -165,7 +179,7 @@ export default function AddComicModal({ onClose, onSuccess }) {
       >
         {/* Header */}
         <div className="modal-header">
-          <h2 className="modal-title">Tambah Komik Baru</h2>
+          <h2 className="modal-title">Edit Komik: {comic?.title}</h2>
           <button onClick={onClose} className="modal-close">
             <FiX />
           </button>
@@ -178,29 +192,6 @@ export default function AddComicModal({ onClose, onSuccess }) {
           )}
 
           <form onSubmit={handleSubmit} className="modal-form">
-            {/* Slug */}
-            <div className="modal-field">
-              <label className="modal-label">
-                <FiBookmark className="modal-label-icon" />
-                Slug (URL-friendly ID) *
-              </label>
-              <input
-                type="text"
-                name="slug"
-                value={formData.slug}
-                onChange={handleChange}
-                className={`modal-input ${
-                  errors.slug ? "modal-input--error" : ""
-                }`}
-                placeholder="contoh: one-piece"
-                disabled={isLoading}
-              />
-              {errors.slug && <p className="modal-error">{errors.slug}</p>}
-              <p className="modal-hint">
-                Harus unik, tanpa spasi, gunakan tanda hubung (-)
-              </p>
-            </div>
-
             {/* Title */}
             <div className="modal-field">
               <label className="modal-label">
@@ -375,7 +366,7 @@ export default function AddComicModal({ onClose, onSuccess }) {
                 className="modal-button modal-button--save"
                 disabled={isLoading}
               >
-                {isLoading ? "Menyimpan..." : "Tambah Komik"}
+                {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
           </form>
