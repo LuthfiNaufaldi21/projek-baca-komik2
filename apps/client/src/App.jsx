@@ -1,4 +1,4 @@
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider } from "./components/ToastProvider";
@@ -11,16 +11,18 @@ import "./App.css";
 
 function AppContent() {
   useScrollToTop();
+  const location = useLocation();
+  const isReaderPage = location.pathname.startsWith("/read/");
 
   return (
     <div className="app__wrapper">
       <Navbar />
 
-      <main className="app__main">
+      <main className={isReaderPage ? "w-full" : "app__main"}>
         <AppRouter />
       </main>
 
-      <Footer />
+      {!isReaderPage && <Footer />}
       <BackToTop />
     </div>
   );

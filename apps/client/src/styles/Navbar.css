@@ -175,3 +175,7 @@
 .navbar__mobile-link--active {
   @apply bg-primary/5 text-primary border-l-4 border-l-primary;
 }
+
+.navbar--static {
+  @apply relative top-auto transform-none !important;
+}

@@ -5,7 +5,7 @@
 }
 
 .detail-page__hero-banner {
-  @apply relative w-full max-w-7xl mx-auto mt-6 h-[260px] overflow-hidden rounded-3xl shadow-2xl mb-[-210px] border border-gray-100 dark:border-gray-800;
+  @apply relative w-full max-w-7xl mx-auto mt-6 h-[300px] overflow-hidden rounded-3xl shadow-2xl mb-[-250px] border border-gray-100 dark:border-gray-800;
 }
 
 .detail-page__hero-banner:hover .detail-page__hero-bg {
@@ -101,7 +101,7 @@
 }
 
 .detail-page__synopsis-container {
-  @apply bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-10;
+  @apply mt-[70px] bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-10;
 }
 
 .detail-page__synopsis-title {
@@ -118,6 +118,7 @@
 
 .detail-page__chapters-header {
   @apply flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4;
+  scroll-margin-top: 100px;
 }
 
 .detail-page__chapters-title {
@@ -273,4 +274,24 @@
 .detail-page__chapter-badge {
   @apply absolute right-3 top-1/2 -translate-y-1/2;
   @apply text-xs font-bold text-primary bg-primary/15 dark:bg-primary/20 px-3 py-1 rounded-full border border-primary/40;
+}
+
+/* Pagination */
+.detail-page__pagination {
+  @apply flex justify-center items-center gap-2 mt-6 flex-wrap;
+}
+
+.detail-page__pagination-btn {
+  @apply flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+    bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
+    hover:bg-gray-200 dark:hover:bg-gray-700
+    disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.detail-page__pagination-btn.active {
+  @apply bg-primary text-white hover:bg-primary-hover;
+}
+
+.detail-page__pagination-dots {
+  @apply px-2 text-gray-500 dark:text-gray-400 font-bold;
 }

@@ -148,8 +148,8 @@
 
 /* Header */
 .reader-header {
-  @apply sticky top-0 z-50 flex justify-between items-center px-4 py-3 
-  bg-[#0a0a0a]/95 backdrop-blur-md border-b border-gray-800 shadow-lg transition-transform duration-300;
+  @apply sticky top-0 w-full max-w-[800px] mx-auto z-[100] flex justify-between items-center px-4 py-3 
+  bg-[#0a0a0a]/80 backdrop-blur-md border-b border-gray-800/50 shadow-lg transition-transform duration-300 rounded-b-xl;
 }
 
 .reader-header__title {
@@ -161,20 +161,20 @@
 }
 
 .reader-header__close {
-  @apply px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-bold text-white transition-colors;
+  @apply px-4 py-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg text-xs font-bold text-white transition-colors backdrop-blur-sm;
 }
 
 .reader-header__actions {
   @apply absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 
-  flex items-center gap-4 bg-gray-800/80 backdrop-blur-sm px-4 py-1.5 rounded-full border border-gray-700 shadow-md;
+  flex items-center gap-4 bg-gray-800/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-gray-700/50 shadow-md;
 }
 
 .reader-header__btn {
-  @apply text-gray-300 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent;
+  @apply text-gray-300 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700/50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent;
 }
 
 .reader-header__divider {
-  @apply w-[1px] h-4 bg-gray-600;
+  @apply w-[1px] h-4 bg-gray-600/50;
 }
 
 /* Content Images FULLSCREEN */
@@ -197,12 +197,12 @@
 .reader-nav-buttons {
   /* Mobile: Baris tunggal dengan dropdown di tengah
      Desktop: Tetap sejajar satu baris */
-  @apply flex flex-row items-center gap-2 sm:gap-3 w-full mb-4 sm:mb-6 relative;
+  @apply flex items-center justify-between gap-2 sm:gap-3 w-full mb-6 relative max-w-3xl mx-auto;
 }
 
 /* Style Tombol Prev & Next */
 .reader-nav-btn {
-  @apply flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2.5 sm:py-3 rounded-xl font-bold transition-all duration-200 text-xs sm:text-sm md:text-base border border-transparent whitespace-nowrap flex-shrink-0;
+  @apply flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl font-bold transition-all duration-200 text-sm border border-transparent whitespace-nowrap flex-shrink-0;
 }
 
 .reader-nav-btn__icon {
@@ -226,22 +226,22 @@
 
 /* Wrapper Dropdown (Agar berada di tengah di desktop) */
 .reader-dropdown-wrapper {
-  @apply relative flex-1 z-40 max-w-full; /* z-40 agar muncul di atas elemen footer lain */
+  @apply relative flex-1 z-40 min-w-0; /* min-w-0 allows truncation */
 }
 
 /* Tombol Pemicu Dropdown */
 .reader-dropdown-trigger {
-  @apply w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm md:text-base
+  @apply w-full flex items-center justify-between px-4 py-3 text-sm
   bg-[#111] hover:bg-[#1a1a1a] text-gray-200 border border-gray-800 
   rounded-xl transition-all duration-200 cursor-pointer font-medium;
 }
 .reader-dropdown-trigger span {
-  @apply truncate mr-2; /* Agar teks panjang tidak merusak layout */
+  @apply truncate mr-2 text-center w-full; /* Center text */
 }
 
 /* Icon Panah */
 .reader-dropdown-icon {
-  @apply w-5 h-5 text-gray-500 transition-transform duration-300;
+  @apply w-5 h-5 text-gray-500 transition-transform duration-300 flex-shrink-0;
 }
 .reader-dropdown-trigger:hover .reader-dropdown-icon {
   @apply text-white;
@@ -249,17 +249,17 @@
 
 /* List Menu (Diperbaiki: Menghapus class animasi plugin yang error) */
 .reader-dropdown-menu {
-  @apply absolute bottom-[calc(100%+8px)] left-0 right-0 sm:w-[400px] sm:mx-auto
-  bg-[#111] border border-gray-800 rounded-xl shadow-2xl shadow-black/80 
-  max-h-80 overflow-y-auto p-1.5
-  origin-bottom transition-all duration-200; /* Class animate-in dihapus agar tidak error */
+  @apply absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 w-[90vw] sm:w-[400px]
+  bg-[#111]/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl shadow-black/80 
+  max-h-[60vh] overflow-y-auto p-2
+  origin-bottom transition-all duration-200 z-50;
 }
 
 /* Item dalam List */
 .reader-dropdown-item {
-  @apply block w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 
+  @apply block w-full text-left px-4 py-3 
   text-gray-400 hover:text-white hover:bg-gray-800 
-  rounded-lg text-xs sm:text-sm transition-colors cursor-pointer border-b border-gray-900 last:border-0;
+  rounded-lg text-sm transition-colors cursor-pointer border-b border-gray-900/50 last:border-0;
 }
 .reader-dropdown-item.active {
   @apply bg-primary/10 text-primary font-bold border-primary/20;

@@ -16,7 +16,13 @@ import {
   FaSpinner,
   FaCheckCircle,
 } from "react-icons/fa";
-import { FiRefreshCw, FiArrowDown, FiArrowUp } from "react-icons/fi";
+import {
+  FiRefreshCw,
+  FiArrowDown,
+  FiArrowUp,
+  FiChevronLeft,
+  FiChevronRight,
+} from "react-icons/fi";
 import "../styles/DetailPage.css";
 
 export default function DetailPage() {
@@ -36,7 +42,9 @@ export default function DetailPage() {
   const [chapterError, setChapterError] = useState(false);
   const [readChapters, setReadChapters] = useState(new Set());
   const [relatedComics, setRelatedComics] = useState([]); // Related comics by genre
-  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
+  const [sortOrder, setSortOrder] = useState("asc"); // 'desc' = terbaru ke lama, 'asc' = lama ke terbaru
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100;
 
   const { showToast } = useToast();
 
@@ -154,6 +162,75 @@ export default function DetailPage() {
     const numB = b.chapterNumber ?? b.id ?? 0;
     return sortOrder === "desc" ? numB - numA : numA - numB;
   });
+
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedChapters.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentChapters = sortedChapters.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      setTimeout(() => {
+        const listElement = document.querySelector(
+          ".detail-page__chapters-header"
+        );
+        if (listElement) {
+          listElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
+  };
+
+  // Helper for pagination ellipsis
+  const getPaginationItems = () => {
+    const rangeWithDots = [];
+    const delta = 1; // Neighbors around current page
+    const leftSide = 2; // Always show first X pages
+    const rightSide = 2; // Always show last X pages
+
+    const pages = new Set();
+
+    // Add first pages
+    for (let i = 1; i <= leftSide; i++) {
+      if (i <= totalPages) pages.add(i);
+    }
+
+    // Add last pages
+    for (let i = totalPages - rightSide + 1; i <= totalPages; i++) {
+      if (i > 0) pages.add(i);
+    }
+
+    // Add current and neighbors
+    for (let i = currentPage - delta; i <= currentPage + delta; i++) {
+      if (i > 0 && i <= totalPages) pages.add(i);
+    }
+
+    const sortedPages = Array.from(pages).sort((a, b) => a - b);
+
+    let l;
+    for (let i of sortedPages) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push("...");
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
+
+  // Reset page on sort/id change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortOrder, id]);
 
   const bookmarkKey = detail?.slug || id;
   const bookmarked = isBookmarked(bookmarkKey);
@@ -422,50 +499,94 @@ export default function DetailPage() {
             <div className="detail-page__chapter-error">
               <p>Gagal memuat daftar chapter. Silakan coba lagi.</p>
             </div>
-          ) : sortedChapters.length > 0 ? (
-            <div className="detail-page__chapters-list">
-              {sortedChapters.map((chapter, idx) => {
-                const chapterNumber =
-                  chapter.chapterNumber ?? chapter.id ?? idx + 1;
-                const chapterTitle =
-                  chapter.title || `Chapter ${chapterNumber}`;
-                const urlParam = chapter.apiLink
-                  ? encodeURIComponent(chapter.apiLink)
-                  : chapterNumber;
+          ) : currentChapters.length > 0 ? (
+            <>
+              <div className="detail-page__chapters-list">
+                {currentChapters.map((chapter, idx) => {
+                  const chapterNumber =
+                    chapter.chapterNumber ?? chapter.id ?? idx + 1;
+                  const chapterTitle =
+                    chapter.title || `Chapter ${chapterNumber}`;
+                  const urlParam = chapter.apiLink
+                    ? encodeURIComponent(chapter.apiLink)
+                    : chapterNumber;
 
-                const isLastRead = isLastReadChapter(chapter);
-                const isRead = isChapterRead(chapter);
-                const chapterKey = getChapterKey(chapter);
+                  const isLastRead = isLastReadChapter(chapter);
+                  const isRead = isChapterRead(chapter);
+                  const chapterKey = getChapterKey(chapter);
 
-                return (
-                  <Link
-                    key={idx}
-                    to={`/read/${detail.slug || id}/${urlParam}`}
-                    onClick={() => markChapterAsRead(chapterKey)}
-                    className={`detail-page__chapter-link ${
-                      isLastRead ? "detail-page__chapter-link--read" : ""
-                    } ${
-                      isRead && !isLastRead
-                        ? "detail-page__chapter-link--completed"
-                        : ""
-                    }`}
-                  >
-                    <span className="detail-page__chapter-title">
-                      {isRead && !isLastRead && (
-                        <FaCheckCircle className="detail-page__chapter-check-icon" />
-                      )}
-                      {chapterTitle}
-                    </span>
-
-                    {isLastRead && (
-                      <span className="detail-page__chapter-badge">
-                        Terakhir Dibaca
+                  return (
+                    <Link
+                      key={idx}
+                      to={`/read/${detail.slug || id}/${urlParam}`}
+                      onClick={() => markChapterAsRead(chapterKey)}
+                      className={`detail-page__chapter-link ${
+                        isLastRead ? "detail-page__chapter-link--read" : ""
+                      } ${
+                        isRead && !isLastRead
+                          ? "detail-page__chapter-link--completed"
+                          : ""
+                      }`}
+                    >
+                      <span className="detail-page__chapter-title">
+                        {isRead && !isLastRead && (
+                          <FaCheckCircle className="detail-page__chapter-check-icon" />
+                        )}
+                        {chapterTitle}
                       </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+
+                      {isLastRead && (
+                        <span className="detail-page__chapter-badge">
+                          Terakhir Dibaca
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="detail-page__pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="detail-page__pagination-btn"
+                  >
+                    <FiChevronLeft /> Prev
+                  </button>
+
+                  {getPaginationItems().map((item, index) =>
+                    item === "..." ? (
+                      <span
+                        key={`dots-${index}`}
+                        className="detail-page__pagination-dots"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => handlePageChange(item)}
+                        className={`detail-page__pagination-btn ${
+                          currentPage === item ? "active" : ""
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="detail-page__pagination-btn"
+                  >
+                    Next <FiChevronRight />
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <p className="detail-page__no-chapters">
               Belum ada chapter tersedia untuk saat ini.
