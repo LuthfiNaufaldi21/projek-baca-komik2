@@ -72,7 +72,7 @@ export default function Navbar() {
 
   const fullAvatarUrl = user?.avatar ? getFullAvatarUrl(user.avatar) : null;
 
-  if (isReaderPage) return null; // Return null lebih bersih daripada nav display:none
+  // if (isReaderPage) return null; // REMOVED: User wants navbar on reader page too
 
   const navLinks = [
     { to: "/daftar-komik", label: "Daftar Komik" },
@@ -84,7 +84,11 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className={`navbar ${!isVisible ? "navbar--hidden" : ""}`}>
+    <nav
+      className={`navbar ${
+        !isVisible && !isReaderPage ? "navbar--hidden" : ""
+      } ${isReaderPage ? "navbar--static" : ""}`}
+    >
       <div className="navbar__container">
         <Link to="/" className="navbar__logo-link">
           <div className="navbar__logo-glow-wrapper">

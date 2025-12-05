@@ -36,6 +36,7 @@ export default function ReaderPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const activeChapterRef = useRef(null); // Ref untuk auto-scroll dropdown
+  const dropdownListRef = useRef(null); // Ref untuk container dropdown
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -208,11 +209,16 @@ export default function ReaderPage() {
 
   // 6. UX Dropdown: Auto scroll ke active chapter
   useEffect(() => {
-    if (isDropdownOpen && activeChapterRef.current) {
-      activeChapterRef.current.scrollIntoView({
-        behavior: "auto",
-        block: "center", // Scroll supaya item ada di tengah
-      });
+    if (isDropdownOpen && activeChapterRef.current && dropdownListRef.current) {
+      const container = dropdownListRef.current;
+      const item = activeChapterRef.current;
+
+      // Manual scroll calculation to avoid window scrolling
+      const itemTop = item.offsetTop;
+      const itemHeight = item.offsetHeight;
+      const containerHeight = container.offsetHeight;
+
+      container.scrollTop = itemTop - containerHeight / 2 + itemHeight / 2;
     }
   }, [isDropdownOpen]);
 
@@ -418,7 +424,7 @@ export default function ReaderPage() {
             </button>
 
             {isDropdownOpen && (
-              <div className="reader-dropdown-menu">
+              <div className="reader-dropdown-menu" ref={dropdownListRef}>
                 {allChapters.map((ch) => {
                   const isActive =
                     ch.apiLink === currentChapter.apiLink ||
